@@ -4,8 +4,9 @@ const Accordion: React.FC<{
   title: string
   subtitle?: string
   children: React.ReactNode
-}> = ({ title, subtitle, children }) => {
-  const [isOpen, setIsOpen] = useState(false)
+  onToggle: () => void
+  isOpen: boolean
+}> = ({ title, subtitle, children, onToggle, isOpen }) => {
 
   return (
     <article className="accordion-item">
@@ -13,7 +14,9 @@ const Accordion: React.FC<{
           type="button"
           className="accordion-trigger"
           aria-controls="section-template"
-          onClick={() => setIsOpen((prev) => !prev)}
+          onClick={() => {
+            onToggle?.();
+          }}
         >
           <span>{title}</span>
           <span className="accordion-icon" aria-hidden="true">

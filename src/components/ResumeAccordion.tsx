@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, Dispatch, SetStateAction } from 'react'
 import type { DragEvent } from 'react'
 import type {
   Applicant,
@@ -47,6 +47,20 @@ type ResumeAccordionProps = {
   removeReference: (index: number) => void
   reorderReferences: (fromIndex: number, toIndex: number) => void
   handleResumeUpload: (file: File | null) => Promise<void>
+}
+
+// Custom hook to sync state with localStorage
+function useStickyState<T>(defaultValue: T[], key: string): [T[], Dispatch<SetStateAction<T[]>>] {
+  const [value, setValue] = useState<T[]>(() => {
+    const stickyValue = window.localStorage.getItem(key);
+    return stickyValue !== null ? JSON.parse(stickyValue) : defaultValue;
+  });
+
+  useEffect(() => {
+    window.localStorage.setItem(key, JSON.stringify(value));
+  }, [key, value]);
+
+  return [value, setValue];
 }
 
 const ResumeAccordion = ({
@@ -109,11 +123,25 @@ const ResumeAccordion = ({
   const openEmployment = (index: number) => setActivePanel({ type: 'employment', index })
   const openReference = (index: number) => setActivePanel({ type: 'reference', index })
 
+  const [openSections, setOpenSections] = useStickyState<string>([], 'accordion-open-sections');
+
+  const toggleSection = (section: string) => {
+    setOpenSections((prev: string[]) =>
+      {
+        if (prev.includes(section)) {
+          return prev.filter((s) => s !== section)
+        } else {
+          return [...prev, section]
+        }
+      }
+    );
+  }
+
   const renderList = () => (
     <div className="section-list" aria-label="Resume sections">
       <div className="section-group">
         <h3 className="section-group-title">Base</h3>
-        <Accordion title="Resume Template" subtitle="Choose your resume template">
+        <Accordion title="Resume Template" subtitle="Choose your resume template" onToggle={() => toggleSection('template')} isOpen={openSections.includes('template')}>
           <div className="form-grid">
             <label>
               Resume Font
@@ -134,7 +162,7 @@ const ResumeAccordion = ({
           callback={() => setActivePanel({ type: 'contact' })}
         />
 
-        <Accordion title="Education">
+        <Accordion title="Education" onToggle={() => toggleSection('education')} isOpen={openSections.includes('education')}>
           <div>
         {education.map((entry, index) => (
           <div
@@ -168,7 +196,7 @@ const ResumeAccordion = ({
           </div>
         </Accordion>
     
-      <Accordion title="Employment">
+      <Accordion title="Employment" onToggle={() => toggleSection('employment')} isOpen={openSections.includes('employment')}>
         {employmentHistory.map((entry, index) => (
           <div
           className={`section-row${dragEmploymentIndex === index ? ' is-dragging' : ''}`}
@@ -200,7 +228,7 @@ const ResumeAccordion = ({
           </button>
       </Accordion>
 
-      <Accordion title="References">
+      <Accordion title="References" onToggle={() => toggleSection('references')} isOpen={openSections.includes('references')}>
         {references.map((entry, index) => (
           <div
             className={`section-row${dragReferenceIndex === index ? ' is-dragging' : ''}`}
