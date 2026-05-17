@@ -219,7 +219,6 @@ function App() {
         <div>
           <h1>Applyr</h1>
         </div>
-        <p className="kicker">Accordion inputs on the left, live preview on the right.</p>
       </header>
       <div className="resume-shell">
         <section className="panel panel-scroll">
