@@ -157,7 +157,7 @@ const ResumeAccordion = ({
               onDragStart={(event) => handleDragStart(setDragEducationIndex, index, event)}
               onDragEnd={() => handleDragEnd(setDragEducationIndex)}
             >
-              ::
+              ☰
             </button>
             <button type="button" className="row-main" onClick={() => openEducation(index)}>
               <span className="row-title">{entry.schoolName || `Education ${index + 1}`}</span>
@@ -190,7 +190,7 @@ const ResumeAccordion = ({
               onDragStart={(event) => handleDragStart(setDragEmploymentIndex, index, event)}
               onDragEnd={() => handleDragEnd(setDragEmploymentIndex)}
               >
-              ::
+              ☰
             </button>
             <button type="button" className="row-main" onClick={() => openEmployment(index)}>
               <span className="row-title">{entry.companyName || `Employment ${index + 1}`}</span>
@@ -222,7 +222,7 @@ const ResumeAccordion = ({
               onDragStart={(event) => handleDragStart(setDragReferenceIndex, index, event)}
               onDragEnd={() => handleDragEnd(setDragReferenceIndex)}
             >
-              ::
+              ☰
             </button>
             <button type="button" className="row-main" onClick={() => openReference(index)}>
               <span className="row-title">{entry.referenceName || `Reference ${index + 1}`}</span>
