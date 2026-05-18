@@ -3,14 +3,14 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../../index.php';
-require_once __DIR__ . '/../auth/require_auth.php';
+require_once __DIR__ . '/../../database.php';
 
-[$db, $user] = requireAuthUser();
+$db = getDatabaseConnection();
 $input = readJsonInput();
 $applicant = is_array($input['applicant'] ?? null) ? $input['applicant'] : [];
 $jobApplication = is_array($input['jobApplication'] ?? null) ? $input['jobApplication'] : [];
 
-$applicantId = (string)$user['applicant_id'];
+$applicantId = (string)($applicant['applicantId'] ?? '');
 $jobApplicationId = (string)($jobApplication['JobApplicationId'] ?? '');
 
 if ($jobApplicationId === '') {

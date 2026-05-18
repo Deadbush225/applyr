@@ -7,6 +7,8 @@ import type {
   Education,
   EmploymentHistory,
   JobApplication,
+  Training,
+  Certificate,
 } from '../types'
 
 export type AuthSession = {
@@ -23,6 +25,8 @@ type HomePageProps = {
   education: Education[]
   employmentHistory: EmploymentHistory[]
   references: ApplicantReference[]
+  trainings: Training[]
+  certificates: Certificate[]
   authSession: AuthSession | null
   isAuthLoading: boolean
   authError: string
@@ -63,6 +67,8 @@ const HomePage = ({
   education,
   employmentHistory,
   references,
+  trainings,
+  certificates,
   authSession,
   isAuthLoading,
   authError,
@@ -200,6 +206,8 @@ const HomePage = ({
                     education={education}
                     employmentHistory={employmentHistory}
                     references={references}
+                    trainings={trainings}
+                    certificates={certificates}
                     previewFont={previewFont}
                     resumeTemplate={resumeTemplate}
                   />

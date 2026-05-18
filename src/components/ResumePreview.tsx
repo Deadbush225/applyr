@@ -6,6 +6,8 @@ import type {
 	Education,
 	EmploymentHistory,
 	JobApplication,
+	Training,
+	Certificate,
 } from "../types";
 
 type ResumePreviewProps = {
@@ -14,6 +16,8 @@ type ResumePreviewProps = {
 	education: Education[];
 	employmentHistory: EmploymentHistory[];
 	references: ApplicantReference[];
+	trainings: Training[];
+	certificates: Certificate[];
 	previewFont: string;
 	resumeTemplate: ResumeTemplateId;
 };
@@ -35,7 +39,9 @@ type SectionBlock = {
 		| [string, string][]
 		| Education[]
 		| EmploymentHistory[]
-		| ApplicantReference[];
+		| ApplicantReference[]
+		| Training[]
+		| Certificate[];
 	isEmpty: boolean;
 };
 
@@ -109,6 +115,8 @@ const ResumePreview = ({
 	education,
 	employmentHistory,
 	references,
+	trainings,
+	certificates,
 	previewFont,
 	resumeTemplate,
 }: ResumePreviewProps) => {
@@ -237,6 +245,22 @@ const ResumePreview = ({
 			},
 		],
 		[
+			"Trainings",
+			{
+				title: "Trainings",
+				lines: trainings,
+				isEmpty: trainings.length === 0,
+			},
+		],
+		[
+			"Certificates",
+			{
+				title: "Certificates",
+				lines: certificates,
+				isEmpty: certificates.length === 0,
+			},
+		],
+		[
 			"Compliance",
 			{
 				title: "Compliance",
@@ -254,6 +278,8 @@ const ResumePreview = ({
 			"Application Details",
 			"Education",
 			"Employment",
+			"Trainings",
+			"Certificates",
 			"References",
 			"Compliance",
 		],
@@ -261,6 +287,8 @@ const ResumePreview = ({
 			"Application Details",
 			"Employment",
 			"Education",
+			"Trainings",
+			"Certificates",
 			"Compliance",
 			"References",
 		],
@@ -269,6 +297,8 @@ const ResumePreview = ({
 			"Compliance",
 			"Employment",
 			"Education",
+			"Trainings",
+			"Certificates",
 			"References",
 		],
 	};
@@ -326,6 +356,34 @@ function isReferenceArray(arr: unknown[]): arr is ApplicantReference[] {
 		first !== null &&
 		!Array.isArray(first) &&
 		"referenceName" in (first as ApplicantReference)
+	);
+}
+
+function isTrainingArray(arr: unknown[]): arr is Training[] {
+	if (!Array.isArray(arr) || arr.length === 0) {
+		return false;
+	}
+
+	const first = arr[0];
+	return (
+		typeof first === "object" &&
+		first !== null &&
+		!Array.isArray(first) &&
+		"trainingTitle" in (first as Training)
+	);
+}
+
+function isCertificateArray(arr: unknown[]): arr is Certificate[] {
+	if (!Array.isArray(arr) || arr.length === 0) {
+		return false;
+	}
+
+	const first = arr[0];
+	return (
+		typeof first === "object" &&
+		first !== null &&
+		!Array.isArray(first) &&
+		"certificateName" in (first as Certificate)
 	);
 }
 
@@ -515,6 +573,91 @@ function isReferenceArray(arr: unknown[]): arr is ApplicantReference[] {
 																		<p>
 																			{getDisplayValue(line.referencePhone, "Phone")}
 																		</p>
+																	</div>
+																</div>
+															))}
+														</div>
+													)}
+												</section>
+											);
+										} else if (
+											section.title.startsWith("Trainings") &&
+											isTrainingArray(section.lines)
+										) {
+											return (
+												<section
+													className="preview-section"
+													key={`section-${pageIndex}-${sectionIndex}`}
+												>
+													<div className="preview-section-header">
+														<h3>{section.title}</h3>
+														<span className="preview-section-rule" />
+													</div>
+													{section.isEmpty ? (
+														<p className="preview-empty">No entries yet.</p>
+													) : (
+														<div className="preview-list">
+															{section.lines.map((line, lineIndex) => (
+																<div
+																	className="line-block"
+																	key={`line-${pageIndex}-${sectionIndex}-${lineIndex}`}
+																>
+																	<div className="line-flex-spacebbetween">
+																		<strong>
+																			{getDisplayValue(line.trainingTitle, "Title")}
+																		</strong>
+																		<p>
+																			{getDisplayValue(line.trainingDurationHours, "Duration") + " Hrs"}
+																		</p>
+																	</div>
+																	<div className="line-flex-spacebbetween">
+																		<i>
+																			{getDisplayValue(line.trainingInstructor, "Instructor")}
+																		</i>
+																		<p>
+																			{getDisplayValue(line.trainingDescription, "Description")}
+																		</p>
+																	</div>
+																</div>
+															))}
+														</div>
+													)}
+												</section>
+											);
+										} else if (
+											section.title.startsWith("Certificates") &&
+											isCertificateArray(section.lines)
+										) {
+											return (
+												<section
+													className="preview-section"
+													key={`section-${pageIndex}-${sectionIndex}`}
+												>
+													<div className="preview-section-header">
+														<h3>{section.title}</h3>
+														<span className="preview-section-rule" />
+													</div>
+													{section.isEmpty ? (
+														<p className="preview-empty">No entries yet.</p>
+													) : (
+														<div className="preview-list">
+															{section.lines.map((line, lineIndex) => (
+																<div
+																	className="line-block"
+																	key={`line-${pageIndex}-${sectionIndex}-${lineIndex}`}
+																>
+																	<div className="line-flex-spacebbetween">
+																		<strong>
+																			{getDisplayValue(line.certificateName, "Name")}
+																		</strong>
+																		<p>
+																			{"Valid: " + getDisplayValue(line.validityMonths, "N/A") + " Months"}
+																		</p>
+																	</div>
+																	<div className="line-flex-spacebbetween">
+																		<i>
+																			{getDisplayValue(line.issuingAuthority, "Authority")}
+																		</i>
 																	</div>
 																</div>
 															))}

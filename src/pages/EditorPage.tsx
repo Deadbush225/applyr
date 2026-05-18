@@ -8,6 +8,8 @@ import type {
   Education,
   EmploymentHistory,
   JobApplication,
+  Training,
+  Certificate,
 } from '../types'
 
 export type EditorPageProps = {
@@ -20,6 +22,8 @@ export type EditorPageProps = {
   education: Education[]
   employmentHistory: EmploymentHistory[]
   references: ApplicantReference[]
+  trainings: Training[]
+  certificates: Certificate[]
   uploadState: { uploading: boolean; message: string }
   previewFont: string
   resumeTemplate: 'classic' | 'compact' | 'modern'
@@ -30,6 +34,8 @@ export type EditorPageProps = {
   updateEducation: (index: number, field: keyof Education, value: string) => void
   updateEmployment: (index: number, field: keyof EmploymentHistory, value: string) => void
   updateReference: (index: number, field: keyof ApplicantReference, value: string) => void
+  updateTraining: (index: number, field: keyof Training, value: string) => void
+  updateCertificate: (index: number, field: keyof Certificate, value: string) => void
   addEducation: () => void
   removeEducation: (index: number) => void
   reorderEducation: (fromIndex: number, toIndex: number) => void
@@ -39,6 +45,12 @@ export type EditorPageProps = {
   addReference: () => void
   removeReference: (index: number) => void
   reorderReferences: (fromIndex: number, toIndex: number) => void
+  addTraining: () => void
+  removeTraining: (index: number) => void
+  reorderTrainings: (fromIndex: number, toIndex: number) => void
+  addCertificate: () => void
+  removeCertificate: (index: number) => void
+  reorderCertificates: (fromIndex: number, toIndex: number) => void
   handleResumeUpload: (file: File | null) => Promise<void>
 }
 
@@ -52,6 +64,8 @@ const EditorPage = ({
   education,
   employmentHistory,
   references,
+  trainings,
+  certificates,
   uploadState,
   previewFont,
   resumeTemplate,
@@ -62,6 +76,8 @@ const EditorPage = ({
   updateEducation,
   updateEmployment,
   updateReference,
+  updateTraining,
+  updateCertificate,
   addEducation,
   removeEducation,
   reorderEducation,
@@ -71,6 +87,12 @@ const EditorPage = ({
   addReference,
   removeReference,
   reorderReferences,
+  addTraining,
+  removeTraining,
+  reorderTrainings,
+  addCertificate,
+  removeCertificate,
+  reorderCertificates,
   handleResumeUpload,
 }: EditorPageProps) => {
   const { applicationId } = useParams()
@@ -119,6 +141,8 @@ const EditorPage = ({
             education={education}
             employmentHistory={employmentHistory}
             references={references}
+            trainings={trainings}
+            certificates={certificates}
             uploadState={uploadState}
             previewFont={previewFont}
             onPreviewFontChange={onPreviewFontChange}
@@ -129,6 +153,8 @@ const EditorPage = ({
             updateEducation={updateEducation}
             updateEmployment={updateEmployment}
             updateReference={updateReference}
+            updateTraining={updateTraining}
+            updateCertificate={updateCertificate}
             addEducation={addEducation}
             removeEducation={removeEducation}
             reorderEducation={reorderEducation}
@@ -138,6 +164,12 @@ const EditorPage = ({
             addReference={addReference}
             removeReference={removeReference}
             reorderReferences={reorderReferences}
+            addTraining={addTraining}
+            removeTraining={removeTraining}
+            reorderTrainings={reorderTrainings}
+            addCertificate={addCertificate}
+            removeCertificate={removeCertificate}
+            reorderCertificates={reorderCertificates}
             handleResumeUpload={handleResumeUpload}
           />
         </section>
@@ -159,6 +191,8 @@ const EditorPage = ({
             education={education}
             employmentHistory={employmentHistory}
             references={references}
+            trainings={trainings}
+            certificates={certificates}
             previewFont={previewFont}
             resumeTemplate={resumeTemplate}
           />
@@ -181,6 +215,8 @@ const EditorPage = ({
               education={education}
               employmentHistory={employmentHistory}
               references={references}
+              trainings={trainings}
+              certificates={certificates}
               previewFont={previewFont}
               resumeTemplate={resumeTemplate}
             />

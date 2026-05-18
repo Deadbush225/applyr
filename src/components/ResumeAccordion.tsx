@@ -6,6 +6,8 @@ import type {
   Education,
   EmploymentHistory,
   JobApplication,
+  Training,
+  Certificate,
 } from '../types'
 import {Accordion, SectionRow} from './Accordion'
 
@@ -21,6 +23,8 @@ type ActivePanel =
   | { type: 'education'; index: number }
   | { type: 'employment'; index: number }
   | { type: 'reference'; index: number }
+  | { type: 'training'; index: number }
+  | { type: 'certificate'; index: number }
   | { type: 'compliance' }
 
 type ResumeAccordionProps = {
@@ -33,6 +37,8 @@ type ResumeAccordionProps = {
   education: Education[]
   employmentHistory: EmploymentHistory[]
   references: ApplicantReference[]
+  trainings: Training[]
+  certificates: Certificate[]
   uploadState: UploadState
   previewFont: string
   onPreviewFontChange: (fontFamily: string) => void
@@ -43,6 +49,8 @@ type ResumeAccordionProps = {
   updateEducation: (index: number, field: keyof Education, value: string) => void
   updateEmployment: (index: number, field: keyof EmploymentHistory, value: string) => void
   updateReference: (index: number, field: keyof ApplicantReference, value: string) => void
+  updateTraining: (index: number, field: keyof Training, value: string) => void
+  updateCertificate: (index: number, field: keyof Certificate, value: string) => void
   addEducation: () => void
   removeEducation: (index: number) => void
   reorderEducation: (fromIndex: number, toIndex: number) => void
@@ -52,6 +60,12 @@ type ResumeAccordionProps = {
   addReference: () => void
   removeReference: (index: number) => void
   reorderReferences: (fromIndex: number, toIndex: number) => void
+  addTraining: () => void
+  removeTraining: (index: number) => void
+  reorderTrainings: (fromIndex: number, toIndex: number) => void
+  addCertificate: () => void
+  removeCertificate: (index: number) => void
+  reorderCertificates: (fromIndex: number, toIndex: number) => void
   handleResumeUpload: (file: File | null) => Promise<void>
 }
 
@@ -79,6 +93,8 @@ const ResumeAccordion = ({
   education,
   employmentHistory,
   references,
+  trainings,
+  certificates,
   uploadState,
   previewFont,
   onPreviewFontChange,
@@ -89,6 +105,8 @@ const ResumeAccordion = ({
   updateEducation,
   updateEmployment,
   updateReference,
+  updateTraining,
+  updateCertificate,
   addEducation,
   removeEducation,
   reorderEducation,
@@ -98,12 +116,20 @@ const ResumeAccordion = ({
   addReference,
   removeReference,
   reorderReferences,
+  addTraining,
+  removeTraining,
+  reorderTrainings,
+  addCertificate,
+  removeCertificate,
+  reorderCertificates,
   handleResumeUpload,
 }: ResumeAccordionProps) => {
   const [activePanel, setActivePanel] = useState<ActivePanel>({ type: 'list' })
   const [dragEducationIndex, setDragEducationIndex] = useState<number | null>(null)
   const [dragEmploymentIndex, setDragEmploymentIndex] = useState<number | null>(null)
   const [dragReferenceIndex, setDragReferenceIndex] = useState<number | null>(null)
+  const [dragTrainingIndex, setDragTrainingIndex] = useState<number | null>(null)
+  const [dragCertificateIndex, setDragCertificateIndex] = useState<number | null>(null)
 
   const handleDragStart = (
     setter: (value: number | null) => void,
@@ -134,6 +160,8 @@ const ResumeAccordion = ({
   const openEducation = (index: number) => setActivePanel({ type: 'education', index })
   const openEmployment = (index: number) => setActivePanel({ type: 'employment', index })
   const openReference = (index: number) => setActivePanel({ type: 'reference', index })
+  const openTraining = (index: number) => setActivePanel({ type: 'training', index })
+  const openCertificate = (index: number) => setActivePanel({ type: 'certificate', index })
 
   const [openSections, setOpenSections] = useStickyState<string>([], 'accordion-open-sections');
 
@@ -303,11 +331,91 @@ const ResumeAccordion = ({
           </button>
       </Accordion>
 
+      <Accordion title="Trainings" onToggle={() => toggleSection('trainings')} isOpen={openSections.includes('trainings')}>
+        {trainings.map((entry, index) => (
+          <div
+            className={`section-row${dragTrainingIndex === index ? ' is-dragging' : ''}`}
+            key={entry.trainingId}
+            onDragOver={(event) => event.preventDefault()}
+            onDrop={() => handleDrop(dragTrainingIndex, index, reorderTrainings, setDragTrainingIndex)}
+          >
+            <button
+              type="button"
+              className="row-handle"
+              aria-label={`Reorder training ${index + 1}`}
+              draggable
+              onDragStart={(event) => handleDragStart(setDragTrainingIndex, index, event)}
+              onDragEnd={() => handleDragEnd(setDragTrainingIndex)}
+            >
+              ☰
+            </button>
+            <button type="button" className="row-main" onClick={() => openTraining(index)}>
+              <span className="row-title">{entry.trainingTitle || `Training ${index + 1}`}</span>
+              <span className="row-subtitle">{entry.trainingInstructor || 'Instructor'}</span>
+            </button>
+            <button type="button" className="row-remove" onClick={() => removeTraining(index)}>
+              Remove
+            </button>
+          </div>
+        ))}
+        <button type="button" className="add-button small" onClick={addTraining}>
+          + Add
+        </button>
+      </Accordion>
+
+      <Accordion title="Certificates" onToggle={() => toggleSection('certificates')} isOpen={openSections.includes('certificates')}>
+        {certificates.map((entry, index) => (
+          <div
+            className={`section-row${dragCertificateIndex === index ? ' is-dragging' : ''}`}
+            key={entry.certificateId}
+            onDragOver={(event) => event.preventDefault()}
+            onDrop={() => handleDrop(dragCertificateIndex, index, reorderCertificates, setDragCertificateIndex)}
+          >
+            <button
+              type="button"
+              className="row-handle"
+              aria-label={`Reorder certificate ${index + 1}`}
+              draggable
+              onDragStart={(event) => handleDragStart(setDragCertificateIndex, index, event)}
+              onDragEnd={() => handleDragEnd(setDragCertificateIndex)}
+            >
+              ☰
+            </button>
+            <button type="button" className="row-main" onClick={() => openCertificate(index)}>
+              <span className="row-title">{entry.certificateName || `Certificate ${index + 1}`}</span>
+              <span className="row-subtitle">{entry.issuingAuthority || 'Authority'}</span>
+            </button>
+            <button type="button" className="row-remove" onClick={() => removeCertificate(index)}>
+              Remove
+            </button>
+          </div>
+        ))}
+        <button type="button" className="add-button small" onClick={addCertificate}>
+          + Add
+        </button>
+      </Accordion>
+
       <SectionRow
           title="Compliance & Upload"
           subtitle="Agreements and resume file"
           callback={() => setActivePanel({ type: 'compliance' })}
         />
+
+      <Accordion title="Download" onToggle={() => toggleSection('download')} isOpen={openSections.includes('download')}>
+        <div style={{ padding: '16px 0', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <p style={{ margin: 0, fontSize: '0.95rem', color: 'var(--text-muted)' }}>
+            Download your resume as a PDF file. The browser print dialog will open automatically. Please make sure to save as PDF and disable headers/footers in the print settings.
+          </p>
+          <button
+            type="button"
+            className="primary-button"
+            onClick={() => window.print()}
+            style={{ alignSelf: 'flex-start' }}
+          >
+            Download PDF
+          </button>
+        </div>
+      </Accordion>
       </div>
     </div>
   )
@@ -590,6 +698,107 @@ const ResumeAccordion = ({
     )
   }
 
+  const renderTraining = (index: number) => {
+    const entry = trainings[index]
+    if (!entry) {
+      return renderList()
+    }
+
+    return (
+      <div className="section-editor">
+        {renderEditorHeader(`Training ${index + 1}`, () => setActivePanel({ type: 'list' }), entry.trainingTitle !== '' && entry.trainingDescription !== '' && entry.trainingInstructor !== '' && entry.trainingDurationHours !== '')}
+        <div className="form-grid">
+          <label>
+            Title*
+            <input
+              value={entry.trainingTitle}
+              onChange={(event) => updateTraining(index, 'trainingTitle', event.target.value)}
+            />
+          </label>
+          <label>
+            Description*
+            <input
+              value={entry.trainingDescription}
+              onChange={(event) => updateTraining(index, 'trainingDescription', event.target.value)}
+            />
+          </label>
+          <label>
+            Instructor*
+            <input
+              value={entry.trainingInstructor}
+              onChange={(event) => updateTraining(index, 'trainingInstructor', event.target.value)}
+            />
+          </label>
+          <label>
+            Duration (Hours)*
+            <input
+              type="number"
+              value={entry.trainingDurationHours}
+              onChange={(event) => updateTraining(index, 'trainingDurationHours', event.target.value)}
+            />
+          </label>
+        </div>
+        <button
+          type="button"
+          className="remove-button"
+          onClick={() => {
+            removeTraining(index)
+            setActivePanel({ type: 'list' })
+          }}
+        >
+          Remove Training
+        </button>
+      </div>
+    )
+  }
+
+  const renderCertificate = (index: number) => {
+    const entry = certificates[index]
+    if (!entry) {
+      return renderList()
+    }
+
+    return (
+      <div className="section-editor">
+        {renderEditorHeader(`Certificate ${index + 1}`, () => setActivePanel({ type: 'list' }), entry.certificateName !== '' && entry.issuingAuthority !== '' && entry.validityMonths !== '')}
+        <div className="form-grid">
+          <label>
+            Name*
+            <input
+              value={entry.certificateName}
+              onChange={(event) => updateCertificate(index, 'certificateName', event.target.value)}
+            />
+          </label>
+          <label>
+            Issuing Authority*
+            <input
+              value={entry.issuingAuthority}
+              onChange={(event) => updateCertificate(index, 'issuingAuthority', event.target.value)}
+            />
+          </label>
+          <label>
+            Validity (Months)*
+            <input
+              type="number"
+              value={entry.validityMonths}
+              onChange={(event) => updateCertificate(index, 'validityMonths', event.target.value)}
+            />
+          </label>
+        </div>
+        <button
+          type="button"
+          className="remove-button"
+          onClick={() => {
+            removeCertificate(index)
+            setActivePanel({ type: 'list' })
+          }}
+        >
+          Remove Certificate
+        </button>
+      </div>
+    )
+  }
+
   const renderCompliance = () => (
     <div className="section-editor">
       {renderEditorHeader('Compliance & Upload', () => setActivePanel({ type: 'list' }), applicant.hasCriminalHistory !== null && applicant.agreesToDrugTest !== null)}
@@ -675,6 +884,8 @@ const ResumeAccordion = ({
       {activePanel.type === 'education' ? renderEducation(activePanel.index) : null}
       {activePanel.type === 'employment' ? renderEmployment(activePanel.index) : null}
       {activePanel.type === 'reference' ? renderReference(activePanel.index) : null}
+      {activePanel.type === 'training' ? renderTraining(activePanel.index) : null}
+      {activePanel.type === 'certificate' ? renderCertificate(activePanel.index) : null}
       {activePanel.type === 'compliance' ? renderCompliance() : null}
     </div>
   )

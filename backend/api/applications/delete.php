@@ -3,9 +3,9 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../../index.php';
-require_once __DIR__ . '/../auth/require_auth.php';
+require_once __DIR__ . '/../../database.php';
 
-[$db, $user] = requireAuthUser();
+$db = getDatabaseConnection();
 $input = readJsonInput();
 $jobApplicationId = trim((string)($input['jobApplicationId'] ?? ''));
 
@@ -16,15 +16,12 @@ if ($jobApplicationId === '') {
     ]);
 }
 
-$applicantId = (string)$user['applicant_id'];
-
 try {
     $statement = $db->prepare(
-        'DELETE FROM JobApplication WHERE JobApplicationId = :jobApplicationId AND applicantId = :applicantId'
+        'DELETE FROM JobApplication WHERE JobApplicationId = :jobApplicationId'
     );
     $statement->execute([
         'jobApplicationId' => $jobApplicationId,
-        'applicantId' => $applicantId,
     ]);
 
     jsonResponse(200, [

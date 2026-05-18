@@ -11,6 +11,8 @@ import type {
   Education,
   EmploymentHistory,
   JobApplication,
+  Training,
+  Certificate,
 } from './types'
 
 const createId = () => {
@@ -72,6 +74,21 @@ const createReference = (applicantId: string): ApplicantReference => ({
   referenceEmail: '',
 })
 
+const createTraining = (applicantId: string): Training => ({
+  trainingId: createId(),
+  trainingTitle: '',
+  trainingDescription: '',
+  trainingInstructor: '',
+  trainingDurationHours: '',
+})
+
+const createCertificate = (applicantId: string): Certificate => ({
+  certificateId: createId(),
+  certificateName: '',
+  issuingAuthority: '',
+  validityMonths: '',
+})
+
 const moveItem = <T,>(items: T[], fromIndex: number, toIndex: number) => {
   const next = [...items]
   const [moved] = next.splice(fromIndex, 1)
@@ -90,6 +107,8 @@ const storageKeys = {
   education: 'applyr:education',
   employmentHistory: 'applyr:employment-history',
   references: 'applyr:references',
+  trainings: 'applyr:trainings',
+  certificates: 'applyr:certificates',
   previewFont: 'applyr:preview-font',
   resumeTemplate: 'applyr:resume-template',
   authSession: 'applyr:auth-session',
@@ -164,6 +183,14 @@ function App() {
     ]),
   )
 
+  const [trainings, setTrainings] = useState<Training[]>(
+    loadStoredValue<Training[]>(storageKeys.trainings, [])
+  )
+
+  const [certificates, setCertificates] = useState<Certificate[]>(
+    loadStoredValue<Certificate[]>(storageKeys.certificates, [])
+  )
+
   const [previewFont, setPreviewFont] = useState(
     loadStoredValue<string>(storageKeys.previewFont, 'Times New Roman'),
   )
@@ -178,6 +205,16 @@ function App() {
   const [authError, setAuthError] = useState('')
   const [isAuthLoading, setIsAuthLoading] = useState(false)
 
+  const touchActiveApplication = () => {
+    setJobApplications((prev) =>
+      prev.map((app) =>
+        app.JobApplicationId === activeJobApplicationId
+          ? { ...app, lastUpdated: new Date().toISOString() }
+          : app
+      )
+    )
+  }
+
   const linkApplicantId = (newApplicantId: string) => {
     setEducation((prev) => prev.map((item) => ({ ...item, applicantId: newApplicantId })))
     setEmploymentHistory((prev) => prev.map((item) => ({ ...item, applicantId: newApplicantId })))
@@ -185,6 +222,7 @@ function App() {
     setJobApplications((prev) =>
       prev.map((item) => ({ ...item, applicantId: newApplicantId })),
     )
+    touchActiveApplication()
   }
 
   const updateApplicant = <K extends keyof Applicant>(key: K, value: Applicant[K]) => {
@@ -195,6 +233,7 @@ function App() {
       }
       return next
     })
+    touchActiveApplication()
   }
 
   const updateApplication = <K extends keyof JobApplication>(
@@ -221,56 +260,112 @@ function App() {
     setEducation((prev) =>
       prev.map((item, current) => (current === index ? { ...item, [field]: value } : item)),
     )
+    touchActiveApplication()
   }
 
   const updateEmployment = (index: number, field: keyof EmploymentHistory, value: string) => {
     setEmploymentHistory((prev) =>
       prev.map((item, current) => (current === index ? { ...item, [field]: value } : item)),
     )
+    touchActiveApplication()
   }
 
   const updateReference = (index: number, field: keyof ApplicantReference, value: string) => {
     setReferences((prev) =>
       prev.map((item, current) => (current === index ? { ...item, [field]: value } : item)),
     )
+    touchActiveApplication()
+  }
+
+  const updateTraining = (index: number, field: keyof Training, value: string) => {
+    setTrainings((prev) =>
+      prev.map((item, current) => (current === index ? { ...item, [field]: value } : item)),
+    )
+    touchActiveApplication()
+  }
+
+  const updateCertificate = (index: number, field: keyof Certificate, value: string) => {
+    setCertificates((prev) =>
+      prev.map((item, current) => (current === index ? { ...item, [field]: value } : item)),
+    )
+    touchActiveApplication()
   }
 
   const addEducation = () => {
     setEducation((prev) => [...prev, createEducation(applicant.applicantId)])
+    touchActiveApplication()
   }
 
   const addEmployment = () => {
     setEmploymentHistory((prev) => [...prev, createEmployment(applicant.applicantId)])
+    touchActiveApplication()
   }
 
   const addReference = () => {
     setReferences((prev) => [...prev, createReference(applicant.applicantId)])
+    touchActiveApplication()
+  }
+
+  const addTraining = () => {
+    setTrainings((prev) => [...prev, createTraining(applicant.applicantId)])
+    touchActiveApplication()
+  }
+
+  const addCertificate = () => {
+    setCertificates((prev) => [...prev, createCertificate(applicant.applicantId)])
+    touchActiveApplication()
   }
 
   const removeEducation = (index: number) => {
     setEducation((prev) => (prev.filter((_, current) => current !== index)))
+    touchActiveApplication()
   }
 
   const removeEmployment = (index: number) => {
     setEmploymentHistory((prev) =>
       prev.filter((_, current) => current !== index),
     )
+    touchActiveApplication()
   }
 
   const removeReference = (index: number) => {
     setReferences((prev) => (prev.filter((_, current) => current !== index)))
+    touchActiveApplication()
+  }
+
+  const removeTraining = (index: number) => {
+    setTrainings((prev) => (prev.filter((_, current) => current !== index)))
+    touchActiveApplication()
+  }
+
+  const removeCertificate = (index: number) => {
+    setCertificates((prev) => (prev.filter((_, current) => current !== index)))
+    touchActiveApplication()
   }
 
   const reorderEducation = (fromIndex: number, toIndex: number) => {
     setEducation((prev) => moveItem(prev, fromIndex, toIndex))
+    touchActiveApplication()
   }
 
   const reorderEmployment = (fromIndex: number, toIndex: number) => {
     setEmploymentHistory((prev) => moveItem(prev, fromIndex, toIndex))
+    touchActiveApplication()
   }
 
   const reorderReferences = (fromIndex: number, toIndex: number) => {
     setReferences((prev) => moveItem(prev, fromIndex, toIndex))
+    touchActiveApplication()
+  }
+
+  const reorderTrainings = (fromIndex: number, toIndex: number) => {
+    setTrainings((prev) => moveItem(prev, fromIndex, toIndex))
+    touchActiveApplication()
+  }
+
+  const reorderCertificates = (fromIndex: number, toIndex: number) => {
+    setCertificates((prev) => moveItem(prev, fromIndex, toIndex))
+    touchActiveApplication()
   }
 
   const activeJobApplication =
@@ -343,6 +438,14 @@ function App() {
   }, [references])
 
   useEffect(() => {
+    window.localStorage.setItem(storageKeys.trainings, JSON.stringify(trainings))
+  }, [trainings])
+
+  useEffect(() => {
+    window.localStorage.setItem(storageKeys.certificates, JSON.stringify(certificates))
+  }, [certificates])
+
+  useEffect(() => {
     window.localStorage.setItem(storageKeys.previewFont, JSON.stringify(previewFont))
   }, [previewFont])
 
@@ -355,7 +458,7 @@ function App() {
   }, [authSession])
 
   useEffect(() => {
-    if (!authSession?.token || !activeJobApplication) {
+    if (!activeJobApplication) {
       return
     }
 
@@ -369,11 +472,11 @@ function App() {
     }
 
     const timeout = window.setTimeout(() => {
-      void syncApplication(payload, authSession.token)
+      void syncApplication(payload)
     }, 400)
 
     return () => window.clearTimeout(timeout)
-  }, [authSession?.token, applicant, activeJobApplication])
+  }, [applicant, activeJobApplication])
 
   const handleResumeUpload = async (file: File | null) => {
     if (!file) {
@@ -444,6 +547,8 @@ function App() {
             education={education}
             employmentHistory={employmentHistory}
             references={references}
+            trainings={trainings}
+            certificates={certificates}
             authSession={authSession}
             isAuthLoading={isAuthLoading}
             authError={authError}
@@ -468,16 +573,20 @@ function App() {
               education={education}
               employmentHistory={employmentHistory}
               references={references}
+              trainings={trainings}
+              certificates={certificates}
               uploadState={uploadState}
               previewFont={previewFont}
               resumeTemplate={resumeTemplate}
-              onPreviewFontChange={setPreviewFont}
-              onResumeTemplateChange={setResumeTemplate}
+              onPreviewFontChange={(font) => { setPreviewFont(font); touchActiveApplication(); }}
+              onResumeTemplateChange={(template) => { setResumeTemplate(template); touchActiveApplication(); }}
               updateApplicant={updateApplicant}
               updateApplication={updateApplication}
               updateEducation={updateEducation}
               updateEmployment={updateEmployment}
               updateReference={updateReference}
+              updateTraining={updateTraining}
+              updateCertificate={updateCertificate}
               addEducation={addEducation}
               removeEducation={removeEducation}
               reorderEducation={reorderEducation}
@@ -487,6 +596,12 @@ function App() {
               addReference={addReference}
               removeReference={removeReference}
               reorderReferences={reorderReferences}
+              addTraining={addTraining}
+              removeTraining={removeTraining}
+              reorderTrainings={reorderTrainings}
+              addCertificate={addCertificate}
+              removeCertificate={removeCertificate}
+              reorderCertificates={reorderCertificates}
               handleResumeUpload={handleResumeUpload}
             />
           ) : (

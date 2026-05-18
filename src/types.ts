@@ -49,3 +49,18 @@ export type ApplicantReference = {
   referencePhone: string
   referenceEmail: string
 }
+
+export type Training = {
+  trainingId: string
+  trainingTitle: string
+  trainingDescription: string
+  trainingInstructor: string
+  trainingDurationHours: string
+}
+
+export type Certificate = {
+  certificateId: string
+  certificateName: string
+  issuingAuthority: string
+  validityMonths: string
+}

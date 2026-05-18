@@ -5,14 +5,12 @@ const API_BASE_URL =
 
 const requestJson = async <T>(
   url: string,
-  token: string,
   body: Record<string, unknown>,
 ) => {
   const response = await fetch(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify(body),
   })
@@ -35,15 +33,11 @@ type ApplicationPayload = {
   }
 }
 
-export const createApplication = async (payload: ApplicationPayload, token: string) =>
-  requestJson(`${API_BASE_URL}/api/applications/create.php`, token, payload)
+export const createApplication = async (payload: ApplicationPayload) =>
+  requestJson(`${API_BASE_URL}/api/applications/create.php`, payload)
 
-export const updateApplication = async (payload: ApplicationPayload, token: string) =>
-  requestJson(`${API_BASE_URL}/api/applications/update.php`, token, payload)
+export const updateApplication = async (payload: ApplicationPayload) =>
+  requestJson(`${API_BASE_URL}/api/applications/update.php`, payload)
 
-export const deleteApplication = async (jobApplicationId: string, token: string) =>
-  requestJson(
-    `${API_BASE_URL}/api/applications/delete.php`,
-    token,
-    { jobApplicationId },
-  )
+export const deleteApplication = async (jobApplicationId: string) =>
+  requestJson(`${API_BASE_URL}/api/applications/delete.php`, { jobApplicationId })

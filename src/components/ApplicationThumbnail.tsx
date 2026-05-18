@@ -7,6 +7,8 @@ import type {
   Education,
   EmploymentHistory,
   JobApplication,
+  Training,
+  Certificate,
 } from '../types'
 
 type ApplicationThumbnailProps = {
@@ -15,6 +17,8 @@ type ApplicationThumbnailProps = {
   education: Education[]
   employmentHistory: EmploymentHistory[]
   references: ApplicantReference[]
+  trainings: Training[]
+  certificates: Certificate[]
   previewFont: string
   resumeTemplate: 'classic' | 'compact' | 'modern'
 }
@@ -25,6 +29,8 @@ const ApplicationThumbnail = ({
   education,
   employmentHistory,
   references,
+  trainings,
+  certificates,
   previewFont,
   resumeTemplate,
 }: ApplicationThumbnailProps) => {
@@ -53,10 +59,32 @@ const ApplicationThumbnail = ({
     let canceled = false
 
     const capture = async () => {
-      const canvas = await html2canvas(captureRef.current as HTMLElement, {
+      const element = captureRef.current as HTMLElement
+      // Save original styles
+      const originalStyle = element.getAttribute('style')
+      
+      // Temporarily set the element to be absolute and full size for capture
+      element.style.position = 'absolute'
+      element.style.top = '-9999px'
+      element.style.left = '-9999px'
+      element.style.width = '210mm'
+      element.style.height = '297mm'
+      element.style.transform = 'none'
+
+      const canvas = await html2canvas(element, {
         backgroundColor: '#ffffff',
         scale: 0.6,
+        windowWidth: 794,
+        windowHeight: 1123,
       })
+      
+      // Restore styles just in case it's still visible
+      if (originalStyle) {
+        element.setAttribute('style', originalStyle)
+      } else {
+        element.removeAttribute('style')
+      }
+
       if (canceled) {
         return
       }
@@ -84,6 +112,8 @@ const ApplicationThumbnail = ({
             education={education}
             employmentHistory={employmentHistory}
             references={references}
+            trainings={trainings}
+            certificates={certificates}
             previewFont={previewFont}
             resumeTemplate={resumeTemplate}
           />
