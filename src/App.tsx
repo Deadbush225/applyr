@@ -83,13 +83,10 @@ function App() {
     createEmptyApplication(starterApplicant.applicantId),
   )
   const [education, setEducation] = useState<Education[]>([
-    createEducation(starterApplicant.applicantId),
   ])
   const [employmentHistory, setEmploymentHistory] = useState<EmploymentHistory[]>([
-    createEmployment(starterApplicant.applicantId),
   ])
   const [references, setReferences] = useState<ApplicantReference[]>([
-    createReference(starterApplicant.applicantId),
   ])
 
   const [previewFont, setPreviewFont] = useState('Times New Roman')
