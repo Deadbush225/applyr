@@ -29,7 +29,12 @@ const getYesNo = (value: boolean | null) => {
 
 type SectionBlock = {
 	title: string;
-	lines: string[] | [string, string][];
+	lines:
+		| string[]
+		| [string, string][]
+		| Education[]
+		| EmploymentHistory[]
+		| ApplicantReference[];
 	isEmpty: boolean;
 };
 
@@ -134,50 +139,31 @@ const ResumePreview = ({
 		},
 		{
 			title: "Education",
-			lines:
-				education.length === 0
-					? []
-					: education.map(
-							(item) =>
-								`${getDisplayValue(item.degreeReceived, "Degree")} - ${getDisplayValue(
-									item.schoolName,
-									"School",
-								)}, ${getDisplayValue(item.schoolLocation, "Location")} (${getDisplayValue(
-									item.yearsAttended,
-									"Years",
-								)})`,
-						),
+			lines: education,
+				// education.length === 0
+				// 	? []
+				// 	: education.map(
+				// 			(item) => {
+
+        //         return `${getDisplayValue(item.degreeReceived, "Degree")} - ${getDisplayValue(
+        //           item.schoolName,
+				// 					"School",
+				// 				)}, ${getDisplayValue(item.schoolLocation, "Location")} (${getDisplayValue(
+        //           item.yearsAttended,
+				// 					"Years",
+				// 				)})`,
+        //       }
+				// 		),
 			isEmpty: education.length === 0,
 		},
 		{
 			title: "Employment",
-			lines:
-				employmentHistory.length === 0
-					? []
-					: employmentHistory.map(
-							(item) =>
-								`${getDisplayValue(item.workPosition, "Role")} at ${getDisplayValue(
-									item.companyName,
-									"Company",
-								)} - ${getDisplayValue(item.workAddress, "Location")}`,
-						),
+			lines: employmentHistory,
 			isEmpty: employmentHistory.length === 0,
 		},
 		{
 			title: "References",
-			lines:
-				references.length === 0
-					? []
-					: references.map(
-							(item) =>
-								`${getDisplayValue(item.referenceName, "Name")}, ${getDisplayValue(
-									item.referenceTitle,
-									"Title",
-								)} at ${getDisplayValue(item.referenceCompany, "Company")} (${getDisplayValue(
-									item.referencePhone,
-									"Phone",
-								)})`,
-						),
+			lines: references,
 			isEmpty: references.length === 0,
 		},
 		{
@@ -191,6 +177,52 @@ const ResumePreview = ({
 	];
 
 	const pages = chunkSectionsIntoPages(sections);
+
+function isTupleArray(arr: unknown[]): arr is [string, string][] {
+	return Array.isArray(arr[0]);
+}
+
+function isEducationArray(arr: unknown[]): arr is Education[] {
+	if (!Array.isArray(arr) || arr.length === 0) {
+		return false;
+	}
+
+	const first = arr[0];
+	return (
+		typeof first === "object" &&
+		first !== null &&
+		!Array.isArray(first) &&
+		"schoolName" in (first as Education)
+	);
+}
+
+function isEmploymentArray(arr: unknown[]): arr is EmploymentHistory[] {
+	if (!Array.isArray(arr) || arr.length === 0) {
+		return false;
+	}
+
+	const first = arr[0];
+	return (
+		typeof first === "object" &&
+		first !== null &&
+		!Array.isArray(first) &&
+		"companyName" in (first as EmploymentHistory)
+	);
+}
+
+function isReferenceArray(arr: unknown[]): arr is ApplicantReference[] {
+	if (!Array.isArray(arr) || arr.length === 0) {
+		return false;
+	}
+
+	const first = arr[0];
+	return (
+		typeof first === "object" &&
+		first !== null &&
+		!Array.isArray(first) &&
+		"referenceName" in (first as ApplicantReference)
+	);
+}
 
 	return (
 		<div
@@ -239,7 +271,7 @@ const ResumePreview = ({
 							{page.sections
 								.filter((section) => !section.isEmpty)
 								.map((section, sectionIndex) => {
-									if (section.title === "Application Details") {
+									if (section.title.startsWith("Application Details") && isTupleArray(section.lines)) {
 										return (
 											<section
 												className="preview-section"
@@ -254,22 +286,132 @@ const ResumePreview = ({
 												) : (
 													<div className="preview-col">
 														{section.lines.map((line, lineIndex) => (
-															<div className="flex-row">
-                                <strong>{line[0]}</strong>
-                                  <p
-                                  key={`line-${pageIndex}-${sectionIndex}-${lineIndex}`}
-                                >
-                                  {line[1]}
-                                </p>
+															<div
+																className="flex-row"
+																key={`line-${pageIndex}-${sectionIndex}-${lineIndex}`}
+															>
+																<strong>{line[0]}</strong>
+																<p>{line[1]}</p>
+															</div>
+														))}
+													</div>
+												)}
+											</section>
+										);
+									} else if (section.title.startsWith("Education") && isEducationArray(section.lines)) {
+										return (
+                      <section
+												className="preview-section"
+												key={`section-${pageIndex}-${sectionIndex}`}
+											>
+												<div className="preview-section-header">
+													<h3>{section.title}</h3>
+													<span className="preview-section-rule" />
+												</div>
+												{section.isEmpty ? (
+													<p className="preview-empty">No entries yet.</p>
+												) : (
+													<div className="preview-list">
+														{section.lines.map((line, lineIndex) => (
+															<div
+																className="line-block"
+																key={`line-${pageIndex}-${sectionIndex}-${lineIndex}`}
+															>
+                                <div className="line-flex-spacebbetween">
+																	<strong>
+                                  {line.degreeReceived ? `${line.degreeReceived}` : "Degree - "}
+                                  </strong>
+                                  <p>{line.yearsAttended}</p>
+                                </div>
+                                <div className="line-flex-spacebbetween">
+                                  <i>{line.schoolName ? `${line.schoolName}` : "School - "}</i>
+                                  <p>{line.schoolLocation ? `${line.schoolLocation}` : "Location - "}</p>
+                                </div>
                               </div>
 														))}
 													</div>
 												)}
 											</section>
 										);
+									} else if (section.title.startsWith("Employment") && isEmploymentArray(section.lines)) {
+                    return (
+                      <section
+												className="preview-section"
+												key={`section-${pageIndex}-${sectionIndex}`}
+											>
+												<div className="preview-section-header">
+												<h3>{section.title}</h3>
+													<span className="preview-section-rule" />
+												</div>
+												{section.isEmpty ? (
+													<p className="preview-empty">No entries yet.</p>
+												) : (
+													<div className="preview-list">
+														{section.lines.map((line, lineIndex) => (
+															<div
+																className="line-block"
+																key={`line-${pageIndex}-${sectionIndex}-${lineIndex}`}
+															>
+                                <div className="line-flex-spacebbetween">
+																		<strong>
+                                  {line.companyName}
+                                  </strong>
+                                  <p>{line.workPosition}</p>
+                                </div>
+                                <div className="line-flex-spacebbetween">
+                                  <i>{line.companyName}</i>
+                                  <p>{line.workAddress}</p>
+                                </div>
+                              </div>
+														))}
+													</div>
+												)}
+											</section>
+                    );
+										} else if (section.title.startsWith("References") && isReferenceArray(section.lines)) {
+											return (
+												<section
+													className="preview-section"
+													key={`section-${pageIndex}-${sectionIndex}`}
+												>
+													<div className="preview-section-header">
+														<h3>{section.title}</h3>
+														<span className="preview-section-rule" />
+													</div>
+													{section.isEmpty ? (
+														<p className="preview-empty">No entries yet.</p>
+													) : (
+														<div className="preview-list">
+															{section.lines.map((line, lineIndex) => (
+																<div
+																	className="line-block"
+																	key={`line-${pageIndex}-${sectionIndex}-${lineIndex}`}
+																>
+																	<div className="line-flex-spacebbetween">
+																		<strong>
+																			{getDisplayValue(line.referenceName, "Name")}
+																		</strong>
+																		<p>
+																			{getDisplayValue(line.referenceTitle, "Title")}
+																		</p>
+																	</div>
+																	<div className="line-flex-spacebbetween">
+																		<i>
+																			{getDisplayValue(line.referenceCompany, "Company")}
+																		</i>
+																		<p>
+																			{getDisplayValue(line.referencePhone, "Phone")}
+																		</p>
+																	</div>
+																</div>
+															))}
+														</div>
+													)}
+												</section>
+											);
 									} else {
 										return (
-                      <section
+											<section
 												className="preview-section"
 												key={`section-${pageIndex}-${sectionIndex}`}
 											>
