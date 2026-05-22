@@ -877,6 +877,11 @@
   gap: 6px;
 }
 
+.preview-col2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .preview-list {
   margin: 6px 0 0;
   // padding-left: 18px;

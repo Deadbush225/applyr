@@ -455,7 +455,7 @@ function isCertificateArray(arr: unknown[]): arr is Certificate[] {
 							{page.sections
 								.filter((section) => !section.isEmpty)
 								.map((section, sectionIndex) => {
-									if (isTupleArray(section.lines)) {
+									if (section.title.startsWith("Application Details") && isTupleArray(section.lines)) {
 										return (
 											<section
 												className="preview-section"
@@ -681,6 +681,33 @@ function isCertificateArray(arr: unknown[]): arr is Certificate[] {
 													)}
 												</section>
 											);
+										} else if (section.title.startsWith("Compliance") && isTupleArray(section.lines)) {
+                        return (
+                        <section
+                          className="preview-section"
+                          key={`section-${pageIndex}-${sectionIndex}`}
+                        >
+                          <div className="preview-section-header">
+                            <h3>{section.title}</h3>
+                            <span className="preview-section-rule" />
+                          </div>
+                          {section.isEmpty ? (
+                            <p className="preview-empty">No entries yet.</p>
+                          ) : (
+                            <div className="preview-col2">
+                              {section.lines.map((line, lineIndex) => (
+                                <div
+                                  className="flex-row"
+                                  key={`line-${pageIndex}-${sectionIndex}-${lineIndex}`}
+                                >
+                                  <strong>{line[0]}</strong>
+                                  <p>{line[1]}</p>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </section>
+                      );
 										} else if (isStringArray(section.lines)) {
 											return (
 												<section

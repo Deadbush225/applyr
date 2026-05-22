@@ -111,12 +111,16 @@ export const ResumePDF = ({ applicant, jobApplication, education, employmentHist
       display: 'flex',
       flexDirection: 'row',
       flexWrap: 'wrap',
+      width: '100%', // <-- CRUCIAL: Forces the container to fill the page so 25% works
     },
     sectionColItem: {
-      width: isCompact ? '50%' : '25%',
+      width: '50%',
+      // width: isCompact ? '50%' : '25%',
       display: 'flex',
       flexDirection: 'row',
-      marginBottom: 4,
+      flexWrap: 'wrap', // <-- Prevents the label and value from overlapping
+      paddingRight: 15, // Adds a strict gutter between columns
+      marginBottom: 8,
     },
     sectionHeader: {
       display: 'flex',
@@ -197,10 +201,22 @@ export const ResumePDF = ({ applicant, jobApplication, education, employmentHist
                 <View style={styles.section} key={sectionKey} wrap={false}>
                   <SectionTitle title="Application Details" />
                   <View style={styles.sectionCol}>
-                    <View style={styles.sectionColItem}><Text style={styles.bold}>Start date: </Text><Text>{getDisplayValue(jobApplication.availableStartDate)}</Text></View>
-                    <View style={styles.sectionColItem}><Text style={styles.bold}>Expected salary: </Text><Text>{getDisplayValue(jobApplication.expectedSalary)}</Text></View>
-                    <View style={styles.sectionColItem}><Text style={styles.bold}>Citizenship: </Text><Text>{getDisplayValue(applicant.citizenshipStatus)}</Text></View>
-                    <View style={styles.sectionColItem}><Text style={styles.bold}>LinkedIn: </Text><Text>{getDisplayValue(applicant.linkedInUrl)}</Text></View>
+                    <View style={styles.sectionColItem}>
+  <Text style={styles.bold}>Start date: </Text>
+  <Text>{getDisplayValue(jobApplication.availableStartDate)}</Text>
+</View>
+<View style={styles.sectionColItem}>
+  <Text style={styles.bold}>Expected salary: </Text>
+  <Text>{getDisplayValue(jobApplication.expectedSalary)}</Text>
+</View>
+<View style={styles.sectionColItem}>
+  <Text style={styles.bold}>Citizenship: </Text>
+  <Text>{getDisplayValue(applicant.citizenshipStatus)}</Text>
+</View>
+<View style={styles.sectionColItem}>
+  <Text style={styles.bold}>LinkedIn: </Text>
+  <Text>{getDisplayValue(applicant.linkedInUrl)}</Text>
+</View>
                   </View>
                 </View>
               );
@@ -211,8 +227,14 @@ export const ResumePDF = ({ applicant, jobApplication, education, employmentHist
                 <View style={styles.section} key={sectionKey} wrap={false}>
                   <SectionTitle title="Compliance" />
                   <View style={styles.sectionCol}>
-                    <View style={styles.sectionColItem}><Text style={styles.bold}>Criminal history: </Text><Text>{getYesNo(applicant.hasCriminalHistory)}</Text></View>
-                    <View style={styles.sectionColItem}><Text style={styles.bold}>Drug test agreement: </Text><Text>{getYesNo(applicant.agreesToDrugTest)}</Text></View>
+                    <View style={styles.sectionColItem}>
+  <Text style={styles.bold}>Criminal history: </Text>
+  <Text>{getYesNo(applicant.hasCriminalHistory)}</Text>
+</View>
+<View style={styles.sectionColItem}>
+  <Text style={styles.bold}>Drug test agreement: </Text>
+  <Text>{getYesNo(applicant.agreesToDrugTest)}</Text>
+</View>
                   </View>
                 </View>
               );
