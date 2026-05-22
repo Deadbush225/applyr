@@ -255,7 +255,7 @@ const ResumeAccordion = ({
           callback={() => setActivePanel({ type: 'contact' })}
         />
 
-        <Accordion title="Education" onToggle={() => toggleSection('education')} isOpen={openSections.includes('education')}>
+        <Accordion title="Education" subtitle="Schools and degrees" onToggle={() => toggleSection('education')} isOpen={openSections.includes('education')}>
           <div>
         {education.map((entry, index) => (
           <div
@@ -289,7 +289,7 @@ const ResumeAccordion = ({
           </div>
         </Accordion>
     
-      <Accordion title="Employment" onToggle={() => toggleSection('employment')} isOpen={openSections.includes('employment')}>
+      <Accordion title="Employment" subtitle="Work and experiences" onToggle={() => toggleSection('employment')} isOpen={openSections.includes('employment')}>
         {employmentHistory.map((entry, index) => (
           <div
           className={`section-row${dragEmploymentIndex === index ? ' is-dragging' : ''}`}
@@ -321,7 +321,7 @@ const ResumeAccordion = ({
           </button>
       </Accordion>
 
-      <Accordion title="References" onToggle={() => toggleSection('references')} isOpen={openSections.includes('references')}>
+      <Accordion title="References" subtitle="People who can vouch for your character" onToggle={() => toggleSection('references')} isOpen={openSections.includes('references')}>
         {references.map((entry, index) => (
           <div
             className={`section-row${dragReferenceIndex === index ? ' is-dragging' : ''}`}
@@ -353,7 +353,7 @@ const ResumeAccordion = ({
           </button>
       </Accordion>
 
-      <Accordion title="Trainings" onToggle={() => toggleSection('trainings')} isOpen={openSections.includes('trainings')}>
+      <Accordion title="Trainings" subtitle="Workshops and courses" onToggle={() => toggleSection('trainings')} isOpen={openSections.includes('trainings')}>
         {trainings.map((entry, index) => (
           <div
             className={`section-row${dragTrainingIndex === index ? ' is-dragging' : ''}`}
@@ -385,7 +385,7 @@ const ResumeAccordion = ({
         </button>
       </Accordion>
 
-      <Accordion title="Certificates" onToggle={() => toggleSection('certificates')} isOpen={openSections.includes('certificates')}>
+      <Accordion title="Certificates" subtitle="Accreditations and achievements" onToggle={() => toggleSection('certificates')} isOpen={openSections.includes('certificates')}>
         {certificates.map((entry, index) => (
           <div
             className={`section-row${dragCertificateIndex === index ? ' is-dragging' : ''}`}
@@ -885,7 +885,7 @@ const ResumeAccordion = ({
           </select>
         </label>
 
-        <label>
+        {/* <label>
           Upload Resume (PDF)*
           <input
             type="file"
@@ -895,7 +895,7 @@ const ResumeAccordion = ({
               void handleResumeUpload(file)
             }}
           />
-        </label>
+        </label> */}
       </div>
 
       {uploadState.message ? (
