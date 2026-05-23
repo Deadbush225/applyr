@@ -113,6 +113,10 @@
   z-index: 10;
 }
 
+.auth-form-transition {
+  animation: fadeIn 0.3s ease-out;
+}
+
 // Clean Tab Switcher
 .auth-tabs {
   display: flex;

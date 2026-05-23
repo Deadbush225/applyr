@@ -150,13 +150,14 @@ const HomePage = ({
               </button>
             </div>
 
-            <div className="auth-header">
-              <h2>{mode === 'login' ? 'Sign in to your account' : 'Create your account'}</h2>
-              <p>Build your profile once and reuse it for every application.</p>
-            </div>
-            {registrationMessage ? <p className="upload-note done">{registrationMessage}</p> : null}
+            <div key={mode} className="auth-form-transition">
+              <div className="auth-header">
+                <h2>{mode === 'login' ? 'Sign in to your account' : 'Create your account'}</h2>
+                <p>Build your profile once and reuse it for every application.</p>
+              </div>
+              {registrationMessage ? <p className="upload-note done">{registrationMessage}</p> : null}
 
-            <form className="auth-form" onSubmit={handleSubmit}>
+              <form className="auth-form" onSubmit={handleSubmit}>
               {mode === 'signup' && (
                 <label>
                   Full name
@@ -184,6 +185,7 @@ const HomePage = ({
                 {isAuthLoading ? 'Working...' : mode === 'login' ? 'Sign in' : 'Create account'}
               </button>
             </form>
+            </div>
 
             <div className="auth-footer">
               {mode === 'login' ? (
