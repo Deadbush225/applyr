@@ -299,10 +299,11 @@
 .home-grid {
   display: flex;
   flex-direction: row;
-  flex-wrap: nowrap; // Forces cards into a single line
+  flex-wrap: wrap; // Forces cards into a single line
   overflow-x: auto; // Enables horizontal scrolling when cards overflow
   gap: 24px; // Space between cards
   padding-bottom: 24px; // Adds breathing room for the scrollbar
+  padding-top: 0.5em;
 
   // Optional: Adds smooth momentum scrolling on trackpads and mobile devices
   -webkit-overflow-scrolling: touch;
@@ -322,8 +323,8 @@
 
   // CRUCIAL FOR HORIZONTAL FLEX: 
   // flex: 0 0 auto prevents the cards from shrinking to fit the screen
-  flex: 0 0 auto;
-  width: 360px; // Increased the card width to make them bigger
+  flex: 0 0 360px;
+
 }
 
 .application-card.is-active {
