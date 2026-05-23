@@ -538,13 +538,20 @@
 
 .delete-button {
   border: 1px solid #fecaca;
-  background: #fff1f2;
+  background: #f3d7d9;
   color: #b91c1c;
   font-weight: 700;
+  width: 100%;
+  border-radius: 10px;
+  padding: 10px 12px;
 }
 
 .delete-button:hover {
-  background: #fee2e2;
+  background: #e7a0a0;
+  color: #5e0101;
+  border: 1px solid #c98080;
+
+
 }
 
 .empty-card {
