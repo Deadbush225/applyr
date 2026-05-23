@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import type { Applicant } from "../types";
 import type { AuthSession } from "../services/auth";
 import GroupBox from "../components/GroupBox";
+import Password from "../components/Password";
 
 type ApplicantEditPageProps = {
 	applicant: Applicant;
@@ -121,31 +122,17 @@ const ApplicantEditPage = ({
 								<p className='required-asterisk'>
 									Current Password
 								</p>
-								<input
-									type="password"
-									value={currentPassword}
-									onChange={(event) => setCurrentPassword(event.target.value)}
-								/>
+                <Password value={currentPassword} onChange={setCurrentPassword} />
 							</label>
 							<label>
 								New Password
-								<input
-									type="password"
-									value={newPassword}
-									onChange={(event) => setNewPassword(event.target.value)}
-								/>
+                <Password value={newPassword} onChange={setNewPassword} />
 							</label>
 							<label>
-								<span>
                   <p className='required-asterisk'>
                     Confirm New Password{" "}
                   </p>
-								</span>
-								<input
-									type="password"
-									value={confirmPassword}
-									onChange={(event) => setConfirmPassword(event.target.value)}
-								/>
+                <Password value={confirmPassword} onChange={setConfirmPassword} />
 							</label>
               </GroupBox>
 						</div>
