@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import './App.scss'
 import EditorPage from './pages/EditorPage'
 import HomePage from './pages/HomePage'
+import Navbar from './components/Navbar'
 import { updateApplication as syncApplication } from './services/applications'
 import { loginUser, registerUser, type AuthSession } from './services/auth'
 import type {
@@ -502,76 +503,87 @@ function App() {
   }
 
   return (
-    <Routes>
-      <Route
-        path="/"
-        element={
-          <HomePage
-            applicant={applicant}
-            jobApplications={jobApplications}
-            activeJobApplicationId={activeJobApplicationId}
-            resumeTemplate={resumeTemplate}
-            previewFont={previewFont}
-            education={education}
-            employmentHistory={employmentHistory}
-            authSession={authSession}
-            isAuthLoading={isAuthLoading}
-            authError={authError}
-            onLogin={handleLogin}
-            onSignup={handleSignup}
-            onLogout={handleLogout}
-            onAddJobApplication={addJobApplication}
-          />
-        }
-      />
-      <Route
-        path="/editor/:applicationId?"
-        element={
-          authenticated ? (
-            <EditorPage
+    <div className="app-shell">
+      {/* 1. Place the Navbar here. 
+        It will sit at the top of the screen on EVERY route.
+      */}
+      <Navbar authSession={authSession} onLogout={handleLogout} />
+
+      {/* 2. Your main content area goes below it.
+      */}
+      <main className="app-content">
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <HomePage
               applicant={applicant}
-              jobApplication={activeJobApplication}
               jobApplications={jobApplications}
               activeJobApplicationId={activeJobApplicationId}
-              onJobApplicationChange={setActiveJobApplicationId}
-              onAddJobApplication={addJobApplication}
+              resumeTemplate={resumeTemplate}
+              previewFont={previewFont}
               education={education}
               employmentHistory={employmentHistory}
-              uploadState={uploadState}
-              previewFont={previewFont}
-              resumeTemplate={resumeTemplate}
-              onPreviewFontChange={(font) => { setPreviewFont(font); touchActiveApplication(); }}
-              onResumeTemplateChange={(template) => { setResumeTemplate(template); touchActiveApplication(); }}
-              updateApplicant={updateApplicant}
-              updateApplication={updateApplication}
-              updateEducation={updateEducation}
-              updateEmployment={updateEmployment}
-              updateReference={updateReference}
-              updateTraining={updateTraining}
-              updateCertificate={updateCertificate}
-              addEducation={addEducation}
-              removeEducation={removeEducation}
-              reorderEducation={reorderEducation}
-              addEmployment={addEmployment}
-              removeEmployment={removeEmployment}
-              reorderEmployment={reorderEmployment}
-              addReference={addReference}
-              removeReference={removeReference}
-              reorderReferences={reorderReferences}
-              addTraining={addTraining}
-              removeTraining={removeTraining}
-              reorderTrainings={reorderTrainings}
-              addCertificate={addCertificate}
-              removeCertificate={removeCertificate}
-              reorderCertificates={reorderCertificates}
-              handleResumeUpload={handleResumeUpload}
+              authSession={authSession}
+              isAuthLoading={isAuthLoading}
+              authError={authError}
+              onLogin={handleLogin}
+              onSignup={handleSignup}
+              onLogout={handleLogout}
+              onAddJobApplication={addJobApplication}
             />
-          ) : (
-            <Navigate to="/" replace />
-          )
-        }
-      />
-    </Routes>
+          }
+        />
+        <Route
+          path="/editor/:applicationId?"
+          element={
+            authenticated ? (
+              <EditorPage
+                applicant={applicant}
+                jobApplication={activeJobApplication}
+                jobApplications={jobApplications}
+                activeJobApplicationId={activeJobApplicationId}
+                onJobApplicationChange={setActiveJobApplicationId}
+                onAddJobApplication={addJobApplication}
+                education={education}
+                employmentHistory={employmentHistory}
+                uploadState={uploadState}
+                previewFont={previewFont}
+                resumeTemplate={resumeTemplate}
+                onPreviewFontChange={(font) => { setPreviewFont(font); touchActiveApplication(); }}
+                onResumeTemplateChange={(template) => { setResumeTemplate(template); touchActiveApplication(); }}
+                updateApplicant={updateApplicant}
+                updateApplication={updateApplication}
+                updateEducation={updateEducation}
+                updateEmployment={updateEmployment}
+                updateReference={updateReference}
+                updateTraining={updateTraining}
+                updateCertificate={updateCertificate}
+                addEducation={addEducation}
+                removeEducation={removeEducation}
+                reorderEducation={reorderEducation}
+                addEmployment={addEmployment}
+                removeEmployment={removeEmployment}
+                reorderEmployment={reorderEmployment}
+                addReference={addReference}
+                removeReference={removeReference}
+                reorderReferences={reorderReferences}
+                addTraining={addTraining}
+                removeTraining={removeTraining}
+                reorderTrainings={reorderTrainings}
+                addCertificate={addCertificate}
+                removeCertificate={removeCertificate}
+                reorderCertificates={reorderCertificates}
+                handleResumeUpload={handleResumeUpload}
+              />
+            ) : (
+              <Navigate to="/" replace />
+            )
+          }
+        />
+      </Routes>
+      </main>
+    </div>
   )
 }
 

@@ -111,12 +111,6 @@ const EditorPage = ({
       <header className="topbar">
         <div>
           <p className="kicker">Application Builder</p>
-          <h1>Applyr</h1>
-        </div>
-        <div className="home-actions">
-          <Link className="outline-button" to="/">
-            Back to Home
-          </Link>
         </div>
       </header>
       <div className="resume-shell">

@@ -55,32 +55,6 @@
   color: var(--text-strong);
 }
 
-.auth-panel {
-  max-width: 420px;
-  border: 1px solid var(--stroke-soft);
-  background: var(--surface);
-  border-radius: 18px;
-  padding: 18px;
-  box-shadow: 0 18px 40px rgba(47, 36, 23, 0.12);
-}
-
-.auth-toggle {
-  display: flex;
-  border: 1px solid var(--stroke-soft);
-  border-radius: 999px;
-  overflow: hidden;
-  margin-bottom: 16px;
-}
-
-.auth-toggle button {
-  flex: 1;
-  border: none;
-  background: transparent;
-  padding: 10px;
-  font-weight: 700;
-  cursor: pointer;
-}
-
 .auth-toggle .is-active {
   background: var(--accent-weak);
   color: var(--accent-dark);
@@ -97,12 +71,229 @@
   font-weight: 600;
 }
 
-.home-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 18px;
+// ━━━━━━━━━━━━━━━━━━━━━━━━━ SPLIT SCREEN AUTHENTICATION ━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+.auth-split-layout {
+  display: flex;
+  min-height: 100vh;
+  width: 100vw;
+  // Overrides the padding added by standard layout wrappers
+  background: #ffffff;
 }
 
+// -- Left Side: Orange Brand Panel --
+.auth-left-panel {
+  flex: 1;
+  background: var(--accent); // <--- Keeps your Orangy tone!
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+
+  @media (max-width: 900px) {
+    display: none; // Hides left panel on mobile devices for a cleaner form
+  }
+}
+
+.auth-left-content {
+  max-width: 520px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+
+  h1 {
+    font-size: 2.8rem;
+    line-height: 1.2;
+    margin: 0;
+    font-weight: 800;
+  }
+}
+
+.auth-badge {
+  align-self: flex-start;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.auth-hero-sub {
+  font-size: 1.15rem;
+  line-height: 1.5;
+  opacity: 0.9;
+  margin-bottom: 12px;
+}
+
+.auth-features {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 1.05rem;
+    font-weight: 500;
+
+    svg {
+      flex-shrink: 0;
+    }
+  }
+}
+
+// -- Right Side: Form Panel --
+.auth-right-panel {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  background: #ffffff;
+}
+
+.auth-form-container {
+  width: 100%;
+  max-width: 440px;
+  display: flex;
+  flex-direction: column;
+}
+
+// Clean Tab Switcher (Matches Image)
+.auth-tabs {
+  display: flex;
+  background: var(--surface-soft);
+  padding: 6px;
+  border-radius: 8px;
+  margin-bottom: 40px;
+
+  button {
+    flex: 1;
+    padding: 12px;
+    border-radius: 6px;
+    border: none;
+    background: transparent;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &.is-active {
+      background: #ffffff;
+      color: var(--accent-dark);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    }
+  }
+}
+
+.auth-header {
+  margin-bottom: 32px;
+
+  h2 {
+    font-size: 2rem;
+    margin: 0 0 8px 0;
+    color: var(--text-strong);
+  }
+
+  p {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 1rem;
+  }
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+
+  label {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-strong);
+  }
+
+  input {
+    border: 1px solid var(--stroke-strong);
+    border-radius: 6px;
+    padding: 14px 16px;
+    font-size: 1rem;
+    background: #ffffff;
+    transition: border-color 0.2s;
+
+    &::placeholder {
+      color: #b0b0b0;
+    }
+
+    &:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-weak);
+    }
+  }
+}
+
+.submit-btn {
+  margin-top: 12px;
+  padding: 16px;
+  font-size: 1.05rem;
+  border-radius: 8px;
+}
+
+.auth-error {
+  color: #c93b3b;
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.auth-footer {
+  margin-top: 32px;
+  text-align: center;
+  font-size: 0.95rem;
+  color: var(--text-muted);
+
+  button {
+    background: none;
+    border: none;
+    padding: 0;
+    color: var(--accent);
+    font-weight: 700;
+    cursor: pointer;
+    font-size: 0.95rem;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+// -------------------------------------------------------------
+
+// 1. Switch from Grid to a horizontally scrolling Flex container
+.home-grid {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap; // Forces cards into a single line
+  overflow-x: auto; // Enables horizontal scrolling when cards overflow
+  gap: 24px; // Space between cards
+  padding-bottom: 24px; // Adds breathing room for the scrollbar
+
+  // Optional: Adds smooth momentum scrolling on trackpads and mobile devices
+  -webkit-overflow-scrolling: touch;
+}
+
+// 2. Lock the card size so they don't squish
 .application-card {
   text-decoration: none;
   color: inherit;
@@ -113,6 +304,11 @@
   display: flex;
   flex-direction: column;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  // CRUCIAL FOR HORIZONTAL FLEX: 
+  // flex: 0 0 auto prevents the cards from shrinking to fit the screen
+  flex: 0 0 auto;
+  width: 360px; // Increased the card width to make them bigger
 }
 
 .application-card.is-active {
@@ -126,30 +322,64 @@
 }
 
 .application-thumbnail {
-  padding: 12px;
-  background: #f9f1e6;
+  padding: 0;
+  background: #f5f5f5;
   border-bottom: 1px solid var(--stroke-soft);
-  min-height: 180px;
 }
 
+// 3. Make the thumbnail taller to match the bigger card
 .thumbnail-preview {
-  height: 190px;
+  width: 100%;
+  height: 320px; // Increased from 260px to 320px
   overflow: hidden;
-  border-radius: 12px;
-  background: #fff;
-  pointer-events: none;
   position: relative;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .thumbnail-image {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  // This ensures we always see the top of the resume, nicely cropped at 260px
+  object-position: top center;
 }
 
 .thumbnail-capture {
-  width: 100%;
-  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 800px;
+  height: 1131px;
+  opacity: 0.01;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: -1;
+}
+
+.thumbnail-skeleton {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 0.6;
+  }
+
+  50% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0.6;
+  }
 }
 
 .thumbnail-preview .preview-scroll {
@@ -232,7 +462,7 @@
   justify-content: space-between;
   align-items: flex-end;
   gap: 18px;
-  margin-bottom: 24px;
+  // margin-bottom: 24px;
 }
 
 .kicker {
@@ -1065,4 +1295,160 @@
   font-weight: 600;
   z-index: 100;
   pointer-events: none;
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━ GLOBAL NAVBAR ━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+.global-navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 28px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--stroke-soft);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  box-shadow: 0 4px 20px rgba(4, 41, 56, 0.03);
+}
+
+.navbar-brand {
+  display: flex;
+  align-items: center;
+}
+
+.brand-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--text-strong);
+  text-decoration: none;
+  letter-spacing: -0.02em;
+  transition: opacity 0.2s ease;
+
+  svg {
+    color: var(--accent);
+  }
+
+  &:hover {
+    opacity: 0.8;
+  }
+}
+
+.navbar-actions {
+  display: flex;
+  align-items: center;
+}
+
+// -- Profile & Dropdown Styles --
+
+.navbar-profile {
+  position: relative;
+}
+
+.profile-button {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid var(--stroke-soft);
+  background: var(--accent-weak);
+  color: var(--accent-dark);
+  font-weight: 700;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0;
+
+  &:hover,
+  &[aria-expanded="true"] {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: white;
+  }
+}
+
+.profile-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 220px;
+  background: white;
+  border: 1px solid var(--stroke-soft);
+  border-radius: 12px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: dropdownFade 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes dropdownFade {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.dropdown-header {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.dropdown-name {
+  margin: 0;
+  font-weight: 700;
+  color: var(--text-strong);
+  font-size: 0.95rem;
+}
+
+.dropdown-email {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dropdown-divider {
+  height: 1px;
+  background: var(--stroke-soft);
+  width: 100%;
+}
+
+.dropdown-item {
+  padding: 12px 16px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-strong);
+  text-decoration: none;
+  background: transparent;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s ease;
+
+  &:hover {
+    background: var(--surface-soft);
+  }
+}
+
+.logout-item {
+  color: #c93b3b;
+
+  &:hover {
+    background: #fff0f0;
+  }
 }
