@@ -283,6 +283,7 @@ function App() {
   const [registrationMessage, setRegistrationMessage] = useState('')
   const storageScope = getStorageScope(authSession?.user.id)
   const [hydratedStorageScope, setHydratedStorageScope] = useState(storageScope)
+  const [isProfileHydrated, setIsProfileHydrated] = useState(!storedAuthSession?.user.id)
   const [showNewAppModal, setShowNewAppModal] = useState(false)
   const navigate = useNavigate()
 
@@ -442,6 +443,10 @@ function App() {
     jobApplications[0]
 
   const authenticated = Boolean(authSession?.token)
+  const requiresApplicantOnboarding =
+    authenticated &&
+    isProfileHydrated &&
+    (!applicant.homeAddress || !applicant.phoneNumber || !applicant.citizenshipStatus || !applicant.applicantName || applicant.hasCriminalHistory === null)
 
   const handleLogin = async (email: string, password: string) => {
     setAuthError('')
@@ -575,51 +580,70 @@ function App() {
     setResumeTemplate(loadScopedValue<ResumeTemplateId>(nextScope, 'resumeTemplate', 'classic'))
     setHydratedStorageScope(nextScope)
 
-    if (authSession?.user.id) {
-      void Promise.all([
-        getApplicantProfile(authSession.user.id),
-        getApplicationsForApplicant(authSession.user.id),
-      ])
-        .then(([profile, response]) => {
-          setApplicant((prev) => ({
-            ...prev,
-            ...profile,
-            applicantId: profile.applicantId,
-          }))
+    if (!authSession?.user.id) {
+      setIsProfileHydrated(true)
+      return
+    }
 
-          const backendApplications = response.data.map((application) =>
-            normalizeBackendApplication(application, profile.applicantId),
-          )
+    let cancelled = false
+    setIsProfileHydrated(false)
 
-          setJobApplications((prev) => {
-            const localById = new Map(prev.map((item) => [item.JobApplicationId, item]))
-            return backendApplications.map((application) => {
-              const local = localById.get(application.JobApplicationId)
-              return {
-                ...application,
-                references: local?.references ?? application.references ?? [],
-                trainings: local?.trainings ?? application.trainings ?? [],
-                certificates: local?.certificates ?? application.certificates ?? [],
-              }
-            })
-          })
+    void Promise.all([
+      getApplicantProfile(authSession.user.id),
+      getApplicationsForApplicant(authSession.user.id),
+    ])
+      .then(([profile, response]) => {
+        if (cancelled) {
+          return
+        }
 
-          setResumeSettingsMap(() => {
-            const next: Record<string, ApplicationResumeSettings> = {}
-            for (const application of response.data) {
-              next[application.JobApplicationId] = {
-                JobApplicationId: application.JobApplicationId,
-                resumeTemplate: application.resumeTemplate || 'classic',
-                previewFont: application.previewFont || 'Helvetica',
-                lastUpdated: application.settingsLastUpdated,
-              }
+        setApplicant((prev) => ({
+          ...prev,
+          ...profile,
+          applicantId: profile.applicantId,
+        }))
+
+        const backendApplications = response.data.map((application) =>
+          normalizeBackendApplication(application, profile.applicantId),
+        )
+
+        setJobApplications((prev) => {
+          const localById = new Map(prev.map((item) => [item.JobApplicationId, item]))
+          return backendApplications.map((application) => {
+            const local = localById.get(application.JobApplicationId)
+            return {
+              ...application,
+              references: local?.references ?? application.references ?? [],
+              trainings: local?.trainings ?? application.trainings ?? [],
+              certificates: local?.certificates ?? application.certificates ?? [],
             }
-            return next
           })
         })
-        .catch(() => {
-          // Keep scoped cache if the backend snapshot is unavailable.
+
+        setResumeSettingsMap(() => {
+          const next: Record<string, ApplicationResumeSettings> = {}
+          for (const application of response.data) {
+            next[application.JobApplicationId] = {
+              JobApplicationId: application.JobApplicationId,
+              resumeTemplate: application.resumeTemplate || 'classic',
+              previewFont: application.previewFont || 'Helvetica',
+              lastUpdated: application.settingsLastUpdated,
+            }
+          }
+          return next
         })
+      })
+      .catch(() => {
+        // Keep scoped cache if the backend snapshot is unavailable.
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setIsProfileHydrated(true)
+        }
+      })
+
+    return () => {
+      cancelled = true
     }
   }, [authSession?.user.id])
 
@@ -699,6 +723,16 @@ function App() {
   useEffect(() => {
     window.localStorage.setItem(storageKeys.authSession, JSON.stringify(authSession))
   }, [authSession])
+
+  // Mouse-follow background blur (updates CSS variables)
+  useEffect(() => {
+    const onMove = (e: MouseEvent) => {
+      document.documentElement.style.setProperty('--mouse-x', `${e.clientX}px`)
+      document.documentElement.style.setProperty('--mouse-y', `${e.clientY}px`)
+    }
+    window.addEventListener('mousemove', onMove)
+    return () => window.removeEventListener('mousemove', onMove)
+  }, [])
 
   // Fetch resume settings when active application changes
   useEffect(() => {
@@ -816,6 +850,7 @@ function App() {
 
   return (
     <div className="app-shell">
+      <div className="mouse-blur" aria-hidden="true" />
       {/* 1. Place the Navbar here. 
         It will sit at the top of the screen on EVERY route.
       */}
@@ -828,8 +863,7 @@ function App() {
         <Route
           path="/"
           element={
-            // If logged-in but missing required profile fields, force onboarding
-            authSession && (!applicant.homeAddress || !applicant.phoneNumber || !applicant.citizenshipStatus || !applicant.applicantName || applicant.hasCriminalHistory === null) ? (
+            requiresApplicantOnboarding ? (
               <Navigate to="/applicant" replace />
             ) : (
                 <HomePage

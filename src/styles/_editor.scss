@@ -12,6 +12,7 @@
   overflow: hidden;
   background: #fff;
   animation: slideInUp 0.3s ease-out backwards;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 
   &:nth-child(1) {
     animation-delay: 0.05s;
@@ -27,6 +28,12 @@
 
   &:nth-child(4) {
     animation-delay: 0.2s;
+  }
+
+  &:hover {
+    border-color: rgba(221, 95, 26, 0.18);
+    box-shadow: 0 12px 24px rgba(47, 36, 23, 0.08);
+    transform: translateY(-1px);
   }
 }
 
@@ -45,7 +52,7 @@
   transition: all 0.2s ease;
 
   &:hover {
-    background: var(--surface-soft);
+    color: var(--accent-dark);
   }
 }
 
@@ -412,22 +419,29 @@
 // Group Box (for applicant profile)
 .groupBox {
   border: 1px solid var(--stroke-soft);
-  border-radius: 12px;
-  padding: 16px;
-  margin: 4px;
-  margin-bottom: 1em;
+  border-radius: 18px;
+  padding: 20px 18px 18px;
+  margin: 0;
+  margin-bottom: 0;
   display: flex;
   flex-direction: column;
   gap: 12px;
   position: relative;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 10px 24px rgba(47, 36, 23, 0.06);
   animation: slideInUp 0.3s ease-out;
 
   .title {
     position: absolute;
-    top: -11px;
-    left: 50%;
-    background: var(--surface-soft);
-    padding: 0 8px;
-    transform: translateX(-50%);
+    top: 0;
+    left: 16px;
+    transform: translateY(-50%);
+    background: var(--surface);
+    padding: 0 10px;
+    border-radius: 999px;
+    border: 1px solid var(--stroke-soft);
+    font-size: 0.8rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
   }
 }

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type FormEvent } from 'react'
 
 type Props = {
   isOpen: boolean
@@ -14,7 +14,7 @@ const NewApplicationModal = ({ isOpen, onClose, onCreate }: Props) => {
 
   if (!isOpen) return null
 
-  const handleSubmit = async (e: any) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setError('')
     if (!appliedPosition.trim()) {
@@ -40,8 +40,9 @@ const NewApplicationModal = ({ isOpen, onClose, onCreate }: Props) => {
             Application Date
             <input type="date" value={jobDate} onChange={(e) => setJobDate(e.target.value)} />
           </label>
-          <label>
-            <input type="checkbox" checked={agrees} onChange={(e) => setAgrees(e.target.checked)} /> I agree to drug testing
+          <label className="modal-checkbox-row">
+            <input type="checkbox" checked={agrees} onChange={(e) => setAgrees(e.target.checked)} />
+            <span>I agree to drug testing</span>
           </label>
           {error ? <p style={{ color: '#c93b3b' }}>{error}</p> : null}
           <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 12, width: '100%' }}>

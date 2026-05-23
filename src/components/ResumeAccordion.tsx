@@ -212,7 +212,7 @@ const ResumeAccordion = ({
   const renderList = () => (
     <div className="section-list" aria-label="Resume sections">
       <div className="section-group">
-        <h3 className="section-group-title">Base</h3>
+        <h3 className="section-group-title">Resume Builder</h3>
         <Accordion title="Resume Template" subtitle="Choose your resume template" onToggle={() => toggleSection('template')} isOpen={openSections.includes('template')}>
           <div className="form-grid">
             <label>
@@ -260,7 +260,7 @@ const ResumeAccordion = ({
         </Accordion>
       {showAgreeModal ? (
         <div className="modal-backdrop">
-          <div className="modal">
+          <div className="modal modal--shift-left resume-confirm-modal">
             <h3>Confirm Terms</h3>
             <p>By downloading this resume you confirm that the information contained is truthful and accurate. Do you agree?</p>
             <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 12 }}>
@@ -892,7 +892,7 @@ const ResumeAccordion = ({
       {renderEditorHeader('Compliance & Upload', () => setActivePanel({ type: 'list' }), applicant.hasCriminalHistory !== null && applicant.agreesToDrugTest !== null)}
       <div className="form-grid">
         <label>
-          Have you ever had a criminal conviction?*
+          <p className="required-asterisk">Have you ever had a criminal conviction?</p>
           <select
             value={
               applicant.hasCriminalHistory === null
@@ -915,7 +915,7 @@ const ResumeAccordion = ({
         </label>
 
         <label>
-          Do you agree to a drug test?*
+          <p className="required-asterisk">Do you agree to a drug test?</p>
           <select
             value={
               applicant.agreesToDrugTest === null

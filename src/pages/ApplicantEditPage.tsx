@@ -87,153 +87,178 @@ const ApplicantEditPage = ({
 		}
 	};
 
+		const onboardingFieldTotal = 5
+		const onboardingFieldsComplete = [
+			applicantName.trim(),
+			homeAddress.trim(),
+			phoneNumber.trim(),
+			citizenshipStatus.trim(),
+			hasCriminalHistory === null ? '' : 'ok',
+		].filter(Boolean).length
+
 	return (
-		<div className="page-shell">
-			<header className="topbar">
-				<div>
+		<div className="page-shell profile-edit-shell">
+			<header className="topbar profile-edit-header">
+				<div className="profile-edit-intro">
 					<p className="kicker">Applicant Profile</p>
+					<h1>Personal details and account security</h1>
+				</div>
+				<div className="profile-edit-summary">
+					<div className="profile-summary-card profile-summary-card--accent profile-summary-card--checklist">
+						<span className="profile-summary-label">Required fields</span>
+						<strong>{onboardingFieldsComplete}/{onboardingFieldTotal} complete</strong>
+						<span>Finish these to skip the prompt on sign in.</span>
+						<div className="profile-checklist-popover" aria-hidden="true">
+							<p className="profile-section-eyebrow">Checklist</p>
+							<h2>What onboarding checks</h2>
+							<ul className="profile-checklist">
+								<li>Full name</li>
+								<li>Home address</li>
+								<li>Phone number</li>
+								<li>Citizenship status</li>
+								<li>Criminal history response</li>
+							</ul>
+						</div>
+					</div>
 				</div>
 			</header>
 
-			<section className="panel">
-				<form className="form-grid" onSubmit={handleSubmit}>
-					<div className="flex-column2">
-						<div className="col">
+			<section className="panel profile-edit-panel">
+				<form className="profile-edit-form" onSubmit={handleSubmit}>
+					<div className="profile-edit-grid">
+						<div className="profile-edit-column">
 							<GroupBox title="Change Name">
-              <label>
-								Applicant Name
-								<input
-									value={authSession?.user.name || applicant.applicantName}
-									disabled
-								/>
-							</label>
-							<label>
-              <p className='required-asterisk'>
-                New Full Name 
-              </p>
-								<input
-									value={applicantName}
-									onChange={(event) => setApplicantName(event.target.value)}
-								/>
-							</label>
-              </GroupBox>
-              <GroupBox title="Change Password">
-                <label>
-								<p className='required-asterisk'>
-									Current Password
-								</p>
-                <Password value={currentPassword} onChange={setCurrentPassword} />
-							</label>
-							<label>
-								New Password
-                <Password value={newPassword} onChange={setNewPassword} />
-							</label>
-							<label>
-                  <p className='required-asterisk'>
-                    Confirm New Password{" "}
-                  </p>
-                <Password value={confirmPassword} onChange={setConfirmPassword} />
-							</label>
-              </GroupBox>
+								<label>
+									Applicant Name
+									<input
+										value={authSession?.user.name || applicant.applicantName}
+										disabled
+									/>
+								</label>
+								<label>
+									<p className="required-asterisk">New Full Name</p>
+									<input
+										value={applicantName}
+										onChange={(event) => setApplicantName(event.target.value)}
+									/>
+								</label>
+							</GroupBox>
+							<GroupBox title="Change Password">
+								<label>
+									<p className="required-asterisk">Current Password</p>
+									<Password value={currentPassword} onChange={setCurrentPassword} />
+								</label>
+								<label>
+									New Password
+									<Password value={newPassword} onChange={setNewPassword} />
+								</label>
+								<label>
+									<p className="required-asterisk">Confirm New Password</p>
+									<Password value={confirmPassword} onChange={setConfirmPassword} />
+								</label>
+							</GroupBox>
 						</div>
-						<div className="col">
-              <label>
-              <p className='required-asterisk'>
-                Home Address 
-              </p>
-								<input
-									value={homeAddress}
-									onChange={(event) => setHomeAddress(event.target.value)}
-								/>
-							</label>
-							<label>
-              <p className='required-asterisk'>
-                Phone Number 
-              </p>
-								<input
-									value={phoneNumber}
-									onChange={(event) => setPhoneNumber(event.target.value)}
-								/>
-							</label>
-							<label>
-                <p className='required-asterisk'>
-                  Email Address 
-                </p>
-								<input
-									type="email"
-									value={emailAddress}
-									onChange={(event) => setEmailAddress(event.target.value)}
-								/>
-							</label>
-							<label>
-								LinkedIn URL
-								<input
-									value={linkedInUrl}
-									onChange={(event) => setLinkedInUrl(event.target.value)}
-								/>
-							</label>
-							<label>
-              <p className='required-asterisk'>
-                Citizenship Status{" "}
-              </p>
-								<select
-									value={citizenshipStatus}
-									onChange={(event) => setCitizenshipStatus(event.target.value)}
-								>
-									<option value="">Choose status</option>
-									<option value="Citizen">Citizen</option>
-									<option value="Permanent Resident">Permanent Resident</option>
-									<option value="Visa">Visa</option>
-									<option value="Other">Other</option>
-								</select>
-							</label>
-							<label>
-              <p className='required-asterisk'>
-                Has Criminal History{" "}
-              </p>
-								<select
-									value={
-										hasCriminalHistory === null
-											? ""
-											: hasCriminalHistory
-												? "yes"
-												: "no"
-									}
-									onChange={(event) =>
-										setHasCriminalHistory(
-											event.target.value === ""
-												? null
-												: event.target.value === "yes",
-										)
-									}
-								>
-									<option value="">Choose</option>
-									<option value="yes">Yes</option>
-									<option value="no">No</option>
-								</select>
-							</label>
+
+						<div className="profile-edit-column">
+							<div className="profile-section-card">
+								<div className="profile-section-heading">
+									<p className="profile-section-eyebrow">Required profile details</p>
+									<h2>Contact and eligibility</h2>
+								</div>
+								<div className="profile-field-list">
+									<label>
+										<p className="required-asterisk">Home Address</p>
+										<input
+											value={homeAddress}
+											onChange={(event) => setHomeAddress(event.target.value)}
+										/>
+									</label>
+									<label>
+										<p className="required-asterisk">Phone Number</p>
+										<input
+											value={phoneNumber}
+											onChange={(event) => setPhoneNumber(event.target.value)}
+										/>
+									</label>
+									<label>
+										<p className="required-asterisk">Email Address</p>
+										<input
+											type="email"
+											value={emailAddress}
+											onChange={(event) => setEmailAddress(event.target.value)}
+										/>
+									</label>
+									<label>
+										LinkedIn URL
+										<input
+											value={linkedInUrl}
+											onChange={(event) => setLinkedInUrl(event.target.value)}
+										/>
+									</label>
+									<label>
+										<p className="required-asterisk">Citizenship Status</p>
+										<select
+											value={citizenshipStatus}
+											onChange={(event) => setCitizenshipStatus(event.target.value)}
+										>
+											<option value="">Choose status</option>
+											<option value="Citizen">Citizen</option>
+											<option value="Permanent Resident">Permanent Resident</option>
+											<option value="Visa">Visa</option>
+											<option value="Other">Other</option>
+										</select>
+									</label>
+									<label>
+										<p className="required-asterisk">Has Criminal History</p>
+										<select
+											value={
+												hasCriminalHistory === null
+													? ''
+													: hasCriminalHistory
+														? 'yes'
+														: 'no'
+											}
+											onChange={(event) =>
+												setHasCriminalHistory(
+													event.target.value === ''
+														? null
+														: event.target.value === 'yes',
+												)
+											}
+										>
+											<option value="">Choose</option>
+											<option value="yes">Yes</option>
+											<option value="no">No</option>
+										</select>
+									</label>
+								</div>
+							</div>
+
 						</div>
-						{/* <div className="col"> */}
-						{/* </div> */}
+						<div className="form-actions profile-form-actions">
+					{error ? <p className="auth-error">{error}</p> : null}
+					{message ? <p className="upload-note done">{message}</p> : null}
+					<div className="profile-actions-center">
+						<p className="profile-save-note">This will save all the settings above</p>
+						<div className="profile-actions-buttons">
+							<button
+								type="button"
+								className="outline-button"
+								onClick={() => navigate('/')}
+							>
+								Cancel
+							</button>
+							<button type="submit" className="primary-button">
+								Save Changes
+							</button>
+						</div>
+					</div>
+				</div>
 					</div>
 				</form>
-				<div className="form-actions">
-				  {error ? <p className="auth-error">{error}</p> : null}
-					{message ? <p className="upload-note done">{message}</p> : null}
-					<button
-						type="button"
-						className="outline-button"
-						onClick={() => navigate("/")}
-					>
-						Cancel
-					</button>
-					<button type="submit" className="primary-button">
-						Save Changes
-					</button>
-				</div>
 			</section>
 		</div>
-	);
+	)
 };
 
 export default ApplicantEditPage;

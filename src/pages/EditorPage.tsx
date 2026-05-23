@@ -152,11 +152,6 @@ const EditorPage = ({
 
   return (
     <div className="page-shell">
-      <header className="topbar">
-        <div>
-          <p className="kicker">Application Builder</p>
-        </div>
-      </header>
       <div className="resume-shell">
         <section className="panel panel-scroll">
           <ResumeAccordion

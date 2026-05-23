@@ -15,7 +15,7 @@
 
 // Modal Container
 .modal {
-  background: #fff;
+  background: rgba(255, 255, 255, 0.96);
   padding: 20px;
   border-radius: 8px;
   max-width: 520px;
@@ -72,6 +72,30 @@
     cursor: pointer;
     accent-color: var(--accent);
   }
+}
+
+.modal--shift-left {
+  margin-left: -44px;
+}
+
+@media (max-width: 820px) {
+  .modal--shift-left {
+    margin-left: 0;
+  }
+}
+
+.modal label,
+.form-grid label,
+.groupBox label,
+.profile-field-list label {
+  font-weight: 700;
+}
+
+.modal-checkbox-row {
+  display: flex !important;
+  align-items: center;
+  flex-direction: row !important;
+  gap: 10px;
 }
 
 // Form Styles
@@ -232,6 +256,16 @@
 
 // Required Asterisk
 .required-asterisk {
-  color: #c93b3b;
+  color: inherit;
+  font-weight: 700;
   margin-left: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+
+  &::after {
+    content: '*';
+    color: #c93b3b;
+    font-weight: 700;
+  }
 }
