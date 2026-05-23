@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes } from 'react-router-dom'
 import './App.scss'
 import EditorPage from './pages/EditorPage'
 import HomePage from './pages/HomePage'
 import Navbar from './components/Navbar'
-import { updateApplication as syncApplication, getResumeSettings } from './services/applications'
+import { updateApplication as syncApplication, getResumeSettings, deleteApplication } from './services/applications'
 import { loginUser, registerUser, type AuthSession } from './services/auth'
 import type {
   Applicant,
@@ -120,6 +120,16 @@ const storageKeys = {
   authSession: 'applyr:auth-session',
 }
 
+type StoredApplicant = Partial<Applicant> & { id?: string }
+type StoredJobApplication = Partial<JobApplication> & { id?: string }
+type StoredEducation = Partial<Education> & { id?: string }
+type StoredEmploymentHistory = Partial<EmploymentHistory> & { id?: string }
+
+const getStorageScope = (userId?: string | null) => (userId ? `user:${userId}` : 'guest')
+
+const getScopedStorageKey = (scope: string, key: keyof typeof storageKeys) =>
+  `${storageKeys[key]}:${scope}`
+
 const loadStoredValue = <T,>(key: string, fallback: T): T => {
   if (typeof window === 'undefined') {
     return fallback
@@ -137,84 +147,126 @@ const loadStoredValue = <T,>(key: string, fallback: T): T => {
   }
 }
 
+const loadScopedValue = <T,>(scope: string, key: keyof typeof storageKeys, fallback: T): T =>
+  loadStoredValue<T>(getScopedStorageKey(scope, key), fallback)
+
+const normalizeApplicant = (value: StoredApplicant): Applicant => ({
+  ...starterApplicant,
+  ...value,
+  applicantId: value.applicantId || value.id || starterApplicant.applicantId,
+})
+
+const normalizeJobApplication = (
+  value: StoredJobApplication,
+  applicantId: string,
+  fallbackId: string,
+): JobApplication => ({
+  ...createEmptyApplication(applicantId),
+  ...value,
+  JobApplicationId: value.JobApplicationId || value.id || fallbackId,
+  applicantId,
+  references: value.references ?? [],
+  trainings: value.trainings ?? [],
+  certificates: value.certificates ?? [],
+  lastUpdated:
+    value.lastUpdated ||
+    value.JobApplicationDate ||
+    new Date().toISOString(),
+})
+
 function App() {
-  const rawApplicant = loadStoredValue<any>(storageKeys.applicant, starterApplicant)
-  const initialApplicant: Applicant = {
-    ...starterApplicant,
-    ...rawApplicant,
-    applicantId: rawApplicant.applicantId || (rawApplicant as any).id || starterApplicant.applicantId,
-  }
-
-  const rawJobApplications = loadStoredValue<any[]>(
-    storageKeys.jobApplications,
-    [createEmptyApplication(initialApplicant.applicantId)],
+  const storedAuthSession = loadStoredValue<AuthSession | null>(storageKeys.authSession, null)
+  const initialStorageScope = getStorageScope(storedAuthSession?.user.id)
+  const initialApplicant = normalizeApplicant(
+    loadScopedValue<StoredApplicant>(initialStorageScope, 'applicant', starterApplicant),
   )
-  const initialJobApplications = rawJobApplications.map((application, i) => { const defaultApp = createEmptyApplication(initialApplicant.applicantId); return { ...defaultApp, ...application, JobApplicationId: application.JobApplicationId || (application as any).id || defaultApp.JobApplicationId, applicantId: initialApplicant.applicantId, 
-    ...application,
-    references: application.references ?? (i === 0 ? loadStoredValue<ApplicantReference[]>(storageKeys.references, [
-      {referenceId: createId(), applicantId: initialApplicant.applicantId, referenceName: 'John Doe', referenceTitle: 'Former Manager', referenceCompany: 'Acme Corp', referencePhone: '555-1234', referenceEmail: 'johndoe@acmecorp.com'},
-      {referenceId: createId(), applicantId: initialApplicant.applicantId, referenceName: 'Jane Smith', referenceTitle: 'Colleague', referenceCompany: 'Globex Inc', referencePhone: '555-5678', referenceEmail: 'janesmith@globexinc.com'},
-      {referenceId: createId(), applicantId: initialApplicant.applicantId, referenceName: 'Bob Johnson', referenceTitle: 'Professor', referenceCompany: 'State University', referencePhone: '555-9012', referenceEmail: 'bjohnson@stateuniversity.com'},
-      {referenceId: createId(), applicantId: initialApplicant.applicantId, referenceName: 'Alice Williams', referenceTitle: 'Mentor', referenceCompany: 'Tech Institute', referencePhone: '555-3456', referenceEmail: 'awilliams@techinstitute.com'},
-    ]) : []),
-    trainings: application.trainings ?? (i === 0 ? loadStoredValue<Training[]>(storageKeys.trainings, []) : []),
-    certificates: application.certificates ?? (i === 0 ? loadStoredValue<Certificate[]>(storageKeys.certificates, []) : []),
-    lastUpdated:
-      application.lastUpdated ||
-      application.JobApplicationDate ||
-      new Date().toISOString(),
-  }})
 
-  const [applicant, setApplicant] = useState<Applicant>(initialApplicant)
-  const [jobApplications, setJobApplications] =
-    useState<JobApplication[]>(initialJobApplications)
-  const [activeJobApplicationId, setActiveJobApplicationId] = useState(
-    loadStoredValue<string>(
-      storageKeys.activeJobApplicationId,
-      initialJobApplications[0].JobApplicationId,
+  const initialJobApplications = loadScopedValue<StoredJobApplication[]>(
+    initialStorageScope,
+    'jobApplications',
+    [createEmptyApplication(initialApplicant.applicantId)],
+  ).map((application, index) =>
+    normalizeJobApplication(
+      application,
+      initialApplicant.applicantId,
+      index === 0
+        ? createEmptyApplication(initialApplicant.applicantId).JobApplicationId
+        : createId(),
     ),
   )
-  const [education, setEducation] = useState<Education[]>(
-    loadStoredValue<Education[]>(storageKeys.education, [
-    {educationId: createId(), applicantId: starterApplicant.applicantId, schoolName: 'State University', schoolLocation: 'Anytown, USA', yearsAttended: '2015-2019', degreeReceived: 'Bachelor of Science', programName: 'Computer Science'},
-    {educationId: createId(), applicantId: starterApplicant.applicantId, schoolName: 'Tech Institute', schoolLocation: 'Othertown, USA', yearsAttended: '2019-2021', degreeReceived: 'Master of Science', programName: 'Software Engineering'},
-    {educationId: createId(), applicantId: starterApplicant.applicantId, schoolName: 'Community College', schoolLocation: 'Sometown, USA', yearsAttended: '2013-2015', degreeReceived: 'Associate Degree', programName: 'Information Technology'},
-    {educationId: createId(), applicantId: starterApplicant.applicantId, schoolName: 'Online University', schoolLocation: 'Online', yearsAttended: '2020-2022', degreeReceived: 'Certificate', programName: 'Data Science'},
-    {educationId: createId(), applicantId: starterApplicant.applicantId, schoolName: 'Business School', schoolLocation: 'Anycity, USA', yearsAttended: '2018-2020', degreeReceived: 'MBA', programName: 'Business Administration'},
-    {educationId: createId(), applicantId: starterApplicant.applicantId, schoolName: 'Design Academy', schoolLocation: 'Othercity, USA', yearsAttended: '2012-2014', degreeReceived: 'Diploma', programName: 'Graphic Design'},
-    ]),
+  const initialActiveJobApplicationId =
+    loadScopedValue<string>(
+      initialStorageScope,
+      'activeJobApplicationId',
+      initialJobApplications[0]?.JobApplicationId ?? '',
+    ) || initialJobApplications[0]?.JobApplicationId || ''
+
+  const initialEducation = loadScopedValue<StoredEducation[]>(
+    initialStorageScope,
+    'education',
+    [],
   )
-  const [employmentHistory, setEmploymentHistory] = useState<EmploymentHistory[]>(
-    loadStoredValue<EmploymentHistory[]>(storageKeys.employmentHistory, [
-    {EmploymentHistoryId: createId(), applicantId: starterApplicant.applicantId, companyName: 'Acme Corp', workAddress: '123 Main St, Anytown, USA', workPosition: 'Software Engineer', reasonForLeaving: 'Seeking new challenges'},
-    {EmploymentHistoryId: createId(), applicantId: starterApplicant.applicantId, companyName: 'Globex Inc', workAddress: '456 Elm St, Othertown, USA', workPosition: 'Junior Developer', reasonForLeaving: 'Career growth opportunities'},
-    {EmploymentHistoryId: createId(), applicantId: starterApplicant.applicantId, companyName: 'Initech', workAddress: '789 Oak St, Sometown, USA', workPosition: 'Intern', reasonForLeaving: 'Internship ended'},
-    {EmploymentHistoryId: createId(), applicantId: starterApplicant.applicantId, companyName: 'Umbrella Corp', workAddress: '321 Pine St, Anycity, USA', workPosition: 'QA Tester', reasonForLeaving: 'Company downsizing'},
-    {EmploymentHistoryId: createId(), applicantId: starterApplicant.applicantId, companyName: 'Hooli', workAddress: '654 Maple St, Othercity, USA', workPosition: 'Product Manager', reasonForLeaving: 'Relocation'},
-    {EmploymentHistoryId: createId(), applicantId: starterApplicant.applicantId, companyName: 'Vehement Capital Partners', workAddress: '987 Cedar St, Somecity, USA', workPosition: 'Business Analyst', reasonForLeaving: 'Pursuing further education'},
-    ]),
+    .map((entry) => ({
+      educationId: entry.educationId || entry.id || createId(),
+      applicantId: entry.applicantId || initialApplicant.applicantId,
+      schoolName: entry.schoolName || '',
+      schoolLocation: entry.schoolLocation || '',
+      yearsAttended: entry.yearsAttended || '',
+      degreeReceived: entry.degreeReceived || '',
+      programName: entry.programName || '',
+    }))
+
+  const initialEmploymentHistory = loadScopedValue<StoredEmploymentHistory[]>(
+    initialStorageScope,
+    'employmentHistory',
+    [],
   )
+    .map((entry) => ({
+      EmploymentHistoryId: entry.EmploymentHistoryId || entry.id || createId(),
+      applicantId: entry.applicantId || initialApplicant.applicantId,
+      companyName: entry.companyName || '',
+      workAddress: entry.workAddress || '',
+      workPosition: entry.workPosition || '',
+      reasonForLeaving: entry.reasonForLeaving || '',
+    }))
+
+  const initialResumeSettingsMap = loadScopedValue<Record<string, ApplicationResumeSettings>>(
+    initialStorageScope,
+    'resumeSettings',
+    {},
+  )
+
+  const initialPreviewFont = loadScopedValue<string>(
+    initialStorageScope,
+    'previewFont',
+    'Times New Roman',
+  )
+  const initialResumeTemplate = loadScopedValue<ResumeTemplateId>(
+    initialStorageScope,
+    'resumeTemplate',
+    'classic',
+  )
+
+  const [applicant, setApplicant] = useState<Applicant>(initialApplicant)
+  const [jobApplications, setJobApplications] = useState<JobApplication[]>(initialJobApplications)
+  const [activeJobApplicationId, setActiveJobApplicationId] = useState(initialActiveJobApplicationId)
+  const [education, setEducation] = useState<Education[]>(initialEducation)
+  const [employmentHistory, setEmploymentHistory] = useState<EmploymentHistory[]>(initialEmploymentHistory)
 
 
   // Store settings per JobApplicationId
-  const [resumeSettingsMap, setResumeSettingsMap] = useState<Record<string, ApplicationResumeSettings>>(
-    loadStoredValue<Record<string, ApplicationResumeSettings>>(storageKeys.resumeSettings, {}),
-  )
+  const [resumeSettingsMap, setResumeSettingsMap] = useState<Record<string, ApplicationResumeSettings>>(initialResumeSettingsMap)
 
   // Current settings for the active application (fallback to defaults)
-  const [previewFont, setPreviewFont] = useState<string>(
-    loadStoredValue<string>(storageKeys.previewFont, 'Times New Roman'),
-  )
-  const [resumeTemplate, setResumeTemplate] = useState<ResumeTemplateId>(
-    loadStoredValue<ResumeTemplateId>(storageKeys.resumeTemplate, 'classic'),
-  )
+  const [previewFont, setPreviewFont] = useState<string>(initialPreviewFont)
+  const [resumeTemplate, setResumeTemplate] = useState<ResumeTemplateId>(initialResumeTemplate)
 
   const [uploadState, setUploadState] = useState({ uploading: false, message: '' })
-  const [authSession, setAuthSession] = useState<AuthSession | null>(
-    loadStoredValue<AuthSession | null>(storageKeys.authSession, null),
-  )
+  const [authSession, setAuthSession] = useState<AuthSession | null>(storedAuthSession)
   const [authError, setAuthError] = useState('')
   const [isAuthLoading, setIsAuthLoading] = useState(false)
+  const storageScope = getStorageScope(authSession?.user.id)
+  const [hydratedStorageScope, setHydratedStorageScope] = useState(storageScope)
 
   const touchActiveApplication = () => {
     setJobApplications((prev) =>
@@ -264,6 +316,26 @@ function App() {
     setJobApplications((prev) => [...prev, next])
     setActiveJobApplicationId(next.JobApplicationId)
     return next.JobApplicationId
+  }
+
+  const deleteJobApplication = async (jobApplicationId: string) => {
+    try {
+      await deleteApplication(jobApplicationId)
+      setJobApplications((prev) => {
+        const remaining = prev.filter((app) => app.JobApplicationId !== jobApplicationId)
+        if (jobApplicationId === activeJobApplicationId) {
+          setActiveJobApplicationId(remaining[0]?.JobApplicationId ?? '')
+        }
+        return remaining
+      })
+      setResumeSettingsMap((prev) => {
+        const next = { ...prev }
+        delete next[jobApplicationId]
+        return next
+      })
+    } catch (error) {
+      console.error('Failed to delete application:', error)
+    }
   }
 
   const updateEducation = (index: number, field: keyof Education, value: string) => {
@@ -388,47 +460,130 @@ function App() {
   }
 
   useEffect(() => {
+    const nextScope = getStorageScope(authSession?.user.id)
+    const nextApplicant = normalizeApplicant(
+      loadScopedValue<StoredApplicant>(nextScope, 'applicant', starterApplicant),
+    )
+    const nextJobApplications = loadScopedValue<StoredJobApplication[]>(
+      nextScope,
+      'jobApplications',
+      [createEmptyApplication(nextApplicant.applicantId)],
+    ).map((application) =>
+      normalizeJobApplication(
+        application,
+        nextApplicant.applicantId,
+        createEmptyApplication(nextApplicant.applicantId).JobApplicationId,
+      ),
+    )
+
+    setApplicant(nextApplicant)
+    setJobApplications(nextJobApplications)
+    setActiveJobApplicationId(
+      loadScopedValue<string>(
+        nextScope,
+        'activeJobApplicationId',
+        nextJobApplications[0]?.JobApplicationId ?? '',
+      ) || nextJobApplications[0]?.JobApplicationId || '',
+    )
+    setEducation(
+      loadScopedValue<StoredEducation[]>(nextScope, 'education', []).map((entry) => ({
+        educationId: entry.educationId || entry.id || createId(),
+        applicantId: entry.applicantId || nextApplicant.applicantId,
+        schoolName: entry.schoolName || '',
+        schoolLocation: entry.schoolLocation || '',
+        yearsAttended: entry.yearsAttended || '',
+        degreeReceived: entry.degreeReceived || '',
+        programName: entry.programName || '',
+      })),
+    )
+    setEmploymentHistory(
+      loadScopedValue<StoredEmploymentHistory[]>(nextScope, 'employmentHistory', []).map((entry) => ({
+        EmploymentHistoryId: entry.EmploymentHistoryId || entry.id || createId(),
+        applicantId: entry.applicantId || nextApplicant.applicantId,
+        companyName: entry.companyName || '',
+        workAddress: entry.workAddress || '',
+        workPosition: entry.workPosition || '',
+        reasonForLeaving: entry.reasonForLeaving || '',
+      })),
+    )
+    setResumeSettingsMap(loadScopedValue<Record<string, ApplicationResumeSettings>>(nextScope, 'resumeSettings', {}))
+    setPreviewFont(loadScopedValue<string>(nextScope, 'previewFont', 'Times New Roman'))
+    setResumeTemplate(loadScopedValue<ResumeTemplateId>(nextScope, 'resumeTemplate', 'classic'))
+    setHydratedStorageScope(nextScope)
+  }, [authSession?.user.id])
+
+  useEffect(() => {
     if (!jobApplications.some((application) => application.JobApplicationId === activeJobApplicationId)) {
       setActiveJobApplicationId(jobApplications[0]?.JobApplicationId ?? '')
     }
   }, [jobApplications, activeJobApplicationId])
 
   useEffect(() => {
-    window.localStorage.setItem(storageKeys.applicant, JSON.stringify(applicant))
-  }, [applicant])
+    if (hydratedStorageScope !== storageScope) {
+      return
+    }
+
+    window.localStorage.setItem(getScopedStorageKey(storageScope, 'applicant'), JSON.stringify(applicant))
+  }, [applicant, storageScope, hydratedStorageScope])
 
   useEffect(() => {
-    window.localStorage.setItem(storageKeys.jobApplications, JSON.stringify(jobApplications))
-  }, [jobApplications])
+    if (hydratedStorageScope !== storageScope) {
+      return
+    }
+
+    window.localStorage.setItem(getScopedStorageKey(storageScope, 'jobApplications'), JSON.stringify(jobApplications))
+  }, [jobApplications, storageScope, hydratedStorageScope])
 
   useEffect(() => {
+    if (hydratedStorageScope !== storageScope) {
+      return
+    }
+
     window.localStorage.setItem(
-      storageKeys.activeJobApplicationId,
+      getScopedStorageKey(storageScope, 'activeJobApplicationId'),
       JSON.stringify(activeJobApplicationId),
     )
-  }, [activeJobApplicationId])
+  }, [activeJobApplicationId, storageScope, hydratedStorageScope])
 
   useEffect(() => {
-    window.localStorage.setItem(storageKeys.education, JSON.stringify(education))
-  }, [education])
+    if (hydratedStorageScope !== storageScope) {
+      return
+    }
+
+    window.localStorage.setItem(getScopedStorageKey(storageScope, 'education'), JSON.stringify(education))
+  }, [education, storageScope, hydratedStorageScope])
 
   useEffect(() => {
-    window.localStorage.setItem(storageKeys.employmentHistory, JSON.stringify(employmentHistory))
-  }, [employmentHistory])
+    if (hydratedStorageScope !== storageScope) {
+      return
+    }
 
-
-
-  useEffect(() => {
-    window.localStorage.setItem(storageKeys.previewFont, JSON.stringify(previewFont))
-  }, [previewFont])
+    window.localStorage.setItem(getScopedStorageKey(storageScope, 'employmentHistory'), JSON.stringify(employmentHistory))
+  }, [employmentHistory, storageScope, hydratedStorageScope])
 
   useEffect(() => {
-    window.localStorage.setItem(storageKeys.resumeTemplate, JSON.stringify(resumeTemplate))
-  }, [resumeTemplate])
+    if (hydratedStorageScope !== storageScope) {
+      return
+    }
+
+    window.localStorage.setItem(getScopedStorageKey(storageScope, 'previewFont'), JSON.stringify(previewFont))
+  }, [previewFont, storageScope, hydratedStorageScope])
 
   useEffect(() => {
-    window.localStorage.setItem(storageKeys.resumeSettings, JSON.stringify(resumeSettingsMap))
-  }, [resumeSettingsMap])
+    if (hydratedStorageScope !== storageScope) {
+      return
+    }
+
+    window.localStorage.setItem(getScopedStorageKey(storageScope, 'resumeTemplate'), JSON.stringify(resumeTemplate))
+  }, [resumeTemplate, storageScope, hydratedStorageScope])
+
+  useEffect(() => {
+    if (hydratedStorageScope !== storageScope) {
+      return
+    }
+
+    window.localStorage.setItem(getScopedStorageKey(storageScope, 'resumeSettings'), JSON.stringify(resumeSettingsMap))
+  }, [resumeSettingsMap, storageScope, hydratedStorageScope])
 
   useEffect(() => {
     window.localStorage.setItem(storageKeys.authSession, JSON.stringify(authSession))
@@ -579,7 +734,6 @@ function App() {
               authError={authError}
               onLogin={handleLogin}
               onSignup={handleSignup}
-              onLogout={handleLogout}
               onAddJobApplication={addJobApplication}
             />
           }
@@ -647,6 +801,7 @@ function App() {
                 removeCertificate={removeCertificate}
                 reorderCertificates={reorderCertificates}
                 handleResumeUpload={handleResumeUpload}
+                onDeleteJobApplication={deleteJobApplication}
               />
             ) : (
               <Navigate to="/" replace />

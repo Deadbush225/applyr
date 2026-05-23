@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import ResumeAccordion from '../components/ResumeAccordion'
 import ResumePreview from '../components/ResumePreview'
 import type {
@@ -19,6 +19,7 @@ export type EditorPageProps = {
   activeJobApplicationId: string
   onJobApplicationChange: (jobApplicationId: string) => void
   onAddJobApplication: () => string
+  onDeleteJobApplication: (jobApplicationId: string) => Promise<void>
   education: Education[]
   employmentHistory: EmploymentHistory[]
   uploadState: { uploading: boolean; message: string }
@@ -58,6 +59,7 @@ const EditorPage = ({
   activeJobApplicationId,
   onJobApplicationChange,
   onAddJobApplication,
+  onDeleteJobApplication,
   education,
   employmentHistory,
   uploadState,
@@ -92,6 +94,11 @@ const EditorPage = ({
   const { applicationId } = useParams()
   const navigate = useNavigate()
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
+
+  const handleDeleteJobApplication = async (jobApplicationId: string) => {
+    await onDeleteJobApplication(jobApplicationId)
+    navigate('/', { replace: true })
+  }
 
   useEffect(() => {
     if (!applicationId) {
@@ -159,6 +166,7 @@ const EditorPage = ({
             removeCertificate={removeCertificate}
             reorderCertificates={reorderCertificates}
             handleResumeUpload={handleResumeUpload}
+            onDeleteJobApplication={handleDeleteJobApplication}
           />
         </section>
         <section

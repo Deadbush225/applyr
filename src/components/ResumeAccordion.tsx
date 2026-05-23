@@ -67,6 +67,7 @@ type ResumeAccordionProps = {
   removeCertificate: (index: number) => void
   reorderCertificates: (fromIndex: number, toIndex: number) => void
   handleResumeUpload: (file: File | null) => Promise<void>
+  onDeleteJobApplication: (jobApplicationId: string) => Promise<void>
 }
 
 // Custom hook to sync state with localStorage
@@ -128,6 +129,7 @@ const ResumeAccordion = ({
   removeCertificate,
   reorderCertificates,
   handleResumeUpload,
+  onDeleteJobApplication,
 }: ResumeAccordionProps) => {
   const [activePanel, setActivePanel] = useState<ActivePanel>({ type: 'list' })
   const [dragEducationIndex, setDragEducationIndex] = useState<number | null>(null)
@@ -151,7 +153,7 @@ const ResumeAccordion = ({
       certificates,
     }
     syncApplication(payload).catch(console.error)
-  }, [activePanel])
+  }, [activePanel, applicant, certificates, education, employmentHistory, jobApplication, trainings])
 
   const handleDragStart = (
     setter: (value: number | null) => void,
@@ -246,6 +248,53 @@ const ResumeAccordion = ({
                 <option value="modern">Modern</option>
               </select>
             </label>
+          </div>
+        </Accordion>
+
+        <Accordion
+          title="Application Settings"
+          subtitle="Status, dates, and removal"
+          onToggle={() => toggleSection('application-settings')}
+          isOpen={openSections.includes('application-settings')}
+        >
+          <div className="form-grid">
+            <label>
+              Application Status*
+              <select
+                value={jobApplication.JobApplicationStatus || 'Pending'}
+                onChange={(event) => updateApplication('JobApplicationStatus', event.target.value)}
+              >
+                <option value="Pending">Pending</option>
+                <option value="Under Review">Under Review</option>
+                <option value="Interview">Interview</option>
+                <option value="Offered">Offered</option>
+                <option value="Rejected">Rejected</option>
+                <option value="Withdrawn">Withdrawn</option>
+              </select>
+            </label>
+
+            <label>
+              Application Date*
+              <input
+                type="date"
+                value={jobApplication.JobApplicationDate || ''}
+                onChange={(event) => updateApplication('JobApplicationDate', event.target.value)}
+              />
+            </label>
+
+            <div className="form-actions">
+              <button
+                type="button"
+                className="delete-button"
+                onClick={() => {
+                  if (confirm('Are you sure you want to delete this application? This action cannot be undone.')) {
+                    void onDeleteJobApplication(jobApplication.JobApplicationId)
+                  }
+                }}
+              >
+                Delete Application
+              </button>
+            </div>
           </div>
         </Accordion>
     
@@ -885,7 +934,7 @@ const ResumeAccordion = ({
           </select>
         </label>
 
-        {/* <label>
+        <label>
           Upload Resume (PDF)*
           <input
             type="file"
@@ -895,7 +944,7 @@ const ResumeAccordion = ({
               void handleResumeUpload(file)
             }}
           />
-        </label> */}
+        </label>
       </div>
 
       {uploadState.message ? (

@@ -467,6 +467,52 @@
   font-size: 0.75rem;
 }
 
+.application-chip.status-pending {
+  background: #f3e8ff;
+  color: #7c3aed;
+}
+
+.application-chip.status-under-review {
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+.application-chip.status-interview {
+  background: #ffedd5;
+  color: #c2410c;
+}
+
+.application-chip.status-offered {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.application-chip.status-rejected {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.application-chip.status-withdrawn {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.application-chip.status-open {
+  background: #fff7ed;
+  color: #c2410c;
+}
+
+.delete-button {
+  border: 1px solid #fecaca;
+  background: #fff1f2;
+  color: #b91c1c;
+  font-weight: 700;
+}
+
+.delete-button:hover {
+  background: #fee2e2;
+}
+
 .empty-card {
   border: 1px dashed var(--stroke-strong);
   border-radius: 18px;

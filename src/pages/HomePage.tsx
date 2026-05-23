@@ -28,7 +28,6 @@ type HomePageProps = {
   authError: string
   onLogin: (email: string, password: string) => Promise<void>
   onSignup: (name: string, email: string, password: string) => Promise<void>
-  onLogout: () => void
   onAddJobApplication: () => string
 }
 
@@ -44,6 +43,11 @@ const formatTime = (value: string) => {
   const parsed = new Date(value)
   if (Number.isNaN(parsed.getTime())) return value
   return parsed.toLocaleString()
+}
+
+const getStatusClass = (status?: string) => {
+  const normalized = (status || 'Open').toLowerCase().replace(/[^a-z]+/g, '-')
+  return `application-chip status-${normalized}`
 }
 
 // Simple Check Icon for the feature list
@@ -67,7 +71,6 @@ const HomePage = ({
   authError,
   onLogin,
   onSignup,
-  onLogout,
   onAddJobApplication,
 }: HomePageProps) => {
   const navigate = useNavigate()
@@ -259,13 +262,15 @@ const HomePage = ({
               </div>
               <div className="application-meta">
                 <h3>{application.appliedPosition || `Application ${index + 1}`}</h3>
-                {/* <p>Applied: {formatDate(application.JobApplicationDate)}</p> */}
+                <p>Applied: {formatDate(application.JobApplicationDate)}</p>
                 
                 <span>
                   {/* <strong>Updated on: </strong> */}
                   <p>{formatTime(application.lastUpdated)}</p>
                 </span>
-                <span className="application-chip">Open</span>
+                <span className={getStatusClass(application.JobApplicationStatus)}>
+                  {application.JobApplicationStatus || 'Open'}
+                </span>
               </div>
             </Link>
           ))
