@@ -204,6 +204,24 @@ try {
         }
     }
 
+    // Insert/update ApplicationResumeSettings
+    if (isset($input['resumeSettings']) && is_array($input['resumeSettings'])) {
+        $resumeSettings = $input['resumeSettings'];
+        $stmtSettings = $db->prepare(
+            'INSERT INTO ApplicationResumeSettings (JobApplicationId, resumeTemplate, previewFont) '
+            . 'VALUES (:jobApplicationId, :resumeTemplate, :previewFont) '
+            . 'ON DUPLICATE KEY UPDATE '
+            . 'resumeTemplate = VALUES(resumeTemplate), '
+            . 'previewFont = VALUES(previewFont), '
+            . 'lastUpdated = CURRENT_TIMESTAMP'
+        );
+        $stmtSettings->execute([
+            'jobApplicationId' => $jobApplicationId,
+            'resumeTemplate' => (string)($resumeSettings['resumeTemplate'] ?? 'classic'),
+            'previewFont' => (string)($resumeSettings['previewFont'] ?? 'Helvetica'),
+        ]);
+    }
+
     $db->commit();
 
     jsonResponse(200, [

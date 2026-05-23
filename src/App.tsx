@@ -4,11 +4,12 @@ import './App.scss'
 import EditorPage from './pages/EditorPage'
 import HomePage from './pages/HomePage'
 import Navbar from './components/Navbar'
-import { updateApplication as syncApplication } from './services/applications'
+import { updateApplication as syncApplication, getResumeSettings } from './services/applications'
 import { loginUser, registerUser, type AuthSession } from './services/auth'
 import type {
   Applicant,
   ApplicantReference,
+  ApplicationResumeSettings,
   Education,
   EmploymentHistory,
   JobApplication,
@@ -115,6 +116,7 @@ const storageKeys = {
   certificates: 'applyr:certificates',
   previewFont: 'applyr:preview-font',
   resumeTemplate: 'applyr:resume-template',
+  resumeSettings: 'applyr:resume-settings',
   authSession: 'applyr:auth-session',
 }
 
@@ -194,7 +196,13 @@ function App() {
   )
 
 
-  const [previewFont, setPreviewFont] = useState(
+  // Store settings per JobApplicationId
+  const [resumeSettingsMap, setResumeSettingsMap] = useState<Record<string, ApplicationResumeSettings>>(
+    loadStoredValue<Record<string, ApplicationResumeSettings>>(storageKeys.resumeSettings, {}),
+  )
+
+  // Current settings for the active application (fallback to defaults)
+  const [previewFont, setPreviewFont] = useState<string>(
     loadStoredValue<string>(storageKeys.previewFont, 'Times New Roman'),
   )
   const [resumeTemplate, setResumeTemplate] = useState<ResumeTemplateId>(
@@ -419,8 +427,44 @@ function App() {
   }, [resumeTemplate])
 
   useEffect(() => {
+    window.localStorage.setItem(storageKeys.resumeSettings, JSON.stringify(resumeSettingsMap))
+  }, [resumeSettingsMap])
+
+  useEffect(() => {
     window.localStorage.setItem(storageKeys.authSession, JSON.stringify(authSession))
   }, [authSession])
+
+  // Fetch resume settings when active application changes
+  useEffect(() => {
+    if (!activeJobApplicationId) return
+
+    // If we already have settings cached, use them
+    if (resumeSettingsMap[activeJobApplicationId]) {
+      const settings = resumeSettingsMap[activeJobApplicationId]
+      setPreviewFont(settings.previewFont)
+      setResumeTemplate(settings.resumeTemplate as ResumeTemplateId)
+      return
+    }
+
+    // Otherwise, try to fetch from backend (for authenticated users)
+    if (authSession?.token) {
+      void getResumeSettings(activeJobApplicationId)
+        .then((res) => {
+          if (res.data) {
+            const settings = res.data
+            setResumeSettingsMap((prev) => ({
+              ...prev,
+              [activeJobApplicationId]: settings,
+            }))
+            setPreviewFont(settings.previewFont)
+            setResumeTemplate(settings.resumeTemplate as ResumeTemplateId)
+          }
+        })
+        .catch(() => {
+          // Silently fail and use defaults
+        })
+    }
+  }, [activeJobApplicationId, authSession?.token, resumeSettingsMap])
 
   useEffect(() => {
     if (!activeJobApplication) {
@@ -438,6 +482,11 @@ function App() {
       employmentHistory,
       trainings: activeJobApplication.trainings || [],
       certificates: activeJobApplication.certificates || [],
+      resumeSettings: {
+        JobApplicationId: activeJobApplicationId,
+        resumeTemplate,
+        previewFont,
+      },
     }
 
     const timeout = window.setTimeout(() => {
@@ -445,7 +494,7 @@ function App() {
     }, 400)
 
     return () => window.clearTimeout(timeout)
-  }, [applicant, activeJobApplication])
+  }, [applicant, activeJobApplication, previewFont, resumeTemplate, activeJobApplicationId, education, employmentHistory])
 
   const handleResumeUpload = async (file: File | null) => {
     if (!file) {
@@ -550,8 +599,30 @@ function App() {
                 uploadState={uploadState}
                 previewFont={previewFont}
                 resumeTemplate={resumeTemplate}
-                onPreviewFontChange={(font) => { setPreviewFont(font); touchActiveApplication(); }}
-                onResumeTemplateChange={(template) => { setResumeTemplate(template); touchActiveApplication(); }}
+                onPreviewFontChange={(font) => {
+                  setPreviewFont(font)
+                  setResumeSettingsMap((prev) => ({
+                    ...prev,
+                    [activeJobApplicationId]: {
+                      JobApplicationId: activeJobApplicationId,
+                      resumeTemplate: resumeTemplate as ResumeTemplateId,
+                      previewFont: font,
+                    },
+                  }))
+                  touchActiveApplication()
+                }}
+                onResumeTemplateChange={(template) => {
+                  setResumeTemplate(template)
+                  setResumeSettingsMap((prev) => ({
+                    ...prev,
+                    [activeJobApplicationId]: {
+                      JobApplicationId: activeJobApplicationId,
+                      resumeTemplate: template,
+                      previewFont,
+                    },
+                  }))
+                  touchActiveApplication()
+                }}
                 updateApplicant={updateApplicant}
                 updateApplication={updateApplication}
                 updateEducation={updateEducation}

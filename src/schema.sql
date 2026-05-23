@@ -41,6 +41,14 @@ CREATE TABLE Training (
 
 -- 2. Create Dependent Entities (Foreign Keys referencing Independent Entities)
 
+CREATE TABLE ApplicationResumeSettings (
+    JobApplicationId INT(10) PRIMARY KEY,
+    resumeTemplate VARCHAR(20) NOT NULL DEFAULT 'classic' CHECK (resumeTemplate IN ('classic', 'compact', 'modern')),
+    previewFont VARCHAR(50) NOT NULL DEFAULT 'Helvetica',
+    lastUpdated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (JobApplicationId) REFERENCES JobApplication(JobApplicationId) ON DELETE CASCADE
+);
+
 CREATE TABLE JobApplication (
     JobApplicationId INT(10) PRIMARY KEY NOT NULL,
     applicantId INT(10) NOT NULL,

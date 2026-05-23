@@ -451,6 +451,10 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
+
+  h3 {
+    margin-bottom: 0;
+  }
 }
 
 .application-chip {

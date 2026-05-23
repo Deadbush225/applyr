@@ -249,8 +249,12 @@ const HomePage = ({
               </div>
               <div className="application-meta">
                 <h3>{application.appliedPosition || `Application ${index + 1}`}</h3>
-                <p>Applied: {formatDate(application.JobApplicationDate)}</p>
-                <p>Updated: {formatTime(application.lastUpdated)}</p>
+                {/* <p>Applied: {formatDate(application.JobApplicationDate)}</p> */}
+                
+                <span>
+                  {/* <strong>Updated on: </strong> */}
+                  <p>{formatTime(application.lastUpdated)}</p>
+                </span>
                 <span className="application-chip">Open</span>
               </div>
             </Link>

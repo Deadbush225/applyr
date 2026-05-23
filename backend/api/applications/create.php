@@ -74,6 +74,17 @@ try {
         'agreesToDrugTest' => (int)($jobApplication['agreesToDrugTest'] ?? 0),
     ]);
 
+    // Insert ApplicationResumeSettings with defaults
+    $stmtSettings = $db->prepare(
+        'INSERT INTO ApplicationResumeSettings (JobApplicationId, resumeTemplate, previewFont) '
+        . 'VALUES (:jobApplicationId, :resumeTemplate, :previewFont)'
+    );
+    $stmtSettings->execute([
+        'jobApplicationId' => $jobApplicationId,
+        'resumeTemplate' => (string)($input['resumeSettings']['resumeTemplate'] ?? 'classic'),
+        'previewFont' => (string)($input['resumeSettings']['previewFont'] ?? 'Helvetica'),
+    ]);
+
     $db->commit();
 
     jsonResponse(201, [

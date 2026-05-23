@@ -67,3 +67,10 @@ export type Certificate = {
   issuingAuthority: string
   validityMonths: string
 }
+
+export type ApplicationResumeSettings = {
+  JobApplicationId: string
+  resumeTemplate: 'classic' | 'compact' | 'modern'
+  previewFont: string
+  lastUpdated?: string
+}
