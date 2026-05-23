@@ -146,21 +146,11 @@ const ResumeAccordion = ({
 
   // Handle PDF download with sync - ensure data is saved before downloading
   const handlePDFDownload = async () => {
-    // If user hasn't agreed to terms, show modal first
-    if (!jobApplication?.agreedToTerms) {
-      setShowAgreeModal(true)
-      return
-    }
-    setIsSyncing(true)
-    try {
-      await onSyncRequest?.()
-      // Trigger the PDF download after sync completes
-      if (pdfLinkRef.current) {
-        pdfLinkRef.current.click()
-      }
-    } finally {
-      setIsSyncing(false)
-    }
+    // Always show the confirmation modal before downloading.
+    // The modal handler will update `agreedToTerms` and `dateAgreed`,
+    // call the provided `onSyncRequest` to persist to the backend,
+    // and then trigger the programmatic PDF download.
+    setShowAgreeModal(true)
   }
 
   const handleDragStart = (

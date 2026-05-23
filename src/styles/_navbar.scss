@@ -30,6 +30,11 @@
   letter-spacing: -0.02em;
   transition: all 0.2s ease;
 
+  img {
+    width: 4.3em;
+    transition: transform 0.2s ease;
+  }
+
   svg {
     color: var(--accent);
     transition: transform 0.2s ease;
@@ -38,6 +43,7 @@
   &:hover {
     opacity: 0.8;
 
+    im,
     svg {
       transform: scale(1.05);
     }
