@@ -1,121 +1,204 @@
--- 1. Create Independent Entities First
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8mb4 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
-CREATE TABLE Applicant (
-    applicantId INT(10) PRIMARY KEY NOT NULL,
-    applicantName VARCHAR(80) NOT NULL,
-    homeAddress VARCHAR(100) NOT NULL,
-    phoneNumber VARCHAR(11) NOT NULL,
-    emailAddress VARCHAR(255) UNIQUE NOT NULL,
-    linkedInUrl VARCHAR(80),
-    citizenshipStatus VARCHAR(20) NOT NULL CHECK (citizenshipStatus IN ('Citizen', 'Permanent Resident', 'Visa', 'Other')),
-    hasCriminalHistory BOOLEAN NOT NULL
-);
+-- --------------------------------------------------------
+-- Table structure for table `Applicant`
+-- --------------------------------------------------------
+DROP TABLE IF EXISTS `Applicant`;
+CREATE TABLE `Applicant` (
+  `applicantId` char(36) NOT NULL,
+  `applicantName` varchar(80) NOT NULL,
+  `homeAddress` varchar(100) NOT NULL,
+  `phoneNumber` varchar(20) NOT NULL,
+  `emailAddress` varchar(255) NOT NULL,
+  `linkedInUrl` varchar(80) DEFAULT NULL,
+  `citizenshipStatus` varchar(20) NOT NULL,
+  `hasCriminalHistory` tinyint(1) NOT NULL,
+  `passwordHash` varchar(255) NOT NULL,
+  PRIMARY KEY (`applicantId`),
+  UNIQUE KEY `emailAddress` (`emailAddress`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE Company (
-    companyId INT(10) PRIMARY KEY NOT NULL,
-    companyName VARCHAR(80) NOT NULL,
-    companyAddress VARCHAR(100) NOT NULL,
-    companyPhone VARCHAR(16) NOT NULL
-);
+-- --------------------------------------------------------
+-- Table structure for table `Certificate`
+-- --------------------------------------------------------
+DROP TABLE IF EXISTS `Certificate`;
+CREATE TABLE `Certificate` (
+  `certificateId` char(36) NOT NULL,
+  `certificateName` varchar(80) NOT NULL,
+  `issuingAuthority` varchar(80) NOT NULL,
+  `validityMonths` int(2) NOT NULL,
+  PRIMARY KEY (`certificateId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE School (
-    schoolId INT(10) PRIMARY KEY NOT NULL,
-    schoolName VARCHAR(80) NOT NULL,
-    schoolLocation VARCHAR(100) NOT NULL
-);
+-- --------------------------------------------------------
+-- Table structure for table `Company`
+-- --------------------------------------------------------
+DROP TABLE IF EXISTS `Company`;
+CREATE TABLE `Company` (
+  `companyId` char(36) NOT NULL,
+  `companyName` varchar(80) NOT NULL,
+  `companyAddress` varchar(100) NOT NULL,
+  `companyPhone` varchar(16) NOT NULL,
+  PRIMARY KEY (`companyId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE Certificate (
-    certificateId INT(10) PRIMARY KEY NOT NULL,
-    certificateName VARCHAR(80) NOT NULL,
-    issuingAuthority VARCHAR(80) NOT NULL,
-    validityMonths INT(2) NOT NULL
-);
+-- --------------------------------------------------------
+-- Table structure for table `School`
+-- --------------------------------------------------------
+DROP TABLE IF EXISTS `School`;
+CREATE TABLE `School` (
+  `schoolId` char(36) NOT NULL,
+  `schoolName` varchar(80) NOT NULL,
+  `schoolLocation` varchar(100) NOT NULL,
+  PRIMARY KEY (`schoolId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE Training (
-    trainingId INT(10) PRIMARY KEY NOT NULL,
-    trainingTitle VARCHAR(80) NOT NULL,
-    trainingDescription VARCHAR(255) NOT NULL,
-    trainingInstructor VARCHAR(80) NOT NULL,
-    trainingDurationHours INT(3) NOT NULL
-);
+-- --------------------------------------------------------
+-- Table structure for table `Training`
+-- --------------------------------------------------------
+DROP TABLE IF EXISTS `Training`;
+CREATE TABLE `Training` (
+  `trainingId` char(36) NOT NULL,
+  `trainingTitle` varchar(80) NOT NULL,
+  `trainingDescription` varchar(255) NOT NULL,
+  `trainingInstructor` varchar(80) NOT NULL,
+  `trainingDurationHours` int(3) NOT NULL,
+  PRIMARY KEY (`trainingId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 2. Create Dependent Entities (Foreign Keys referencing Independent Entities)
+-- --------------------------------------------------------
+-- Table structure for table `JobApplication`
+-- --------------------------------------------------------
+DROP TABLE IF EXISTS `JobApplication`;
+CREATE TABLE `JobApplication` (
+  `JobApplicationId` char(36) NOT NULL,
+  `applicantId` char(36) NOT NULL,
+  `appliedPosition` varchar(60) NOT NULL,
+  `JobApplicationDate` date NOT NULL,
+  `JobApplicationStatus` varchar(20) NOT NULL DEFAULT 'Pending',
+  `availableStartDate` date DEFAULT NULL,
+  `expectedSalary` decimal(10,2) DEFAULT NULL,
+  `resumeFileUrl` varchar(255) DEFAULT NULL,
+  `agreesToDrugTest` tinyint(1) NOT NULL DEFAULT 0,
+  `agreedToTerms` tinyint(1) NOT NULL DEFAULT 1,
+  `dateAgreed` date NOT NULL DEFAULT curdate(),
+  `lastUpdated` datetime NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`JobApplicationId`),
+  KEY `applicantId` (`applicantId`),
+  CONSTRAINT `fk_jobapp_applicant` FOREIGN KEY (`applicantId`) REFERENCES `Applicant` (`applicantId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE ApplicationResumeSettings (
-    JobApplicationId INT(10) PRIMARY KEY,
-    resumeTemplate VARCHAR(20) NOT NULL DEFAULT 'classic' CHECK (resumeTemplate IN ('classic', 'compact', 'modern')),
-    previewFont VARCHAR(50) NOT NULL DEFAULT 'Helvetica',
-    lastUpdated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (JobApplicationId) REFERENCES JobApplication(JobApplicationId) ON DELETE CASCADE
-);
+-- --------------------------------------------------------
+-- Table structure for table `ApplicationResumeSettings`
+-- --------------------------------------------------------
+DROP TABLE IF EXISTS `ApplicationResumeSettings`;
+CREATE TABLE `ApplicationResumeSettings` (
+  `JobApplicationId` char(36) NOT NULL,
+  `resumeTemplate` varchar(20) NOT NULL DEFAULT 'classic' CHECK (`resumeTemplate` in ('classic','compact','modern')),
+  `previewFont` varchar(50) NOT NULL DEFAULT 'Helvetica',
+  `lastUpdated` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`JobApplicationId`),
+  CONSTRAINT `fk_settings_jobapp` FOREIGN KEY (`JobApplicationId`) REFERENCES `JobApplication` (`JobApplicationId`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE JobApplication (
-    JobApplicationId INT(10) PRIMARY KEY NOT NULL,
-    applicantId INT(10) NOT NULL,
-    appliedPosition VARCHAR(60) NOT NULL,
-    JobApplicationDate DATE NOT NULL,
-    JobApplicationStatus VARCHAR(20) NOT NULL CHECK (JobApplicationStatus IN ('Pending', 'Under Review', 'Interview', 'Offered', 'Rejected', 'Withdrawn')),
-    availableStartDate DATE NOT NULL,
-    expectedSalary DECIMAL(10,2) CHECK (expectedSalary >= 0.00),
-    resumeFileUrl VARCHAR(60),
-    agreesToDrugTest BOOLEAN NOT NULL,
-    agreedToTerms BOOLEAN NOT NULL,
-    dateAgreed DATE NOT NULL,
-    FOREIGN KEY (applicantId) REFERENCES Applicant(applicantId)
-);
+-- --------------------------------------------------------
+-- Table structure for table `ApplicantCertificate`
+-- --------------------------------------------------------
+DROP TABLE IF EXISTS `ApplicantCertificate`;
+CREATE TABLE `ApplicantCertificate` (
+  `applicantId` char(36) NOT NULL,
+  `certificateId` char(36) NOT NULL,
+  `dateIssued` date NOT NULL,
+  PRIMARY KEY (`applicantId`,`certificateId`),
+  KEY `fk_appcert_cert_idx` (`certificateId`),
+  CONSTRAINT `fk_appcert_applicant` FOREIGN KEY (`applicantId`) REFERENCES `Applicant` (`applicantId`),
+  CONSTRAINT `fk_appcert_cert` FOREIGN KEY (`certificateId`) REFERENCES `Certificate` (`certificateId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE EmploymentHistory (
-    EmploymentHistoryId INT(10) PRIMARY KEY NOT NULL,
-    applicantId INT(10) NOT NULL,
-    companyId INT(10) NOT NULL,
-    workPosition VARCHAR(80) NOT NULL,
-    reasonForLeaving VARCHAR(80),
-    startDate DATE NOT NULL,
-    endDate DATE NOT NULL,
-    isEmployed BOOLEAN NOT NULL,
-    FOREIGN KEY (applicantId) REFERENCES Applicant(applicantId),
-    FOREIGN KEY (companyId) REFERENCES Company(companyId)
-);
+-- --------------------------------------------------------
+-- Table structure for table `ApplicantTraining`
+-- --------------------------------------------------------
+DROP TABLE IF EXISTS `ApplicantTraining`;
+CREATE TABLE `ApplicantTraining` (
+  `applicantId` char(36) NOT NULL,
+  `trainingId` char(36) NOT NULL,
+  `completionDate` date NOT NULL,
+  PRIMARY KEY (`trainingId`,`applicantId`),
+  KEY `fk_apptrain_applicant_idx` (`applicantId`),
+  CONSTRAINT `fk_apptrain_applicant` FOREIGN KEY (`applicantId`) REFERENCES `Applicant` (`applicantId`),
+  CONSTRAINT `fk_apptrain_train` FOREIGN KEY (`trainingId`) REFERENCES `Training` (`trainingId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE Education (
-    educationId INT(10) PRIMARY KEY NOT NULL,
-    applicantId INT(10) NOT NULL,
-    schoolId INT(10) NOT NULL,
-    startYear YEAR NOT NULL,
-    endYear YEAR NOT NULL,
-    degreeReceived VARCHAR(30) NOT NULL,
-    programName VARCHAR(30) NOT NULL,
-    FOREIGN KEY (applicantId) REFERENCES Applicant(applicantId),
-    FOREIGN KEY (schoolId) REFERENCES School(schoolId)
-);
+-- --------------------------------------------------------
+-- Table structure for table `Education`
+-- --------------------------------------------------------
+DROP TABLE IF EXISTS `Education`;
+CREATE TABLE `Education` (
+  `educationId` char(36) NOT NULL,
+  `applicantId` char(36) NOT NULL,
+  `schoolId` char(36) NOT NULL,
+  `startYear` year(4) DEFAULT NULL,
+  `endYear` year(4) DEFAULT NULL,
+  `degreeReceived` varchar(30) NOT NULL,
+  `programName` varchar(30) NOT NULL,
+  PRIMARY KEY (`educationId`),
+  KEY `applicantId` (`applicantId`),
+  KEY `schoolId` (`schoolId`),
+  CONSTRAINT `fk_edu_applicant` FOREIGN KEY (`applicantId`) REFERENCES `Applicant` (`applicantId`),
+  CONSTRAINT `fk_edu_school` FOREIGN KEY (`schoolId`) REFERENCES `School` (`schoolId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE ApplicantCertificate (
-    applicantId INT(10) NOT NULL,
-    certificateId INT(10) NOT NULL,
-    dateIssued DATE NOT NULL,
-    PRIMARY KEY (applicantId, certificateId),
-    FOREIGN KEY (applicantId) REFERENCES Applicant(applicantId),
-    FOREIGN KEY (certificateId) REFERENCES Certificate(certificateId)
-);
+-- --------------------------------------------------------
+-- Table structure for table `EmploymentHistory`
+-- --------------------------------------------------------
+DROP TABLE IF EXISTS `EmploymentHistory`;
+CREATE TABLE `EmploymentHistory` (
+  `EmploymentHistoryId` char(36) NOT NULL,
+  `applicantId` char(36) NOT NULL,
+  `companyId` char(36) NOT NULL,
+  `workPosition` varchar(80) NOT NULL,
+  `reasonForLeaving` varchar(80) DEFAULT NULL,
+  `startDate` date DEFAULT NULL,
+  `endDate` date DEFAULT NULL,
+  `isEmployed` tinyint(1) NOT NULL DEFAULT 0,
+  PRIMARY KEY (`EmploymentHistoryId`),
+  KEY `applicantId` (`applicantId`),
+  KEY `companyId` (`companyId`),
+  CONSTRAINT `fk_emp_applicant` FOREIGN KEY (`applicantId`) REFERENCES `Applicant` (`applicantId`),
+  CONSTRAINT `fk_emp_company` FOREIGN KEY (`companyId`) REFERENCES `Company` (`companyId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE ApplicantTraining (
-    applicantId INT(10) NOT NULL,
-    trainingId INT(10) NOT NULL,
-    completionDate DATE NOT NULL,
-    PRIMARY KEY (applicantId, trainingId),
-    FOREIGN KEY (applicantId) REFERENCES Applicant(applicantId),
-    FOREIGN KEY (trainingId) REFERENCES Training(trainingId)
-);
+-- --------------------------------------------------------
+-- Table structure for table `Reference`
+-- --------------------------------------------------------
+DROP TABLE IF EXISTS `Reference`;
+CREATE TABLE `Reference` (
+  `referenceId` char(36) NOT NULL,
+  `JobApplicationId` char(36) NOT NULL,
+  `referenceName` varchar(80) NOT NULL,
+  `referenceTitle` varchar(80) NOT NULL,
+  `referenceCompany` varchar(80) NOT NULL,
+  `referencePhone` varchar(20) NOT NULL,
+  `referenceEmail` varchar(255) NOT NULL,
+  PRIMARY KEY (`referenceId`),
+  UNIQUE KEY `referenceEmail` (`referenceEmail`),
+  KEY `JobApplicationId` (`JobApplicationId`),
+  CONSTRAINT `fk_ref_jobapp` FOREIGN KEY (`JobApplicationId`) REFERENCES `JobApplication` (`JobApplicationId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 3. Create Multi-level Dependent Entities
-
-CREATE TABLE Reference (
-    referenceId INT(10) PRIMARY KEY NOT NULL,
-    JobApplicationId INT(10) NOT NULL,
-    referenceName VARCHAR(80) NOT NULL,
-    referenceTitle VARCHAR(80) NOT NULL,
-    referenceCompany VARCHAR(80) NOT NULL,
-    referencePhone VARCHAR(11) NOT NULL,
-    referenceEmail VARCHAR(255) UNIQUE NOT NULL,
-    FOREIGN KEY (JobApplicationId) REFERENCES JobApplication(JobApplicationId)
-);
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
