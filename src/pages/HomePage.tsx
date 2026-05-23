@@ -269,7 +269,7 @@ const HomePage = ({
                   <p>{formatTime(application.lastUpdated)}</p>
                 </span>
                 <span className={getStatusClass(application.JobApplicationStatus)}>
-                  {application.JobApplicationStatus || 'Open'}
+                  {application.JobApplicationStatus || 'Editting'}
                 </span>
               </div>
             </Link>

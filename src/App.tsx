@@ -726,7 +726,8 @@ function App() {
     }
   }, [activeJobApplicationId, authSession?.token, resumeSettingsMap])
 
-  useEffect(() => {
+  // Explicit sync function - only called when user downloads PDF, exits to home, or on session recovery
+  const syncCurrentApplication = async () => {
     if (!activeJobApplication) {
       return
     }
@@ -749,12 +750,8 @@ function App() {
       },
     }
 
-    const timeout = window.setTimeout(() => {
-      void syncApplication(payload)
-    }, 400)
-
-    return () => window.clearTimeout(timeout)
-  }, [applicant, activeJobApplication, previewFont, resumeTemplate, activeJobApplicationId, education, employmentHistory])
+    await syncApplication(payload).catch(console.error)
+  }
 
   const handleResumeUpload = async (file: File | null) => {
     if (!file) {
@@ -907,6 +904,7 @@ function App() {
                 reorderCertificates={reorderCertificates}
                 handleResumeUpload={handleResumeUpload}
                 onDeleteJobApplication={deleteJobApplication}
+                onSyncRequest={syncCurrentApplication}
               />
             ) : (
               <Navigate to="/" replace />

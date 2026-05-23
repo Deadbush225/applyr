@@ -30,7 +30,10 @@ const getFontFamily = (font: string) => {
   return 'Helvetica';
 };
 
-const getDisplayValue = (value: string, fallback = "Not provided") => value.trim() ? value : fallback;
+const getDisplayValue = (value: string | null | undefined, fallback = "Not provided") => {
+  if (!value || typeof value !== 'string') return fallback
+  return value.trim() ? value : fallback
+}
 const getYesNo = (value: boolean | null) => value === null ? "Not provided" : (value ? "Yes" : "No");
 
 export const ResumePDF = ({ applicant, jobApplication, education, employmentHistory, references, trainings, certificates, previewFont, resumeTemplate }: ResumePDFProps) => {

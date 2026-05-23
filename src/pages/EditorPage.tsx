@@ -20,6 +20,7 @@ export type EditorPageProps = {
   onJobApplicationChange: (jobApplicationId: string) => void
   onAddJobApplication: () => string
   onDeleteJobApplication: (jobApplicationId: string) => Promise<void>
+  onSyncRequest?: () => Promise<void>
   education: Education[]
   employmentHistory: EmploymentHistory[]
   uploadState: { uploading: boolean; message: string }
@@ -60,6 +61,7 @@ const EditorPage = ({
   onJobApplicationChange,
   onAddJobApplication,
   onDeleteJobApplication,
+  onSyncRequest,
   education,
   employmentHistory,
   uploadState,
@@ -97,8 +99,16 @@ const EditorPage = ({
 
   const handleDeleteJobApplication = async (jobApplicationId: string) => {
     await onDeleteJobApplication(jobApplicationId)
+    await onSyncRequest?.()
     navigate('/', { replace: true })
   }
+
+  // Sync data before leaving the editor page
+  useEffect(() => {
+    return () => {
+      onSyncRequest?.().catch(console.error)
+    }
+  }, [onSyncRequest])
 
   useEffect(() => {
     if (!applicationId) {
@@ -167,6 +177,7 @@ const EditorPage = ({
             reorderCertificates={reorderCertificates}
             handleResumeUpload={handleResumeUpload}
             onDeleteJobApplication={handleDeleteJobApplication}
+            onSyncRequest={onSyncRequest}
           />
         </section>
         <section

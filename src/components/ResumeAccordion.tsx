@@ -84,10 +84,12 @@ function useStickyState<T>(defaultValue: T[], key: string): [T[], Dispatch<SetSt
   return [value, setValue];
 }
 
-import { updateApplication as syncApplication } from '../services/applications'
-
 import ResumePDF from './ResumePDF';
 import { PDFDownloadLink } from '@react-pdf/renderer';
+
+type ResumeAccordionPropsWithSync = ResumeAccordionProps & {
+  onSyncRequest?: () => Promise<void>
+}
 
 const ResumeAccordion = ({
   applicant,
@@ -130,30 +132,14 @@ const ResumeAccordion = ({
   reorderCertificates,
   handleResumeUpload,
   onDeleteJobApplication,
-}: ResumeAccordionProps) => {
+  onSyncRequest,
+}: ResumeAccordionPropsWithSync) => {
   const [activePanel, setActivePanel] = useState<ActivePanel>({ type: 'list' })
   const [dragEducationIndex, setDragEducationIndex] = useState<number | null>(null)
   const [dragEmploymentIndex, setDragEmploymentIndex] = useState<number | null>(null)
   const [dragReferenceIndex, setDragReferenceIndex] = useState<number | null>(null)
   const [dragTrainingIndex, setDragTrainingIndex] = useState<number | null>(null)
   const [dragCertificateIndex, setDragCertificateIndex] = useState<number | null>(null)
-
-  useEffect(() => {
-    if (!applicant.applicantId) return;
-    const payload = {
-      applicant,
-      jobApplication: {
-        ...jobApplication,
-        agreesToDrugTest: applicant.agreesToDrugTest ?? false,
-        JobApplicationStatus: 'Pending',
-      },
-      education,
-      employmentHistory,
-      trainings,
-      certificates,
-    }
-    syncApplication(payload).catch(console.error)
-  }, [activePanel, applicant, certificates, education, employmentHistory, jobApplication, trainings])
 
   const handleDragStart = (
     setter: (value: number | null) => void,
@@ -496,6 +482,7 @@ const ResumeAccordion = ({
             fileName={`${applicant.applicantName || 'Resume'}.pdf`}
             className="primary-button"
             style={{ alignSelf: 'flex-start', textDecoration: 'none' }}
+            onClick={onSyncRequest}
           >
             {({ loading }) => (loading ? 'Generating PDF...' : 'Download PDF')}
           </PDFDownloadLink>
