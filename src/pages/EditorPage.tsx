@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import ResumeAccordion from '../components/ResumeAccordion'
 import ResumePreview from '../components/ResumePreview'
@@ -97,18 +97,45 @@ const EditorPage = ({
   const navigate = useNavigate()
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
 
+  // 1. THE REF TRICK: Always hold the freshest save function without triggering React re-renders
+  const syncRef = useRef(onSyncRequest)
+  useEffect(() => {
+    syncRef.current = onSyncRequest
+  }, [onSyncRequest])
+
   const handleDeleteJobApplication = async (jobApplicationId: string) => {
     await onDeleteJobApplication(jobApplicationId)
-    await onSyncRequest?.()
+    await syncRef.current?.()
     navigate('/', { replace: true })
   }
 
-  // Sync data before leaving the editor page
+  // 2. TRUE UNMOUNT SAVE: Empty dependency array means this ONLY runs when leaving the page
   useEffect(() => {
     return () => {
-      onSyncRequest?.().catch(console.error)
+      syncRef.current?.().catch(console.error)
     }
-  }, [onSyncRequest])
+  }, [])
+
+  // 3. SMART AUTO-SAVE: Debounces network requests by 2 seconds
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      // Only fire if the user has a valid application loaded
+      if (jobApplication?.JobApplicationId) {
+        syncRef.current?.().catch(console.error)
+      }
+    }, 2000)
+
+    // If any data changes before 2 seconds, this cleanup kills the old timer 
+    // and a new one starts. This effectively stops the spam.
+    return () => clearTimeout(timer)
+  }, [
+    applicant, 
+    jobApplication, 
+    education, 
+    employmentHistory, 
+    previewFont, 
+    resumeTemplate
+  ])
 
   useEffect(() => {
     if (!applicationId) {

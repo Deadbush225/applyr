@@ -1,4 +1,4 @@
-import { useState, useEffect, type Dispatch, type SetStateAction } from 'react'
+import { useState, useEffect, useRef, type Dispatch, type SetStateAction } from 'react'
 import type { DragEvent } from 'react'
 import type {
   Applicant,
@@ -140,6 +140,23 @@ const ResumeAccordion = ({
   const [dragReferenceIndex, setDragReferenceIndex] = useState<number | null>(null)
   const [dragTrainingIndex, setDragTrainingIndex] = useState<number | null>(null)
   const [dragCertificateIndex, setDragCertificateIndex] = useState<number | null>(null)
+  const [isSyncing, setIsSyncing] = useState(false)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const pdfLinkRef = useRef<any>(null)
+
+  // Handle PDF download with sync - ensure data is saved before downloading
+  const handlePDFDownload = async () => {
+    setIsSyncing(true)
+    try {
+      await onSyncRequest?.()
+      // Trigger the PDF download after sync completes
+      if (pdfLinkRef.current) {
+        pdfLinkRef.current.click()
+      }
+    } finally {
+      setIsSyncing(false)
+    }
+  }
 
   const handleDragStart = (
     setter: (value: number | null) => void,
@@ -463,29 +480,39 @@ const ResumeAccordion = ({
           <p style={{ margin: 0, fontSize: '0.95rem', color: 'var(--text-muted)' }}>
             Download your resume as a PDF file. The document will be generated locally.
           </p>
-          <PDFDownloadLink
-            key={`${resumeTemplate}-${previewFont}-${jobApplication.JobApplicationId ?? 'new'}`}
-            document={
-              <ResumePDF
-                key={`${resumeTemplate}-${previewFont}-${jobApplication.JobApplicationId ?? 'new'}`}
-                applicant={applicant}
-                jobApplication={jobApplication}
-                education={education}
-                employmentHistory={employmentHistory}
-                references={references}
-                trainings={trainings}
-                certificates={certificates}
-                previewFont={previewFont}
-                resumeTemplate={resumeTemplate}
-              />
-            }
-            fileName={`${applicant.applicantName || 'Resume'}.pdf`}
+          <button
+            type="button"
             className="primary-button"
-            style={{ alignSelf: 'flex-start', textDecoration: 'none' }}
-            onClick={onSyncRequest}
+            style={{ alignSelf: 'flex-start' }}
+            onClick={handlePDFDownload}
+            disabled={isSyncing}
           >
-            {({ loading }) => (loading ? 'Generating PDF...' : 'Download PDF')}
-          </PDFDownloadLink>
+            {isSyncing ? 'Syncing & Generating PDF...' : 'Download PDF'}
+          </button>
+          {/* Hidden PDFDownloadLink - triggered programmatically after sync */}
+          <div style={{ display: 'none' }}>
+            <PDFDownloadLink
+              ref={pdfLinkRef}
+              key={`${resumeTemplate}-${previewFont}-${jobApplication.JobApplicationId ?? 'new'}`}
+              document={
+                <ResumePDF
+                  key={`${resumeTemplate}-${previewFont}-${jobApplication.JobApplicationId ?? 'new'}`}
+                  applicant={applicant}
+                  jobApplication={jobApplication}
+                  education={education}
+                  employmentHistory={employmentHistory}
+                  references={references}
+                  trainings={trainings}
+                  certificates={certificates}
+                  previewFont={previewFont}
+                  resumeTemplate={resumeTemplate}
+                />
+              }
+              fileName={`${applicant.applicantName || 'Resume'}.pdf`}
+            >
+              {() => 'Download'}
+            </PDFDownloadLink>
+          </div>
         </div>
       </Accordion>
       </div>
