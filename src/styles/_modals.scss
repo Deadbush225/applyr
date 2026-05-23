@@ -7,11 +7,17 @@
   background: rgba(0, 0, 0, 0.45);
   display: flex;
   align-items: center;
-  justify-content: flex-start;
   z-index: 9999;
   animation: fadeIn 0.3s ease-out;
   backdrop-filter: blur(2px);
 
+  &.left-align {
+    justify-content: flex-start;
+  }
+
+  &.center-align {
+    justify-content: center;
+  }
 }
 
 // Modal Container

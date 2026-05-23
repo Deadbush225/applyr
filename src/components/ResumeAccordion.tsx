@@ -249,7 +249,7 @@ const ResumeAccordion = ({
           </div>
         </Accordion>
       {showAgreeModal ? (
-        <div className="modal-backdrop">
+        <div className="modal-backdrop left-align">
           <div className="modal modal--shift-left resume-confirm-modal">
             <h3>Confirm Terms</h3>
             <p>By downloading this resume you confirm that the information contained is truthful and accurate. Do you agree?</p>

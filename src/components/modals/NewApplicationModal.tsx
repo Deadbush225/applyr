@@ -26,7 +26,7 @@ const NewApplicationModal = ({ isOpen, onClose, onCreate }: Props) => {
   }
 
   return (
-    <div className="modal-backdrop">
+    <div className="modal-backdrop center-align">
       <div className="modal">
         <h3>Create New Application</h3>
         <form onSubmit={handleSubmit} className='form-grid'>
