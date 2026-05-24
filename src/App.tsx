@@ -469,7 +469,7 @@ function App() {
         programName: item.programName.trim(),
       }))
       .filter((item) =>
-        [item.schoolName, item.schoolLocation, item.startYear, item.endYear, item.degreeReceived, item.programName].some(
+        [item.schoolName, item.schoolLocation, item.startYear, item.endYear, item.degreeReceived, item.programName].every(
           (value) => !isBlank(value),
         ),
       )
@@ -487,9 +487,7 @@ function App() {
         endDate: trimValue(item.endDate) as string,
       }))
       .filter((item) =>
-        [item.companyName, item.companyAddress, item.companyPhone, item.workPosition, item.reasonForLeaving, item.startDate, item.endDate].some(
-          (value) => !isBlank(value),
-        ),
+        [item.companyName, item.workPosition, item.startDate, item.endDate].every((value) => !isBlank(value)),
       )
 
   const sanitizeTrainings = (items: Training[]) =>

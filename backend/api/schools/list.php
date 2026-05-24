@@ -7,7 +7,7 @@ require_once __DIR__ . '/../../database.php';
 
 try {
     $db = getDatabaseConnection();
-    $stmt = $db->prepare('SELECT schoolId AS id, schoolName AS name FROM School ORDER BY schoolName ASC');
+    $stmt = $db->prepare('SELECT schoolId AS id, schoolName AS name, schoolLocation AS location FROM School ORDER BY schoolName ASC');
     $stmt->execute();
     $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 

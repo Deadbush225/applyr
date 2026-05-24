@@ -617,10 +617,14 @@ const ResumeAccordion = ({
             <SmartCombobox
               fetchUrl="/backend/api/schools/list.php"
               valueName={entry.schoolName}
+              valueId={entry.schoolId ?? null}
               placeholder="Start typing school..."
-              onChange={({ name, id }) => {
+              onChange={({ name, id, location }) => {
                 updateEducation(index, 'schoolName', name)
                 updateEducation(index, 'schoolId', id || '')
+                if (location !== undefined) {
+                  updateEducation(index, 'schoolLocation', location || '')
+                }
               }}
             />
           </label>
@@ -697,10 +701,14 @@ const ResumeAccordion = ({
             <SmartCombobox
               fetchUrl="/backend/api/companies/list.php"
               valueName={entry.companyName}
+              valueId={entry.companyId ?? null}
               placeholder="Start typing company..."
-              onChange={({ name, id }) => {
+              onChange={({ name, id, location }) => {
                 updateEmployment(index, 'companyName', name)
                 updateEmployment(index, 'companyId', id || '')
+                if (location !== undefined) {
+                  updateEmployment(index, 'companyAddress', location || '')
+                }
               }}
             />
           </label>
