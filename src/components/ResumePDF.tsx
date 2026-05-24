@@ -281,19 +281,18 @@ export const ResumePDF = ({ applicant, jobApplication, education, employmentHist
                       {employmentHistory.map((entry, idx) => (
                         <View key={idx} style={styles.lineBlock} wrap={false}>
                           <View style={styles.lineFlex}>
-                            <Text style={styles.bold}>{entry.companyName}</Text>
-                            <Text>{entry.workPosition}</Text>
-                          </View>
-                          <View style={styles.lineFlex}>
                             <Text style={styles.italic}>{entry.companyName}</Text>
+                            <View style={styles.lineFlex}>
+                              <Text style={styles.italic}>{entry.startDate || 'N/A'} - {entry.endDate || 'N/A'}</Text>
+                            </View>
+                          </View>
+                          <View style={styles.lineFlex}>
+                            <Text>{entry.workPosition}</Text>
+                            <Text>{entry.reasonForLeaving ? `Reason for leaving: ${entry.reasonForLeaving}` : ''}</Text>
+                          </View>
+                          <View style={styles.lineFlex}>
                             <Text>{entry.companyAddress}</Text>
-                          </View>
-                          <View style={styles.lineFlex}>
-                            <Text style={styles.italic}>Phone: {entry.companyPhone || 'N/A'}</Text>
-                          </View>
-                          <View style={styles.lineFlex}>
-                            <Text style={styles.italic}>Start: {entry.startDate || 'N/A'}</Text>
-                            <Text>End: {entry.endDate || 'N/A'}</Text>
+                            <Text style={styles.italic}>Company Phone: {entry.companyPhone || 'N/A'}</Text>
                           </View>
                         </View>
                       ))}
@@ -315,14 +314,16 @@ export const ResumePDF = ({ applicant, jobApplication, education, employmentHist
                         <View key={idx} style={styles.lineBlock} wrap={false}>
                           <View style={styles.lineFlex}>
                             <Text style={styles.bold}>{getDisplayValue(entry.trainingTitle, "Title")}</Text>
-                            <Text>{getDisplayValue(entry.trainingDurationHours, "Duration") + " Hrs"}</Text>
+                            <Text>{entry.completionDate || 'N/A'}</Text>
                           </View>
                           <View style={styles.lineFlex}>
                             <Text style={styles.italic}>{getDisplayValue(entry.trainingInstructor, "Instructor")}</Text>
-                            <Text>{getDisplayValue(entry.trainingDescription, "Description")}</Text>
+                            
+                            <Text>{getDisplayValue(entry.trainingDurationHours, "Duration") + " Hrs"}</Text>
                           </View>
                           <View style={styles.lineFlex}>
-                            <Text style={styles.italic}>Completed: {entry.completionDate || 'N/A'}</Text>
+                            <Text style={styles.italic}></Text>
+                            <Text>{getDisplayValue(entry.trainingDescription, "No description")}</Text>
                           </View>
                         </View>
                       ))}
@@ -344,13 +345,11 @@ export const ResumePDF = ({ applicant, jobApplication, education, employmentHist
                         <View key={idx} style={styles.lineBlock} wrap={false}>
                           <View style={styles.lineFlex}>
                             <Text style={styles.bold}>{getDisplayValue(entry.certificateName, "Name")}</Text>
-                            <Text>{"Valid: " + getDisplayValue(entry.validityMonths, "N/A") + " Months"}</Text>
+                            <Text>{entry.dateIssued || 'N/A'}</Text>
                           </View>
                           <View style={styles.lineFlex}>
                             <Text style={styles.italic}>{getDisplayValue(entry.issuingAuthority, "Authority")}</Text>
-                          </View>
-                          <View style={styles.lineFlex}>
-                            <Text>Date Issued: {entry.dateIssued || 'N/A'}</Text>
+                            <Text>{"Valid for " + getDisplayValue(entry.validityMonths, "N/A") + " Months"}</Text>
                           </View>
                         </View>
                       ))}
@@ -377,6 +376,10 @@ export const ResumePDF = ({ applicant, jobApplication, education, employmentHist
                           <View style={styles.lineFlex}>
                             <Text style={styles.italic}>{getDisplayValue(entry.referenceCompany, "Company")}</Text>
                             <Text>{getDisplayValue(entry.referencePhone, "Phone")}</Text>
+                          </View>
+                          <View style={styles.lineFlex}>
+                            <Text style={styles.italic}></Text>
+                            <Text>{getDisplayValue(entry.referenceEmail, "Email")}</Text>
                           </View>
                         </View>
                       ))}
