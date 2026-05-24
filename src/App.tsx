@@ -449,6 +449,89 @@ function App() {
   const reorderTrainings = (fromIndex: number, toIndex: number) => updateNestedArray('trainings', arr => moveItem(arr, fromIndex, toIndex))
   const reorderCertificates = (fromIndex: number, toIndex: number) => updateNestedArray('certificates', arr => moveItem(arr, fromIndex, toIndex))
 
+  const isBlank = (value: unknown) => value === '' || value === null || value === undefined
+
+  const trimValue = (value: unknown) => (typeof value === 'string' ? value.trim() : value)
+
+  const sanitizeEducation = (items: Education[]) =>
+    items
+      .map((item) => ({
+        ...item,
+        schoolName: item.schoolName.trim(),
+        schoolLocation: item.schoolLocation.trim(),
+        startYear: item.startYear.trim(),
+        endYear: item.endYear.trim(),
+        degreeReceived: item.degreeReceived.trim(),
+        programName: item.programName.trim(),
+      }))
+      .filter((item) =>
+        [item.schoolName, item.schoolLocation, item.startYear, item.endYear, item.degreeReceived, item.programName].some(
+          (value) => !isBlank(value),
+        ),
+      )
+
+  const sanitizeEmployment = (items: EmploymentHistory[]) =>
+    items
+      .map((item) => ({
+        ...item,
+        companyName: item.companyName.trim(),
+        workAddress: item.workAddress.trim(),
+        workPosition: item.workPosition.trim(),
+        reasonForLeaving: typeof item.reasonForLeaving === 'string' ? item.reasonForLeaving.trim() : item.reasonForLeaving,
+        startDate: trimValue(item.startDate) as string,
+        endDate: trimValue(item.endDate) as string,
+      }))
+      .filter((item) =>
+        [item.companyName, item.workAddress, item.workPosition, item.reasonForLeaving, item.startDate, item.endDate].some(
+          (value) => !isBlank(value),
+        ),
+      )
+
+  const sanitizeTrainings = (items: Training[]) =>
+    items
+      .map((item) => ({
+        ...item,
+        trainingTitle: item.trainingTitle.trim(),
+        trainingDescription: item.trainingDescription.trim(),
+        trainingInstructor: item.trainingInstructor.trim(),
+        trainingDurationHours: trimValue(item.trainingDurationHours) as string,
+        completionDate: trimValue(item.completionDate) as string | undefined,
+      }))
+      .filter((item) =>
+        [item.trainingTitle, item.trainingDescription, item.trainingInstructor, item.trainingDurationHours, item.completionDate].some(
+          (value) => !isBlank(value),
+        ),
+      )
+
+  const sanitizeCertificates = (items: Certificate[]) =>
+    items
+      .map((item) => ({
+        ...item,
+        certificateName: item.certificateName.trim(),
+        issuingAuthority: item.issuingAuthority.trim(),
+        validityMonths: trimValue(item.validityMonths) as string,
+        dateIssued: trimValue(item.dateIssued) as string | undefined,
+      }))
+      .filter((item) =>
+        [item.certificateName, item.issuingAuthority, item.validityMonths, item.dateIssued].some((value) => !isBlank(value)),
+      )
+
+  const sanitizeReferences = (items: ApplicantReference[]) =>
+    items
+      .map((item) => ({
+        ...item,
+        referenceName: item.referenceName.trim(),
+        referenceTitle: item.referenceTitle.trim(),
+        referenceCompany: item.referenceCompany.trim(),
+        referencePhone: item.referencePhone.trim(),
+        referenceEmail: item.referenceEmail.trim(),
+      }))
+      .filter((item) =>
+        [item.referenceName, item.referenceTitle, item.referenceCompany, item.referencePhone, item.referenceEmail].some(
+          (value) => !isBlank(value),
+        ),
+      )
+
   const activeJobApplication =
     jobApplications.find((application) => application.JobApplicationId === activeJobApplicationId) ??
     jobApplications[0]
@@ -795,11 +878,11 @@ function App() {
         agreesToDrugTest: applicant.agreesToDrugTest ?? false,
         JobApplicationStatus: 'Pending',
       },
-      education,
-      employmentHistory,
-      trainings: activeJobApplication.trainings || [],
-      certificates: activeJobApplication.certificates || [],
-      references: activeJobApplication.references || [],
+      education: sanitizeEducation(education),
+      employmentHistory: sanitizeEmployment(employmentHistory),
+      trainings: sanitizeTrainings(activeJobApplication.trainings || []),
+      certificates: sanitizeCertificates(activeJobApplication.certificates || []),
+      references: sanitizeReferences(activeJobApplication.references || []),
       resumeSettings: {
         JobApplicationId: activeJobApplicationId,
         resumeTemplate,
