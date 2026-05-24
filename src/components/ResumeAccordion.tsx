@@ -715,7 +715,7 @@ const ResumeAccordion = ({
             />
           </label>
           <label>
-            <p className="required-asterisk">Reason For Leaving (optional)</p>
+            <p className="required-asterisk">Reason For Leaving</p>
             <input
               value={entry.reasonForLeaving ?? ''}
               onChange={(event) => updateEmployment(index, 'reasonForLeaving', event.target.value)}
