@@ -161,7 +161,7 @@ const HomePage = ({
               {mode === 'signup' && (
                 <label>
                   Full name
-                  <input required value={name} onChange={(event) => setName(event.target.value)} placeholder="e.g. Sevilla, Mark Elijah R." />
+                  <input required value={name} onChange={(event) => setName(event.target.value)} placeholder="e.g. Dela Cruz, Juan" />
                 </label>
               )}
               <label>

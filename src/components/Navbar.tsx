@@ -79,24 +79,7 @@ const Navbar = ({ authSession, onLogout }: NavbarProps) => {
                 </button>
               </div>
             )}
-            {/* Inline mobile profile (shown only on small viewports) */}
-            <div className="profile-dropdown mobile-inline" aria-hidden="true">
-              <div className="dropdown-header">
-                <p className="dropdown-name">{displayName}</p>
-                <p className="dropdown-email">{authSession.user.email}</p>
-              </div>
-              <div className="dropdown-divider"></div>
-              <Link to="/" className="dropdown-item">Dashboard</Link>
-              <Link to="/applicant" className="dropdown-item">Applicant</Link>
-              <div className="dropdown-divider"></div>
-              <button 
-                type="button" 
-                className="dropdown-item logout-item" 
-                onClick={onLogout}
-              >
-                Log out
-              </button>
-            </div>
+          
           </div>
         ) : (
           <div className="navbar-auth-links">

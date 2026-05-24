@@ -864,7 +864,7 @@ function App() {
           path="/"
           element={
             requiresApplicantOnboarding ? (
-              <Navigate to="/applicant" replace />
+              <Navigate to="/applicant" state={{ from: 'onboarding' }} replace />
             ) : (
                 <HomePage
                 applicant={applicant}

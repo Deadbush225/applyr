@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import type { Applicant } from "../types";
 import type { AuthSession } from "../services/auth";
 import GroupBox from "../components/GroupBox";
@@ -27,6 +27,7 @@ const ApplicantEditPage = ({
 	onSaveApplicant,
 }: ApplicantEditPageProps) => {
 	const navigate = useNavigate();
+	const location = useLocation();
 	const [applicantName, setApplicantName] = useState(applicant.applicantName);
 	const [homeAddress, setHomeAddress] = useState(applicant.homeAddress);
 	const [phoneNumber, setPhoneNumber] = useState(applicant.phoneNumber);
@@ -54,7 +55,8 @@ const ApplicantEditPage = ({
 		setHasCriminalHistory(applicant.hasCriminalHistory);
 	}, [applicant]);
 
-	// Auto-redirect if all onboarding fields are complete
+	// Auto-redirect if all onboarding fields are complete **and** the user
+	// arrived here as part of the onboarding flow.
 	useEffect(() => {
 		const fieldsComplete = [
 			applicant.applicantName.trim(),
@@ -64,10 +66,12 @@ const ApplicantEditPage = ({
 			applicant.hasCriminalHistory === null ? '' : 'ok',
 		].filter(Boolean).length;
 
-		if (fieldsComplete === 5) {
+		const cameFromOnboarding = ((location.state as { from?: string } | null)?.from) === 'onboarding';
+
+		if (cameFromOnboarding && fieldsComplete === 5) {
 			navigate('/', { replace: true });
 		}
-	}, [applicant, navigate]);
+	}, [applicant, navigate, location.state]);
 
 	const handleSubmit = async (event: FormEvent) => {
 		event.preventDefault();
