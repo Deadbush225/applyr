@@ -1,5 +1,36 @@
 import { z } from 'zod'
 
+const NullableBooleanSchema = z.preprocess((value) => {
+  if (value === '' || value === undefined || value === null) {
+    return null
+  }
+
+  if (value === true || value === false) {
+    return value
+  }
+
+  if (value === 1 || value === '1' || value === 'true') {
+    return true
+  }
+
+  if (value === 0 || value === '0' || value === 'false') {
+    return false
+  }
+
+  return value
+}, z.boolean().nullable())
+
+const DraftDateSchema = z.preprocess((value) => {
+  if (value === '' || value === undefined) {
+    return null
+  }
+
+  return value
+}, z.union([
+  z.string().refine((s) => !Number.isNaN(Date.parse(s)), { message: 'Invalid date' }),
+  z.null(),
+]))
+
 export const ApplicantSchema = z.object({
   applicantId: z.string().optional(),
   applicantName: z.string().min(1),
@@ -8,7 +39,7 @@ export const ApplicantSchema = z.object({
   emailAddress: z.string().email(),
   linkedInUrl: z.string().optional().nullable(),
   citizenshipStatus: z.string().min(1),
-  hasCriminalHistory: z.boolean().or(z.null()),
+  hasCriminalHistory: NullableBooleanSchema,
 })
 
 export const EducationSchema = z.object({
@@ -30,8 +61,8 @@ export const EmploymentSchema = z.object({
   companyPhone: z.string().optional().nullable(),
   workPosition: z.string().min(1),
   reasonForLeaving: z.string().optional().nullable(),
-  startDate: z.string().refine((s) => !Number.isNaN(Date.parse(s)), { message: 'startDate must be a valid date' }),
-  endDate: z.string().refine((s) => !Number.isNaN(Date.parse(s)), { message: 'endDate must be a valid date' }),
+  startDate: DraftDateSchema,
+  endDate: DraftDateSchema,
   isEmployed: z.boolean().optional(),
 })
 
@@ -41,7 +72,7 @@ export const TrainingSchema = z.object({
   trainingDescription: z.string().optional().nullable(),
   trainingInstructor: z.string().optional().nullable(),
   trainingDurationHours: z.union([z.string(), z.number()]).optional(),
-  completionDate: z.string().refine((s) => !Number.isNaN(Date.parse(s)), { message: 'completionDate must be a valid date' }),
+  completionDate: DraftDateSchema,
 })
 
 export const CertificateSchema = z.object({
@@ -49,7 +80,7 @@ export const CertificateSchema = z.object({
   certificateName: z.string().min(1),
   issuingAuthority: z.string().min(1),
   validityMonths: z.union([z.string(), z.number()]).optional(),
-  dateIssued: z.string().refine((s) => !Number.isNaN(Date.parse(s)), { message: 'dateIssued must be a valid date' }),
+  dateIssued: DraftDateSchema,
 })
 
 export const ReferenceSchema = z.object({

@@ -616,6 +616,7 @@ function App() {
           ...prev,
           ...profile,
           applicantId: profile.applicantId,
+          hasCriminalHistory: profile.hasCriminalHistory ?? null,
         }))
 
         const backendApplications = response.data.map((application) =>
