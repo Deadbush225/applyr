@@ -665,7 +665,7 @@ const ResumeAccordion = ({
       return renderList()
     }
 
-    const isValid = entry.schoolName !== '' && entry.degreeReceived !== '' && entry.schoolLocation !== '' && entry.startYear !== '' && (entry.isCurrent || entry.endYear !== '')
+    const isValid = entry.schoolName !== '' && entry.degreeReceived !== '' && entry.programName !== '' && entry.schoolLocation !== '' && entry.startYear !== '' && (entry.isCurrent || entry.endYear !== '')
     const hasEducationErrors = hasFieldErrors(`education.${index}`)
 
     return (
@@ -725,7 +725,9 @@ const ResumeAccordion = ({
             {renderFieldError(`education.${index}.degreeReceived`)}
           </label>
           <label>
+            <p className="required-asterisk">
             Program Name
+            </p>
             <input
               value={entry.programName}
               onChange={(event) => updateEducation(index, 'programName', event.target.value)}
