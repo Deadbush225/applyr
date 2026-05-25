@@ -95,6 +95,7 @@ const ApplicantDetailsPage = ({
 
   const navigate = useNavigate()
   const [activePanel, setActivePanel] = useState<ActivePanel>({ type: 'list' })
+  const [clickedPanel, setClickedPanel] = useState<ActivePanel>({type: 'list'})
   const [openSections, setOpenSections] = useState<string[]>(['education', 'employment', 'training', 'certificate'])
   const [showSectionSwitchModal, setShowSectionSwitchModal] = useState(false)
 
@@ -102,6 +103,7 @@ const ApplicantDetailsPage = ({
     if (activePanel.type === 'list' || panel.type === 'list') {
       setActivePanel(panel)
     } else {
+      setClickedPanel(panel)
       setShowSectionSwitchModal(true)
     }
   }
@@ -659,11 +661,11 @@ const renderEducation = (index: number) => {
                 type="button"
                 className="primary-button"
                 onClick={() => {
-                  setActivePanel({ type: 'list' })
+                  setActivePanel(clickedPanel)
                   setShowSectionSwitchModal(false)
                 }}
               >
-                Go To Section List
+                Exit & Switch
               </button>
             </div>
           </div>
@@ -913,6 +915,11 @@ const renderEducation = (index: number) => {
             {activePanel.type === 'employment' ? renderEmployment(activePanel.index) : null}
             {activePanel.type === 'training' ? renderTraining(activePanel.index) : null}
             {activePanel.type === 'certificate' ? renderCertificate(activePanel.index) : null}
+            {activePanel.type === 'list' ? (
+              <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>
+                <p>← Select an item in the sidebar to edit</p>
+              </div>
+            ) : null}
         </section>
       </div>
     </div>

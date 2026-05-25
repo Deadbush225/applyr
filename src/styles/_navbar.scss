@@ -19,47 +19,6 @@
   align-items: center;
 }
 
-.navbar-middle {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-}
-
-.navbar-links {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.nav-link {
-  text-decoration: none;
-  color: var(--text-muted);
-  font-weight: 700;
-  font-size: 0.9rem;
-  padding: 7px 12px;
-  border-radius: 999px;
-  transition: all 0.2s ease;
-
-  &:hover {
-    color: var(--text-strong);
-    background: var(--surface-soft);
-  }
-
-  &.active {
-    color: #fff;
-    background: var(--accent);
-    box-shadow: 0 8px 18px rgba(221, 95, 26, 0.25);
-  }
-}
-
-.navbar-breadcrumb {
-  margin: 0;
-  color: var(--text-muted);
-  font-size: 0.78rem;
-  font-weight: 600;
-}
-
 .brand-link {
   display: flex;
   align-items: center;
@@ -84,11 +43,88 @@
   &:hover {
     opacity: 0.8;
 
-    im,
+    img,
     svg {
       transform: scale(1.05);
     }
   }
+}
+
+.navbar-middle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.navbar-links {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: relative;
+  /* Required to contain the absolute indicator */
+}
+
+/* The Sliding Background Pill */
+.nav-indicator {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  background: var(--accent);
+  border-radius: 999px;
+  box-shadow: 0 8px 18px rgba(221, 95, 26, 0.25);
+  z-index: 0;
+  /* Smooth sliding curve */
+  transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1),
+    width 0.35s cubic-bezier(0.25, 1, 0.5, 1),
+    opacity 0.2s ease;
+}
+
+.nav-link {
+  position: relative;
+  z-index: 1;
+  /* Sits above the sliding indicator */
+  text-decoration: none;
+  color: var(--text-muted);
+  font-weight: 700;
+  font-size: 0.9rem;
+  padding: 7px 12px;
+  border-radius: 999px;
+  transition: color 0.2s ease;
+  /* We only animate text color now */
+
+  &:hover {
+    color: var(--text-strong);
+  }
+
+  &.active {
+    color: #fff;
+  }
+}
+
+// --- BREADCRUMB SLIDE ANIMATION ---
+@keyframes slideNext {
+  0% {
+    opacity: 0;
+    transform: translateX(20px);
+    /* Starts slightly to the right */
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+    /* Glides into its natural position */
+  }
+}
+
+.navbar-breadcrumb {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  /* cubic-bezier makes the slide feel snappy at first, then gently settle */
+  animation: slideNext 0.35s cubic-bezier(0.25, 1, 0.5, 1) forwards;
 }
 
 .navbar-actions {
@@ -156,114 +192,6 @@
   }
 }
 
-.mobile_navbar-actions {
-  display: none;
-}
-
-@media (max-width: 800px) {
-
-  .navbar-middle {
-    display: none;
-  }
-
-  .navbar-actions {
-    display: none;
-  }
-
-  .mobile_navbar-actions {
-    display: flex;
-  }
-}
-
-// -------------------------------------------------------------
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ NAVBAR ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-.global-navbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 28px;
-  background: rgba(255, 255, 255, 0.82);
-  border-bottom: 1px solid var(--stroke-soft);
-  position: sticky;
-  top: 0;
-  z-index: 50;
-  box-shadow: 0 4px 20px rgba(4, 41, 56, 0.03);
-  animation: slideInDown 0.4s ease-out;
-}
-
-.navbar-brand {
-  display: flex;
-  align-items: center;
-}
-
-.brand-link {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 1.25rem;
-  font-weight: 800;
-  color: var(--text-strong);
-  text-decoration: none;
-  letter-spacing: -0.02em;
-  transition: all 0.2s ease;
-
-  img {
-    width: 4.3em;
-    transition: transform 0.2s ease;
-  }
-
-  svg {
-    color: var(--accent);
-    transition: transform 0.2s ease;
-  }
-
-  &:hover {
-    opacity: 0.8;
-
-    im,
-    svg {
-      transform: scale(1.05);
-    }
-  }
-}
-
-
-/* Mobile inline profile dropdown (hidden on desktop) */
-.profile-dropdown.mobile-inline {
-  display: none;
-}
-
-@media (max-width: 820px) {
-  .profile-button {
-    display: none;
-  }
-
-  .profile-dropdown.mobile-inline {
-    display: flex;
-    position: static;
-    width: auto;
-    background: transparent;
-    border: none;
-    box-shadow: none;
-    flex-direction: row;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .profile-dropdown.mobile-inline .dropdown-header {
-    display: none;
-  }
-
-  .profile-dropdown.mobile-inline .dropdown-item,
-  .profile-dropdown.mobile-inline .logout-item {
-    display: inline-flex;
-    padding: 8px 10px;
-    background: var(--surface-soft);
-    border-radius: 8px;
-  }
-}
-
 // Profile & Dropdown
 .navbar-profile {
   position: relative;
@@ -311,6 +239,10 @@
   display: flex;
   flex-direction: column;
   animation: dropdownFade 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+
+  &.mobile-inline {
+    display: none;
+  }
 }
 
 .dropdown-header {
@@ -370,5 +302,47 @@
 
   &:hover {
     background: #fff0f0;
+  }
+}
+
+.mobile_navbar-actions {
+  display: none;
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ RESPONSIVE LOGIC ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+@media (max-width: 800px) {
+
+  .navbar-middle,
+  .navbar-actions {
+    display: none;
+  }
+
+  .mobile_navbar-actions {
+    display: flex;
+  }
+
+  .profile-dropdown.mobile-inline {
+    display: flex;
+    position: static;
+    width: auto;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+
+    .dropdown-header {
+      display: none;
+    }
+
+    .dropdown-item,
+    .logout-item {
+      display: inline-flex;
+      padding: 8px 10px;
+      background: var(--surface-soft);
+      border-radius: 8px;
+    }
   }
 }

@@ -296,7 +296,10 @@ const ResumeAccordion = ({
         </Accordion>
       {showAgreeModal ? (
         <div className="modal-backdrop left-align">
-          <div className="modal modal--shift-left resume-confirm-modal">
+        </div>
+      ) : null}
+
+      {showAgreeModal ? (<div className="modal modal--shift-left resume-confirm-modal">
             <h3>Confirm Terms</h3>
             <p>By downloading this resume you confirm that the information contained is truthful and accurate. Do you agree?</p>
             <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 12 }}>
@@ -321,9 +324,7 @@ const ResumeAccordion = ({
                 I agree
               </button>
             </div>
-          </div>
-        </div>
-      ) : null}
+          </div>) : null}
 
         <Accordion
           title="Application Settings"

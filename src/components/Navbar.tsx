@@ -34,6 +34,28 @@ const Navbar = ({ authSession, onLogout }: NavbarProps) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  // --- Sliding Indicator Refs & State ---
+  const navLinksRef = useRef<HTMLDivElement>(null);
+  const [indicatorStyle, setIndicatorStyle] = useState({ width: 0, left: 0, opacity: 0 });
+
+  // Calculate active link position on route change
+  useEffect(() => {
+    // setTimeout ensures the DOM updates the '.active' class first
+    const timer = setTimeout(() => {
+      if (navLinksRef.current) {
+        const activeLink = navLinksRef.current.querySelector('.nav-link.active') as HTMLElement;
+        if (activeLink) {
+          setIndicatorStyle({
+            width: activeLink.offsetWidth,
+            left: activeLink.offsetLeft,
+            opacity: 1
+          });
+        }
+      }
+    }, 50);
+    return () => clearTimeout(timer);
+  }, [location.pathname]);
+
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -69,7 +91,17 @@ const Navbar = ({ authSession, onLogout }: NavbarProps) => {
       </div>
 
       <div className="navbar-middle">
-        <div className="navbar-links" aria-label="Primary">
+        <div className="navbar-links" aria-label="Primary" ref={navLinksRef}>
+          {/* The sliding background pill */}
+          <div 
+            className="nav-indicator" 
+            style={{
+              width: `${indicatorStyle.width}px`,
+              transform: `translateX(${indicatorStyle.left}px)`,
+              opacity: indicatorStyle.opacity
+            }} 
+          />
+          
           <Link to="/" className={`nav-link ${location.pathname === '/' ? 'active' : ''}`}>
             Dashboard
           </Link>
