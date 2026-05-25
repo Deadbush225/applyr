@@ -159,6 +159,7 @@ const ApplicantEditPage = ({
 									<input
 										value={applicantName}
 										onChange={(event) => setApplicantName(event.target.value)}
+										placeholder="e.g., Juan Dela Cruz"
 									/>
 								</label>
 							</GroupBox>
@@ -190,6 +191,7 @@ const ApplicantEditPage = ({
 										<input
 											value={homeAddress}
 											onChange={(event) => setHomeAddress(event.target.value)}
+											placeholder="e.g., Manila, Philippines"
 										/>
 									</label>
 									<label>
@@ -197,6 +199,7 @@ const ApplicantEditPage = ({
 										<input
 											value={phoneNumber}
 											onChange={(event) => setPhoneNumber(event.target.value)}
+											placeholder="e.g., +63 917 123 4567"
 										/>
 									</label>
 									<label>
@@ -205,6 +208,7 @@ const ApplicantEditPage = ({
 											type="email"
 											value={emailAddress}
 											onChange={(event) => setEmailAddress(event.target.value)}
+											placeholder="e.g., juan.delacruz@example.com"
 										/>
 									</label>
 									<label>
@@ -212,6 +216,7 @@ const ApplicantEditPage = ({
 										<input
 											value={linkedInUrl}
 											onChange={(event) => setLinkedInUrl(event.target.value)}
+											placeholder="e.g., linkedin.com/in/juan-delacruz"
 										/>
 									</label>
 									<label>

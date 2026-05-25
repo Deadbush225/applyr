@@ -35,7 +35,11 @@ const NewApplicationModal = ({ isOpen, onClose, onCreate }: Props) => {
             <p className='required-asterisk'>
               Applied Position
             </p>
-            <input value={appliedPosition} onChange={(e) => setAppliedPosition(e.target.value)} />
+            <input
+              value={appliedPosition}
+              onChange={(e) => setAppliedPosition(e.target.value)}
+              placeholder="e.g., Junior Software Engineer"
+            />
           </label>
           <label>
             Application Date

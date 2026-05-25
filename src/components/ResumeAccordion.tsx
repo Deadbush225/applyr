@@ -616,7 +616,7 @@ const ResumeAccordion = ({
           <input
             value={jobApplication.appliedPosition}
             onChange={(event) => updateApplication('appliedPosition', event.target.value)}
-            placeholder="Frontend Engineer"
+            placeholder="e.g., Junior Software Engineer"
           />
         </label>
         <label>
@@ -633,7 +633,7 @@ const ResumeAccordion = ({
             type="number"
             value={jobApplication.expectedSalary}
             onChange={(event) => updateApplication('expectedSalary', event.target.value)}
-            placeholder="85000"
+            placeholder="e.g., 85000"
           />
         </label>
       </div>
@@ -658,7 +658,7 @@ const ResumeAccordion = ({
               fetchUrl="/backend/api/schools/list.php"
               valueName={entry.schoolName}
               valueId={entry.schoolId ?? null}
-              placeholder="Start typing school..."
+              placeholder="e.g., Polytechnic University of the Philippines"
               onChange={({ name, id, location }) => {
                 updateEducation(index, 'schoolName', name)
                 updateEducation(index, 'schoolId', id || '')
@@ -673,6 +673,7 @@ const ResumeAccordion = ({
             <input
               value={entry.schoolLocation}
               onChange={(event) => updateEducation(index, 'schoolLocation', event.target.value)}
+              placeholder="e.g., Manila, Philippines"
             />
           </label>
           <label>
@@ -683,7 +684,7 @@ const ResumeAccordion = ({
               max={2100}
               value={entry.startYear}
               onChange={(event) => updateEducation(index, 'startYear', event.target.value)}
-              placeholder="2019"
+              placeholder="e.g., 2019"
             />
           </label>
           <label>
@@ -691,6 +692,7 @@ const ResumeAccordion = ({
             <input
               value={entry.degreeReceived}
               onChange={(event) => updateEducation(index, 'degreeReceived', event.target.value)}
+              placeholder="e.g., Bachelor of Science"
             />
           </label>
           <label>
@@ -698,6 +700,7 @@ const ResumeAccordion = ({
             <input
               value={entry.programName}
               onChange={(event) => updateEducation(index, 'programName', event.target.value)}
+              placeholder="e.g., Computer Science"
             />
           </label>
           <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -717,7 +720,7 @@ const ResumeAccordion = ({
               max={2100}
               value={entry.endYear}
               onChange={(event) => updateEducation(index, 'endYear', event.target.value)}
-              placeholder="2023"
+              placeholder="e.g., 2023"
               disabled={entry.isCurrent ?? false}
               style={{ opacity: entry.isCurrent ? 0.5 : 1, cursor: entry.isCurrent ? 'not-allowed' : 'auto' }}
             />
@@ -755,7 +758,7 @@ const ResumeAccordion = ({
               fetchUrl="/backend/api/companies/list.php"
               valueName={entry.companyName}
               valueId={entry.companyId ?? null}
-              placeholder="Start typing company..."
+              placeholder="e.g., Tech Solutions Inc."
               onChange={({ name, id, location }) => {
                 updateEmployment(index, 'companyName', name)
                 updateEmployment(index, 'companyId', id || '')
@@ -770,6 +773,7 @@ const ResumeAccordion = ({
             <input
               value={entry.companyAddress}
               onChange={(event) => updateEmployment(index, 'companyAddress', event.target.value)}
+              placeholder="e.g., Makati City"
             />
           </label>
           <label>
@@ -777,6 +781,7 @@ const ResumeAccordion = ({
             <input
               value={entry.companyPhone ?? ''}
               onChange={(event) => updateEmployment(index, 'companyPhone', event.target.value)}
+              placeholder="e.g., +63 2 1234 5678"
             />
           </label>
           <label>
@@ -784,6 +789,7 @@ const ResumeAccordion = ({
             <input
               value={entry.workPosition}
               onChange={(event) => updateEmployment(index, 'workPosition', event.target.value)}
+              placeholder="e.g., Junior Software Engineer"
             />
           </label>
           <label>
@@ -791,6 +797,7 @@ const ResumeAccordion = ({
             <input
               value={entry.reasonForLeaving ?? ''}
               onChange={(event) => updateEmployment(index, 'reasonForLeaving', event.target.value)}
+              placeholder="e.g., Career growth, Relocation (Optional)"
             />
           </label>
           <label>
@@ -853,6 +860,7 @@ const ResumeAccordion = ({
             <input
               value={entry.referenceName}
               onChange={(event) => updateReference(index, 'referenceName', event.target.value)}
+              placeholder="e.g., Dr. Alan Turing"
             />
           </label>
           <label>
@@ -860,6 +868,7 @@ const ResumeAccordion = ({
             <input
               value={entry.referenceTitle}
               onChange={(event) => updateReference(index, 'referenceTitle', event.target.value)}
+              placeholder="e.g., Former Manager"
             />
           </label>
           <label>
@@ -867,6 +876,7 @@ const ResumeAccordion = ({
             <input
               value={entry.referenceCompany}
               onChange={(event) => updateReference(index, 'referenceCompany', event.target.value)}
+              placeholder="e.g., Tech Solutions Inc."
             />
           </label>
           <label>
@@ -874,6 +884,7 @@ const ResumeAccordion = ({
             <input
               value={entry.referencePhone}
               onChange={(event) => updateReference(index, 'referencePhone', event.target.value)}
+              placeholder="e.g., +63 917 123 4567"
             />
           </label>
           <label>
@@ -882,6 +893,7 @@ const ResumeAccordion = ({
               type="email"
               value={entry.referenceEmail}
               onChange={(event) => updateReference(index, 'referenceEmail', event.target.value)}
+              placeholder="e.g., alan@example.com"
             />
           </label>
         </div>
@@ -940,7 +952,7 @@ const ResumeAccordion = ({
               fetchUrl="/backend/api/trainings/list.php"
               valueName={entry.trainingTitle}
               valueId={entry.trainingId ?? null}
-              placeholder="Start typing training..."
+              placeholder="e.g., Agile Scrum Mastery"
               onChange={({ name, id, description, duration }) => {
                 updateTraining(index, 'trainingTitle', name)
                 updateTraining(index, 'trainingId', id || '')
@@ -958,6 +970,7 @@ const ResumeAccordion = ({
             <input
               value={entry.trainingDescription}
               onChange={(event) => updateTraining(index, 'trainingDescription', event.target.value)}
+              placeholder="e.g., Intensive workshop on agile methodologies"
             />
           </label>
           <label>
@@ -965,6 +978,7 @@ const ResumeAccordion = ({
             <input
               value={entry.trainingInstructor}
               onChange={(event) => updateTraining(index, 'trainingInstructor', event.target.value)}
+              placeholder="e.g., Maria Santos"
             />
           </label>
           <label>
@@ -973,6 +987,7 @@ const ResumeAccordion = ({
               type="number"
               value={entry.trainingDurationHours}
               onChange={(event) => updateTraining(index, 'trainingDurationHours', event.target.value)}
+              placeholder="e.g., 40"
             />
           </label>
           <label>
@@ -1040,7 +1055,7 @@ const ResumeAccordion = ({
               fetchUrl="/backend/api/certificates/list.php"
               valueName={entry.certificateName}
               valueId={entry.certificateId ?? null}
-              placeholder="Start typing certificate..."
+              placeholder="e.g., AWS Certified Developer"
               onChange={({ name, id, location, validityMonths }) => {
                 updateCertificate(index, 'certificateName', name)
                 updateCertificate(index, 'certificateId', id || '')
@@ -1058,6 +1073,7 @@ const ResumeAccordion = ({
             <input
               value={entry.issuingAuthority}
               onChange={(event) => updateCertificate(index, 'issuingAuthority', event.target.value)}
+              placeholder="e.g., Amazon Web Services"
             />
           </label>
           <label>
@@ -1066,6 +1082,7 @@ const ResumeAccordion = ({
               type="number"
               value={entry.validityMonths}
               onChange={(event) => updateCertificate(index, 'validityMonths', event.target.value)}
+              placeholder="e.g., 36"
             />
           </label>
           <label>
