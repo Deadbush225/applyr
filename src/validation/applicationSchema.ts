@@ -85,6 +85,50 @@ const ValidatedDateSchema = DraftDateSchema.refine(
   { message: 'Date cannot be in the future' }
 )
 
+const OptionalPhoneSchema = z.string().optional().nullable().superRefine((value, ctx) => {
+  if (value === null || value === undefined || value.trim() === '') {
+    return
+  }
+
+  const trimmed = value.trim()
+  if (trimmed.startsWith('09')) {
+    if (!/^09\d{9}$/.test(trimmed)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Mobile numbers must be 11 digits.',
+      })
+    }
+    return
+  }
+
+  if (!/^[0-9\-\s]{8,12}$/.test(trimmed)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Invalid landline format.',
+    })
+  }
+})
+
+const RequiredPhoneSchema = z.string().min(1, 'Reference phone is required').superRefine((value, ctx) => {
+  const trimmed = value.trim()
+  if (trimmed.startsWith('09')) {
+    if (!/^09\d{9}$/.test(trimmed)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Mobile numbers must be 11 digits.',
+      })
+    }
+    return
+  }
+
+  if (!/^[0-9\-\s]{8,12}$/.test(trimmed)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Invalid landline format.',
+    })
+  }
+})
+
 export const ApplicantSchema = z.object({
   applicantId: z.string().optional(),
   applicantName: z.string().min(1, 'Name is required'),
@@ -153,7 +197,7 @@ export const EmploymentSchema = z.object({
   companyId: z.string().optional(),
   companyName: z.string().min(1, 'Company name is required'),
   companyAddress: z.string().optional().nullable(),
-  companyPhone: z.string().optional().nullable(),
+  companyPhone: OptionalPhoneSchema,
   workPosition: z.string().min(1, 'Work position is required'),
   reasonForLeaving: z.string().optional().nullable(),
   startDate: ValidatedDateSchema,
@@ -267,7 +311,7 @@ export const ReferenceSchema = z.object({
   referenceName: z.string().min(1, 'Reference name is required'),
   referenceTitle: z.string().min(1, 'Reference title is required'),
   referenceCompany: z.string().min(1, 'Reference company is required'),
-  referencePhone: z.string().min(1, 'Reference phone is required'),
+  referencePhone: RequiredPhoneSchema,
   referenceEmail: z.string().email('Invalid email format'),
 })
 
