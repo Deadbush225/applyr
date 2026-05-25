@@ -612,7 +612,13 @@ function App() {
     }
 
     try {
-      await deleteNestedItem('training', entry.trainingId, authSession?.token)
+      const nestedId = (entry.trainingId as string) || (entry as any).id || ''
+      if (!nestedId) {
+        console.warn('Training has no id, skipping backend delete and removing locally')
+        updateNestedArray('trainings', (arr) => arr.filter((_, i) => i !== index))
+        return
+      }
+      await deleteNestedItem('training', nestedId, authSession?.token)
       updateNestedArray('trainings', (arr) => arr.filter((_, i) => i !== index))
     } catch (error) {
       console.error('Failed to delete training:', error)
@@ -626,7 +632,13 @@ function App() {
     }
 
     try {
-      await deleteNestedItem('certificate', entry.certificateId, authSession?.token)
+      const nestedId = (entry.certificateId as string) || (entry as any).id || ''
+      if (!nestedId) {
+        console.warn('Certificate has no id, skipping backend delete and removing locally')
+        updateNestedArray('certificates', (arr) => arr.filter((_, i) => i !== index))
+        return
+      }
+      await deleteNestedItem('certificate', nestedId, authSession?.token)
       updateNestedArray('certificates', (arr) => arr.filter((_, i) => i !== index))
     } catch (error) {
       console.error('Failed to delete certificate:', error)
@@ -876,7 +888,7 @@ function App() {
         }))
 
         const backendTrainings = (profile.trainings || []).map((entry) => ({
-          trainingId: entry.trainingId || createId(),
+          trainingId: entry.trainingId || entry.id || createId(),
           trainingTitle: entry.trainingTitle || '',
           trainingDescription: entry.trainingDescription || '',
           trainingInstructor: entry.trainingInstructor || '',
@@ -885,7 +897,7 @@ function App() {
         }))
 
         const backendCertificates = (profile.certificates || []).map((entry) => ({
-          certificateId: entry.certificateId || createId(),
+          certificateId: entry.certificateId || entry.id || createId(),
           certificateName: entry.certificateName || '',
           issuingAuthority: entry.issuingAuthority || '',
           validityMonths: entry.validityMonths || '',

@@ -83,6 +83,16 @@ const ApplicantDetailsPage = ({
     return value
   }
 
+  const isValidPhoneNumber = (value: string) => {
+    if (!value) return false
+    const digits = value.replace(/\D/g, '')
+    // Mobile (Philippines): starts with 09 and 11 digits total
+    const mobile = /^09\d{9}$/.test(digits)
+    // Landline: 7 to 10 digits (allow leading 0 area codes)
+    const landline = /^0?\d{7,10}$/.test(digits) && !/^09\d{9}$/.test(digits)
+    return mobile || landline
+  }
+
   const navigate = useNavigate()
   const [activePanel, setActivePanel] = useState<ActivePanel>({ type: 'list' })
   const [openSections, setOpenSections] = useState<string[]>(['education', 'employment', 'training', 'certificate'])
@@ -695,6 +705,13 @@ const renderEducation = (index: number) => {
                   onChange={(e) => updateApplicant('phoneNumber', e.target.value)}
                   disabled={isValidationBlocked}
                   />
+                {applicant.phoneNumber ? (
+                  isValidPhoneNumber(applicant.phoneNumber) ? (
+                    <p style={{ color: '#15803d', fontSize: '0.85rem', marginTop: 6 }}>Valid phone number</p>
+                  ) : (
+                    <p style={{ color: '#dc2626', fontSize: '0.85rem', marginTop: 6 }}>Invalid phone number. Use mobile (09XXXXXXXXX) or landline.</p>
+                  )
+                ) : null}
               </div>
                   </div>
             </GroupBox>
