@@ -5,23 +5,12 @@ declare(strict_types=1);
 require_once __DIR__ . '/../../index.php';
 require_once __DIR__ . '/../auth/require_auth.php';
 
-$db = requireAuthUser(); // rename to get db connection
+[$db, $user] = requireAuthUser();
 $input = readJsonInput();
 $applicant = is_array($input['applicant'] ?? null) ? $input['applicant'] : [];
 $jobApplication = is_array($input['jobApplication'] ?? null) ? $input['jobApplication'] : [];
 
-$applicantId = (string)$applicant['applicantId']; // Your original line
-
-// --- ADD THIS TEMPORARY DEBUGGING BLOCK ---
-if ($applicantId === '' || $applicantId === null) {
-    jsonResponse(400, [
-        'success' => false,
-        'message' => 'DEBUG: The applicantId is empty! Check your array keys.',
-        'debug_input' => $input 
-    ]);
-    exit;
-}
-// ------------------------------------------
+$applicantId = (string)$user['applicantId'];
 $jobApplicationId = (string)($jobApplication['JobApplicationId'] ?? '');
 
 if ($jobApplicationId === '') {
@@ -29,6 +18,7 @@ if ($jobApplicationId === '') {
         'success' => false,
         'message' => 'JobApplicationId is required.',
     ]);
+    exit;
 }
 
 $defaults = [
@@ -45,43 +35,32 @@ $jobApplication = array_merge($defaults, $jobApplication);
 try {
     $db->beginTransaction();
 
-    $statement = $db->prepare(
-        'UPDATE Applicant SET '
-        . 'applicantName = :applicantName, '
-        . 'homeAddress = :homeAddress, '
-        . 'phoneNumber = :phoneNumber, '
-        . 'emailAddress = :emailAddress, '
-        . 'linkedInUrl = :linkedInUrl, '
-        . 'citizenshipStatus = :citizenshipStatus, '
-        . 'hasCriminalHistory = :hasCriminalHistory '
-        . 'WHERE applicantId = :applicantId'
-    );
+    if (!empty($applicant)) {
+        $statement = $db->prepare(
+            'UPDATE Applicant SET '
+            . 'applicantName = :applicantName, '
+            . 'homeAddress = :homeAddress, '
+            . 'phoneNumber = :phoneNumber, '
+            . 'emailAddress = :emailAddress, '
+            . 'linkedInUrl = :linkedInUrl, '
+            . 'citizenshipStatus = :citizenshipStatus, '
+            . 'hasCriminalHistory = :hasCriminalHistory '
+            . 'WHERE applicantId = :applicantId'
+        );
 
-    $statement->execute([
-        'applicantId' => $applicantId,
-        'applicantName' => (string)($applicant['applicantName'] ?? ''),
-        'homeAddress' => (string)($applicant['homeAddress'] ?? ''),
-        'phoneNumber' => (string)($applicant['phoneNumber'] ?? ''),
-        'emailAddress' => (string)($applicant['emailAddress'] ?? ''),
-        'linkedInUrl' => (string)($applicant['linkedInUrl'] ?? ''),
-        'citizenshipStatus' => (string)($applicant['citizenshipStatus'] ?? ''),
-        'hasCriminalHistory' => (int)($applicant['hasCriminalHistory'] ?? 0),
-    ]);
-
-    // --- ADD THIS CHECK ---
-    $checkUser = $db->prepare("SELECT applicantId FROM Applicant WHERE applicantId = :id");
-    $checkUser->execute(['id' => $applicantId]);
-    
-    if ($checkUser->rowCount() === 0) {
-        // If the database can't find this ID, stop everything and print it out!
-        jsonResponse(404, [
-            'success' => false,
-            'message' => "DEBUG FATAL: The token contains applicantId: '{$applicantId}', but this ID does NOT exist in the Applicant table in your database. Check if register.php actually inserted it!"
+        $statement->execute([
+            'applicantId' => $applicantId,
+            'applicantName' => (string)($applicant['applicantName'] ?? ''),
+            'homeAddress' => (string)($applicant['homeAddress'] ?? ''),
+            'phoneNumber' => (string)($applicant['phoneNumber'] ?? ''),
+            'emailAddress' => (string)($applicant['emailAddress'] ?? ''),
+            'linkedInUrl' => (string)($applicant['linkedInUrl'] ?? ''),
+            'citizenshipStatus' => (string)($applicant['citizenshipStatus'] ?? ''),
+            'hasCriminalHistory' => (int)($applicant['hasCriminalHistory'] ?? 0),
         ]);
-        exit;
     }
 
-    // The $statement->rowCount() check has been successfully removed from here
+
 
     $statement = $db->prepare(
         'INSERT INTO JobApplication (JobApplicationId, applicantId, appliedPosition, JobApplicationDate, JobApplicationStatus, availableStartDate, expectedSalary, resumeFileUrl, agreesToDrugTest, agreedToTerms, dateAgreed, lastUpdated) '

@@ -34,28 +34,30 @@ if ($jobApplication['appliedPosition'] === '') {
 try {
     $db->beginTransaction();
 
-    $statement = $db->prepare(
-        'UPDATE Applicant SET '
-        . 'applicantName = :applicantName, '
-        . 'homeAddress = :homeAddress, '
-        . 'phoneNumber = :phoneNumber, '
-        . 'emailAddress = :emailAddress, '
-        . 'linkedInUrl = :linkedInUrl, '
-        . 'citizenshipStatus = :citizenshipStatus, '
-        . 'hasCriminalHistory = :hasCriminalHistory '
-        . 'WHERE applicantId = :applicantId'
-    );
+    if (!empty($applicant)) {
+        $statement = $db->prepare(
+            'UPDATE Applicant SET '
+            . 'applicantName = :applicantName, '
+            . 'homeAddress = :homeAddress, '
+            . 'phoneNumber = :phoneNumber, '
+            . 'emailAddress = :emailAddress, '
+            . 'linkedInUrl = :linkedInUrl, '
+            . 'citizenshipStatus = :citizenshipStatus, '
+            . 'hasCriminalHistory = :hasCriminalHistory '
+            . 'WHERE applicantId = :applicantId'
+        );
 
-    $statement->execute([
-        'applicantId' => $applicantId,
-        'applicantName' => (string)($applicant['applicantName'] ?? ''),
-        'homeAddress' => (string)($applicant['homeAddress'] ?? ''),
-        'phoneNumber' => (string)($applicant['phoneNumber'] ?? ''),
-        'emailAddress' => (string)($applicant['emailAddress'] ?? ''),
-        'linkedInUrl' => (string)($applicant['linkedInUrl'] ?? ''),
-        'citizenshipStatus' => (string)($applicant['citizenshipStatus'] ?? ''),
-        'hasCriminalHistory' => (int)($applicant['hasCriminalHistory'] ?? 0),
-    ]);
+        $statement->execute([
+            'applicantId' => $applicantId,
+            'applicantName' => (string)($applicant['applicantName'] ?? ''),
+            'homeAddress' => (string)($applicant['homeAddress'] ?? ''),
+            'phoneNumber' => (string)($applicant['phoneNumber'] ?? ''),
+            'emailAddress' => (string)($applicant['emailAddress'] ?? ''),
+            'linkedInUrl' => (string)($applicant['linkedInUrl'] ?? ''),
+            'citizenshipStatus' => (string)($applicant['citizenshipStatus'] ?? ''),
+            'hasCriminalHistory' => (int)($applicant['hasCriminalHistory'] ?? 0),
+        ]);
+    }
 
     $statement = $db->prepare(
         'INSERT INTO JobApplication (JobApplicationId, applicantId, appliedPosition, JobApplicationDate, JobApplicationStatus, availableStartDate, expectedSalary, resumeFileUrl, agreesToDrugTest, agreedToTerms, dateAgreed, lastUpdated) '

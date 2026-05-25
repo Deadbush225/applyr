@@ -50,7 +50,6 @@ CREATE TABLE `ApplicantCertificate` (
   `certificateId` varchar(50) NOT NULL,
   `dateIssued` date NOT NULL,
   PRIMARY KEY (`applicantId`,`certificateId`),
-  UNIQUE KEY `uq_app_cert` (`applicantId`,`certificateId`),
   KEY `fk_ApplicantCertificate_1_idx` (`certificateId`),
   CONSTRAINT `1` FOREIGN KEY (`applicantId`) REFERENCES `Applicant` (`applicantId`),
   CONSTRAINT `fk_ApplicantCertificate_1` FOREIGN KEY (`certificateId`) REFERENCES `Certificate` (`certificateId`) ON DELETE NO ACTION ON UPDATE NO ACTION

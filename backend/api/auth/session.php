@@ -24,8 +24,8 @@ function validateSessionToken(PDO $db, string $token): ?array
     }
 
     return [
-        'applicant_id' => (string)$session['applicantId'],
-        'email' => (string)$session['emailAddress'],
-        'name' => (string)$session['applicantName'],
+        'applicantId' => (string)$session['applicantId'],
+        'emailAddress' => (string)$session['emailAddress'],
+        'applicantName' => (string)$session['applicantName'],
     ];
 }

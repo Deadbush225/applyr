@@ -32,6 +32,22 @@ try {
     $statement->execute(['applicantId' => $applicantId]);
     $applications = $statement->fetchAll(PDO::FETCH_ASSOC);
 
+    // Fetch References for all these applications
+    $stmtRef = $db->prepare('SELECT r.* FROM Reference r JOIN JobApplication ja ON r.JobApplicationId = ja.JobApplicationId WHERE ja.applicantId = :applicantId');
+    $stmtRef->execute(['applicantId' => $applicantId]);
+    $references = $stmtRef->fetchAll(PDO::FETCH_ASSOC);
+
+    // Attach references to each application
+    foreach ($applications as &$app) {
+        $app['references'] = [];
+        foreach ($references as $ref) {
+            if ($ref['JobApplicationId'] === $app['JobApplicationId']) {
+                $app['references'][] = $ref;
+            }
+        }
+    }
+    unset($app); // break reference
+
     jsonResponse(200, [
         'success' => true,
         'data' => $applications,

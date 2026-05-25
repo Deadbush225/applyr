@@ -5,7 +5,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/../../index.php';
 require_once __DIR__ . '/../auth/require_auth.php';
 
-$db = requireAuthUser();
+[$db, $user] = requireAuthUser();
 $input = readJsonInput();
 $jobApplicationId = (string)($input['jobApplicationId'] ?? '');
 
