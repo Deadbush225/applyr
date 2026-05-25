@@ -140,6 +140,24 @@ const ResumeAccordion = ({
   onSyncRequest,
 }: ResumeAccordionPropsWithSync) => {
   const today = new Date().toISOString().split('T')[0]
+  const currentYear = new Date().getFullYear()
+  const blockInvalidNumberKey = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'e' || event.key === 'E' || event.key === '+' || event.key === '-') {
+      event.preventDefault()
+    }
+  }
+  const getFieldErrors = (fieldPath: string) =>
+    validationErrors.filter((err) => err.field === fieldPath || err.field.startsWith(`${fieldPath}.`))
+  const hasFieldErrors = (fieldPath: string) => getFieldErrors(fieldPath).length > 0
+  const renderFieldError = (fieldPath: string) => {
+    const fieldErrors = getFieldErrors(fieldPath)
+    if (!fieldErrors.length) return null
+    return (
+      <p style={{ color: '#dc2626', fontSize: '0.75rem', marginTop: '4px' }}>
+        {fieldErrors[0]?.message || 'Invalid value'}
+      </p>
+    )
+  }
   const formatEducationRange = (entry: Education) => {
     if (!entry.startYear && !entry.endYear && !entry.isCurrent) return ''
     const endLabel = entry.isCurrent ? 'Present' : (entry.endYear || '')
@@ -343,6 +361,7 @@ const ResumeAccordion = ({
                 max={today}
                 onChange={(event) => updateApplication('JobApplicationDate', event.target.value)}
               />
+              {renderFieldError('jobApplication.JobApplicationDate')}
             </label>
 
             <div className="form-actions">
@@ -647,10 +666,15 @@ const ResumeAccordion = ({
     }
 
     const isValid = entry.schoolName !== '' && entry.degreeReceived !== '' && entry.schoolLocation !== '' && entry.startYear !== '' && (entry.isCurrent || entry.endYear !== '')
+    const hasEducationErrors = hasFieldErrors(`education.${index}`)
 
     return (
       <div className="section-editor">
-        {renderEditorHeader(`Education ${index + 1}`, () => setActivePanel({ type: 'list' }), isValid)}
+        {renderEditorHeader(
+          `Education ${index + 1}`,
+          () => setActivePanel({ type: 'list' }),
+          isValid && !hasEducationErrors,
+        )}
         <div className="form-grid">
           <label>
             <p className="required-asterisk">School Name</p>
@@ -681,11 +705,15 @@ const ResumeAccordion = ({
             <input
               type="number"
               min={1900}
-              max={2100}
+              max={currentYear}
+              minLength={4}
+              maxLength={4}
               value={entry.startYear}
               onChange={(event) => updateEducation(index, 'startYear', event.target.value)}
+              onKeyDown={blockInvalidNumberKey}
               placeholder="e.g., 2019"
             />
+            {renderFieldError(`education.${index}.startYear`)}
           </label>
           <label>
             <p className="required-asterisk">Degree Received</p>
@@ -694,6 +722,7 @@ const ResumeAccordion = ({
               onChange={(event) => updateEducation(index, 'degreeReceived', event.target.value)}
               placeholder="e.g., Bachelor of Science"
             />
+            {renderFieldError(`education.${index}.degreeReceived`)}
           </label>
           <label>
             Program Name
@@ -702,6 +731,7 @@ const ResumeAccordion = ({
               onChange={(event) => updateEducation(index, 'programName', event.target.value)}
               placeholder="e.g., Computer Science"
             />
+            {renderFieldError(`education.${index}.programName`)}
           </label>
           <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <input
@@ -717,13 +747,17 @@ const ResumeAccordion = ({
             <input
               type="number"
               min={1900}
-              max={2100}
+              max={currentYear}
+              minLength={4}
+              maxLength={4}
               value={entry.endYear}
               onChange={(event) => updateEducation(index, 'endYear', event.target.value)}
+              onKeyDown={blockInvalidNumberKey}
               placeholder="e.g., 2023"
               disabled={entry.isCurrent ?? false}
               style={{ opacity: entry.isCurrent ? 0.5 : 1, cursor: entry.isCurrent ? 'not-allowed' : 'auto' }}
             />
+            {renderFieldError(`education.${index}.endYear`)}
           </label>
         </div>
         <button
@@ -747,10 +781,15 @@ const ResumeAccordion = ({
     }
 
     const isValid = entry.companyName !== '' && entry.workPosition !== '' && entry.companyAddress !== '' && entry.startDate !== '' && (entry.isEmployed || entry.endDate !== '')
+    const hasEmploymentErrors = hasFieldErrors(`employmentHistory.${index}`)
 
     return (
       <div className="section-editor">
-        {renderEditorHeader(`Employment ${index + 1}`, () => setActivePanel({ type: 'list' }), isValid)}
+        {renderEditorHeader(
+          `Employment ${index + 1}`,
+          () => setActivePanel({ type: 'list' }),
+          isValid && !hasEmploymentErrors,
+        )}
         <div className="form-grid">
           <label>
             <p className="required-asterisk">Company Name</p>
@@ -775,6 +814,7 @@ const ResumeAccordion = ({
               onChange={(event) => updateEmployment(index, 'companyAddress', event.target.value)}
               placeholder="e.g., Makati City"
             />
+            {renderFieldError(`employmentHistory.${index}.companyAddress`)}
           </label>
           <label>
             <p>Company Phone</p>
@@ -783,6 +823,7 @@ const ResumeAccordion = ({
               onChange={(event) => updateEmployment(index, 'companyPhone', event.target.value)}
               placeholder="e.g., +63 2 1234 5678"
             />
+            {renderFieldError(`employmentHistory.${index}.companyPhone`)}
           </label>
           <label>
             <p className="required-asterisk">Work Position</p>
@@ -791,6 +832,7 @@ const ResumeAccordion = ({
               onChange={(event) => updateEmployment(index, 'workPosition', event.target.value)}
               placeholder="e.g., Junior Software Engineer"
             />
+            {renderFieldError(`employmentHistory.${index}.workPosition`)}
           </label>
           <label>
             <p className="required-asterisk">Reason For Leaving</p>
@@ -799,6 +841,7 @@ const ResumeAccordion = ({
               onChange={(event) => updateEmployment(index, 'reasonForLeaving', event.target.value)}
               placeholder="e.g., Career growth, Relocation (Optional)"
             />
+            {renderFieldError(`employmentHistory.${index}.reasonForLeaving`)}
           </label>
           <label>
             <p className="required-asterisk">Start Date</p>
@@ -808,6 +851,7 @@ const ResumeAccordion = ({
               max={today}
               onChange={(event) => updateEmployment(index, 'startDate', event.target.value)}
             />
+            {renderFieldError(`employmentHistory.${index}.startDate`)}
           </label>
           <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <input
@@ -829,6 +873,7 @@ const ResumeAccordion = ({
               disabled={entry.isEmployed ?? false}
               style={{ opacity: entry.isEmployed ? 0.5 : 1, cursor: entry.isEmployed ? 'not-allowed' : 'auto' }}
             />
+            {renderFieldError(`employmentHistory.${index}.endDate`)}
           </label>
         </div>
         <button
@@ -862,6 +907,7 @@ const ResumeAccordion = ({
               onChange={(event) => updateReference(index, 'referenceName', event.target.value)}
               placeholder="e.g., Dr. Alan Turing"
             />
+            {renderFieldError(`references.${index}.referenceName`)}
           </label>
           <label>
             <p className="required-asterisk">Title</p>
@@ -870,6 +916,7 @@ const ResumeAccordion = ({
               onChange={(event) => updateReference(index, 'referenceTitle', event.target.value)}
               placeholder="e.g., Former Manager"
             />
+            {renderFieldError(`references.${index}.referenceTitle`)}
           </label>
           <label>
             <p className="required-asterisk">Company</p>
@@ -878,6 +925,7 @@ const ResumeAccordion = ({
               onChange={(event) => updateReference(index, 'referenceCompany', event.target.value)}
               placeholder="e.g., Tech Solutions Inc."
             />
+            {renderFieldError(`references.${index}.referenceCompany`)}
           </label>
           <label>
             <p className="required-asterisk">Phone</p>
@@ -886,6 +934,7 @@ const ResumeAccordion = ({
               onChange={(event) => updateReference(index, 'referencePhone', event.target.value)}
               placeholder="e.g., +63 917 123 4567"
             />
+            {renderFieldError(`references.${index}.referencePhone`)}
           </label>
           <label>
             Email
@@ -895,6 +944,7 @@ const ResumeAccordion = ({
               onChange={(event) => updateReference(index, 'referenceEmail', event.target.value)}
               placeholder="e.g., alan@example.com"
             />
+            {renderFieldError(`references.${index}.referenceEmail`)}
           </label>
         </div>
         <button
@@ -917,7 +967,7 @@ const ResumeAccordion = ({
       return renderList()
     }
 
-    const hasTrainingError = trainingErrorMessages.length > 0
+    const hasTrainingError = trainingErrorMessages.length > 0 || hasFieldErrors(`trainings.${index}`)
 
     return (
       <div className="section-editor">
@@ -972,6 +1022,7 @@ const ResumeAccordion = ({
               onChange={(event) => updateTraining(index, 'trainingDescription', event.target.value)}
               placeholder="e.g., Intensive workshop on agile methodologies"
             />
+            {renderFieldError(`trainings.${index}.trainingDescription`)}
           </label>
           <label>
             <p className="required-asterisk">Instructor</p>
@@ -980,6 +1031,7 @@ const ResumeAccordion = ({
               onChange={(event) => updateTraining(index, 'trainingInstructor', event.target.value)}
               placeholder="e.g., Maria Santos"
             />
+            {renderFieldError(`trainings.${index}.trainingInstructor`)}
           </label>
           <label>
             <p className="required-asterisk">Duration (Hours)</p>
@@ -989,6 +1041,7 @@ const ResumeAccordion = ({
               onChange={(event) => updateTraining(index, 'trainingDurationHours', event.target.value)}
               placeholder="e.g., 40"
             />
+            {renderFieldError(`trainings.${index}.trainingDurationHours`)}
           </label>
           <label>
             <p className="required-asterisk">Completion Date</p>
@@ -998,6 +1051,7 @@ const ResumeAccordion = ({
               max={today}
               onChange={(event) => updateTraining(index, 'completionDate', event.target.value)}
             />
+            {renderFieldError(`trainings.${index}.completionDate`)}
           </label>
         </div>
         <button
@@ -1020,7 +1074,7 @@ const ResumeAccordion = ({
       return renderList()
     }
 
-    const hasCertificateError = certificateErrorMessages.length > 0
+    const hasCertificateError = certificateErrorMessages.length > 0 || hasFieldErrors(`certificates.${index}`)
 
     return (
       <div className="section-editor">
@@ -1075,6 +1129,7 @@ const ResumeAccordion = ({
               onChange={(event) => updateCertificate(index, 'issuingAuthority', event.target.value)}
               placeholder="e.g., Amazon Web Services"
             />
+            {renderFieldError(`certificates.${index}.issuingAuthority`)}
           </label>
           <label>
             <p className="required-asterisk">Validity (Months)</p>
@@ -1084,6 +1139,7 @@ const ResumeAccordion = ({
               onChange={(event) => updateCertificate(index, 'validityMonths', event.target.value)}
               placeholder="e.g., 36"
             />
+            {renderFieldError(`certificates.${index}.validityMonths`)}
           </label>
           <label>
             <p className="required-asterisk">Date Issued</p>
@@ -1093,6 +1149,7 @@ const ResumeAccordion = ({
               max={today}
               onChange={(event) => updateCertificate(index, 'dateIssued', event.target.value)}
             />
+            {renderFieldError(`certificates.${index}.dateIssued`)}
           </label>
         </div>
         <button
