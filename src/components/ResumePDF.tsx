@@ -1,5 +1,11 @@
-import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer';
+import { Document, Page, Text, View, StyleSheet, Font } from '@react-pdf/renderer';
 import type { Applicant, JobApplication, Education, EmploymentHistory, ApplicantReference, Training, Certificate } from '../types';
+
+// Ensure the ₱ (Peso) glyph renders correctly in PDFs.
+Font.register({
+  family: 'NotoSans',
+  src: new URL('../assets/fonts/NotoSans-Regular.ttf', import.meta.url).toString(),
+});
 
 type ResumeTemplateId = "classic" | "compact" | "modern";
 
@@ -35,6 +41,26 @@ const getDisplayValue = (value: string | null | undefined, fallback = "Not provi
   return value.trim() ? value : fallback
 }
 const getYesNo = (value: boolean | null) => value === null ? "Not provided" : (value ? "Yes" : "No");
+
+const formatCurrencyPHP = (value: unknown, fallback = "Not provided") => {
+  if (value === null || value === undefined) return fallback;
+
+  const raw = typeof value === "string" ? value.trim() : String(value);
+  if (!raw) return fallback;
+
+  const numeric = typeof value === "number" ? value : Number(raw.replace(/,/g, ""));
+  if (!Number.isFinite(numeric)) return raw;
+
+  try {
+    const formatted = new Intl.NumberFormat("en-PH", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(numeric);
+    return `₱${formatted}`;
+  } catch {
+    return `₱${numeric.toFixed(2)}`;
+  }
+};
 
 const formatDateForPDF = (value: string | Date | null | undefined, includeDay= true) => {
   if (!value) return ''
@@ -270,7 +296,9 @@ export const ResumePDF = ({ applicant, jobApplication, education, employmentHist
                     </View>
                     <View style={styles.sectionColItem}>
                       <Text style={styles.bold}>Expected salary: </Text>
-                      <Text>{getDisplayValue(jobApplication.expectedSalary)}</Text>
+                      <Text style={{ fontFamily: 'NotoSans' }}>
+                        {formatCurrencyPHP(jobApplication.expectedSalary)}
+                      </Text>
                     </View>
                     <View style={styles.sectionColItem}>
                       <Text style={styles.bold}>Citizenship: </Text>

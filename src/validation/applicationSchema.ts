@@ -333,11 +333,9 @@ export const JobApplicationSchema = z
   .object({
     JobApplicationId: z.string().optional(),
     appliedPosition: z.string().min(1),
-    JobApplicationDate: z
-      .string()
-      .refine((s) => !Number.isNaN(Date.parse(s)), {
-        message: "JobApplicationDate must be a valid date",
-      }),
+    JobApplicationDate: z.string().refine((s) => !Number.isNaN(Date.parse(s)), {
+      message: "JobApplicationDate must be a valid date",
+    }),
     availableStartDate: z.string().optional().nullable(),
     expectedSalary: z.union([z.string(), z.number()]).optional().nullable(),
     agreesToDrugTest: z.boolean().optional(),
@@ -392,6 +390,32 @@ export const JobApplicationSchema = z
         path: ["availableStartDate"],
         message: "Available start date cannot be earlier than today",
       });
+    }
+
+    const salaryRaw = value.expectedSalary;
+    if (
+      salaryRaw !== undefined &&
+      salaryRaw !== null &&
+      String(salaryRaw).trim() !== ""
+    ) {
+      const salaryNumber =
+        typeof salaryRaw === "number"
+          ? salaryRaw
+          : Number(String(salaryRaw).replace(/,/g, ""));
+
+      if (!Number.isFinite(salaryNumber)) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["expectedSalary"],
+          message: "Expected salary must be a valid number",
+        });
+      } else if (salaryNumber < 20000) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["expectedSalary"],
+          message: "Expected salary must be at least ₱20,000.00",
+        });
+      }
     }
 
     if (

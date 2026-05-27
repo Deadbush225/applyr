@@ -884,13 +884,27 @@ const ResumeAccordion = ({
         ? jobApplication.JobApplicationDate
         : today;
 
+    const expectedSalaryRaw = jobApplication.expectedSalary;
+    const expectedSalaryKey =
+      expectedSalaryRaw === null || expectedSalaryRaw === undefined
+        ? ""
+        : String(expectedSalaryRaw).trim();
+    const expectedSalaryNumber = expectedSalaryKey
+      ? Number(expectedSalaryKey.replace(/,/g, ""))
+      : null;
+
+    const isExpectedSalaryValid =
+      !expectedSalaryKey ||
+      (Number.isFinite(expectedSalaryNumber) && (expectedSalaryNumber as number) >= 20000);
+
     return (
       <div className="section-editor">
         {renderEditorHeader(
           "Contact Info",
           () => setActivePanel({ type: "list" }),
           applicant.applicantName !== "" &&
-            jobApplication.appliedPosition !== "",
+            jobApplication.appliedPosition !== "" &&
+            isExpectedSalaryValid,
         )}
         <div className="form-grid">
           <label>
@@ -920,15 +934,18 @@ const ResumeAccordion = ({
             {renderFieldError("jobApplication.availableStartDate")}
           </label>
           <label>
-            Expected Salary
+            Expected Salary (PHP)
             <input
               type="number"
               value={jobApplication.expectedSalary}
+              min={20000}
+              step="0.01"
               onChange={(event) =>
                 updateApplication("expectedSalary", event.target.value)
               }
-              placeholder="e.g., 85000"
+              placeholder="e.g., ₱ 85000.00"
             />
+            {renderFieldError("jobApplication.expectedSalary")}
           </label>
         </div>
       </div>
