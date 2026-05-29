@@ -104,7 +104,7 @@ const Navbar = ({ authSession, onLogout, onNavigateRequest }: NavbarProps) => {
       </div>
 
       <div className="navbar-middle">
-        <div className="navbar-links" aria-label="Primary" ref={navLinksRef}>
+        {authSession && <div className="navbar-links" aria-label="Primary" ref={navLinksRef}>
           {/* The sliding background pill */}
           <div 
             className="nav-indicator" 
@@ -124,7 +124,7 @@ const Navbar = ({ authSession, onLogout, onNavigateRequest }: NavbarProps) => {
           <Link to="/applicant" className={`nav-link ${location.pathname.startsWith('/applicant') ? 'active' : ''}`} onClick={(event) => handleNavigate(event, '/applicant')}>
             Applicant Info
           </Link>
-        </div>
+        </div>}
         {/* <p className="navbar-breadcrumb" aria-live="polite">
           {breadcrumb.join(' / ')}
         </p> */}
