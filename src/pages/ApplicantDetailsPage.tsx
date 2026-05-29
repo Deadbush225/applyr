@@ -100,12 +100,90 @@ const ApplicantDetailsPage = ({
   const [showSectionSwitchModal, setShowSectionSwitchModal] = useState(false)
 
   const _setActivePanel = (panel: ActivePanel) => {
+    // If switching to or from the list, allow immediately
     if (activePanel.type === 'list' || panel.type === 'list') {
       setActivePanel(panel)
-    } else {
-      setClickedPanel(panel)
-      setShowSectionSwitchModal(true)
+      return
     }
+
+    // If current editor is complete (no missing required fields / validation errors), allow switching
+    const isCurrentEditorComplete = () => {
+      if (activePanel.type === 'education') {
+        const entry = education[activePanel.index]
+        if (!entry) return true
+        const isValid =
+          entry.schoolName !== '' &&
+          entry.degreeReceived !== '' &&
+          entry.programName !== '' &&
+          entry.schoolLocation !== '' &&
+          entry.startYear !== '' &&
+          (entry.isCurrent || entry.endYear !== '')
+        const hasErrors = hasFieldErrors(`education.${activePanel.index}`)
+        return isValid && !hasErrors
+      }
+      if (activePanel.type === 'employment') {
+        const entry = employmentHistory[activePanel.index]
+        if (!entry) return true
+        const isValid =
+          entry.companyName !== '' &&
+          entry.workPosition !== '' &&
+          entry.companyAddress !== '' &&
+          entry.startDate !== '' &&
+          (entry.isEmployed || entry.endDate !== '')
+        const hasErrors = hasFieldErrors(`employmentHistory.${activePanel.index}`)
+        return isValid && !hasErrors
+      }
+      if (activePanel.type === 'training') {
+        const entry = trainings[activePanel.index]
+        if (!entry) return true
+        const hasTrainingError = trainingErrorMessages.length > 0 || hasFieldErrors(`trainings.${activePanel.index}`)
+        const isValid =
+          entry.trainingTitle !== '' &&
+          entry.trainingInstructor !== '' &&
+          entry.trainingDurationHours !== '' &&
+          entry.completionDate !== ''
+        return isValid && !hasTrainingError
+      }
+      if (activePanel.type === 'certificate') {
+        const entry = certificates[activePanel.index]
+        if (!entry) return true
+        const hasCertificateError = certificateErrorMessages.length > 0 || hasFieldErrors(`certificates.${activePanel.index}`)
+        const isValid =
+          entry.certificateName !== '' &&
+          entry.issuingAuthority !== '' &&
+          entry.validityMonths !== '' &&
+          entry.dateIssued !== ''
+        return isValid && !hasCertificateError
+      }
+      return true
+    }
+
+    if (isCurrentEditorComplete()) {
+      setActivePanel(panel)
+      return
+    }
+
+    // Otherwise prompt the user
+    setClickedPanel(panel)
+    setShowSectionSwitchModal(true)
+  }
+
+  const handleDiscardAndSwitch = async () => {
+    try {
+      if (activePanel.type === 'education') {
+        await removeEducation(activePanel.index)
+      } else if (activePanel.type === 'employment') {
+        await removeEmployment(activePanel.index)
+      } else if (activePanel.type === 'training') {
+        await removeTraining(activePanel.index)
+      } else if (activePanel.type === 'certificate') {
+        await removeCertificate(activePanel.index)
+      }
+    } catch (err) {
+      console.error('Failed to discard item before switching:', err)
+    }
+    setActivePanel(clickedPanel)
+    setShowSectionSwitchModal(false)
   }
 
   const blockInvalidNumberKey = (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -121,19 +199,57 @@ const ApplicantDetailsPage = ({
   }, [onSyncRequest])
 
   // 2. TRUE UNMOUNT SAVE: Empty dependency array means this ONLY runs when leaving the page
+  const lastSavedSerializedRef = useRef<string | null>(null)
+
+  // Initialize baseline serialized snapshot to avoid an immediate sync when nothing changed
   useEffect(() => {
-    return () => {
-      syncRef.current?.().catch(console.error)
+    try {
+      lastSavedSerializedRef.current = JSON.stringify({ applicant, education, employmentHistory, trainings, certificates })
+    } catch {
+      lastSavedSerializedRef.current = null
     }
+    return () => {
+      // On unmount, only persist if current state differs from last saved snapshot
+      try {
+        const current = JSON.stringify({ applicant, education, employmentHistory, trainings, certificates })
+        if (current !== lastSavedSerializedRef.current) {
+          syncRef.current?.().catch(console.error)
+        }
+      } catch {
+        syncRef.current?.().catch(console.error)
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // 3. SMART AUTO-SAVE: Debounces network requests by 2 seconds
+  // 3. SMART AUTO-SAVE: Debounces network requests by 2 seconds, only when data actually changed
   useEffect(() => {
-    const timer = setTimeout(() => {
-      syncRef.current?.().catch(console.error)
-    }, 2000)
+    let cancelled = false
+    let timer: ReturnType<typeof setTimeout> | null = null
+    try {
+      const serialized = JSON.stringify({ applicant, education, employmentHistory, trainings, certificates })
+      if (serialized !== lastSavedSerializedRef.current) {
+        timer = setTimeout(async () => {
+          if (cancelled) return
+          try {
+            await syncRef.current?.()
+            lastSavedSerializedRef.current = serialized
+          } catch (err) {
+            console.error(err)
+          }
+        }, 2000)
+      }
+    } catch {
+      // if serialization fails, fallback to syncing as before
+      timer = setTimeout(() => {
+        syncRef.current?.().catch(console.error)
+      }, 2000)
+    }
 
-    return () => clearTimeout(timer)
+    return () => {
+      cancelled = true
+      if (timer) clearTimeout(timer)
+    }
   }, [applicant, education, employmentHistory, trainings, certificates])
 
   const toggleSection = (sectionName: string) => {
@@ -670,25 +786,24 @@ const renderEducation = (index: number) => {
       {showSectionSwitchModal ? (
         <div className="modal-backdrop center-align" role="dialog" aria-modal="true" aria-labelledby="section-switch-title">
           <div className="modal">
-            <h3 id="section-switch-title">Finish This Section First</h3>
-            <p>Please submit your current section before editing another one.</p>
+            <h3 id="section-switch-title">Finish this section first.</h3>
+            <p>Please provide the required fields before editing another one.</p>
             <div className="form-actions">
               <button
                 type="button"
                 className="outline-button"
                 onClick={() => setShowSectionSwitchModal(false)}
               >
-                Keep Editing
+                Continue editing
               </button>
               <button
                 type="button"
                 className="primary-button"
                 onClick={() => {
-                  setActivePanel(clickedPanel)
-                  setShowSectionSwitchModal(false)
+                  void handleDiscardAndSwitch()
                 }}
               >
-                Exit & Switch
+                Discard and switch
               </button>
             </div>
           </div>
