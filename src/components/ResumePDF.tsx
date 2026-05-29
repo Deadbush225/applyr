@@ -173,6 +173,7 @@ export const ResumePDF = ({ applicant, jobApplication, education, employmentHist
       fontSize: baseFontSize * 1.5,
       marginBottom: 4,
       fontFamily: fontVariants.bold,
+      fontWeight: 'bold',
       color: textStrong,
     },
     role: {
@@ -225,6 +226,7 @@ export const ResumePDF = ({ applicant, jobApplication, education, employmentHist
       fontSize: h3FontSize,
       textTransform: 'uppercase',
       fontFamily: fontVariants.bold,
+      fontWeight: 'bold',
       letterSpacing: 0.4,
       color: textStrong,
     },
@@ -248,12 +250,15 @@ export const ResumePDF = ({ applicant, jobApplication, education, employmentHist
     },
     bold: {
       fontFamily: fontVariants.bold,
+      fontWeight: 'bold',
     },
     italic: {
       fontFamily: fontVariants.italic,
+      fontStyle: 'italic',
     },
     label: {
       fontFamily: fontVariants.bold,
+      fontWeight: 'bold',
       color: textStrong,
     },
     dateText: {
