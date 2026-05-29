@@ -570,7 +570,7 @@ const ResumeAccordion = ({
 
       <SectionRow
           title="Compliance"
-          subtitle="Agreements and resume file"
+          subtitle="Consent and disclosures"
           callback={() => setActivePanel({ type: 'compliance' })}
         />
 
