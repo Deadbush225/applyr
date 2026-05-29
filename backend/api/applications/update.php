@@ -312,7 +312,7 @@ try {
         $stmtSettings->execute([
             'jobApplicationId' => $jobApplicationId,
             'resumeTemplate' => (string)($resumeSettings['resumeTemplate'] ?? 'classic'),
-            'previewFont' => (string)($resumeSettings['previewFont'] ?? 'Helvetica'),
+            'previewFont' => (string)($resumeSettings['previewFont'] ?? 'Times New Roman'),
         ]);
     }
 

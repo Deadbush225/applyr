@@ -35,7 +35,7 @@ try {
             'data' => [
                 'JobApplicationId' => $jobApplicationId,
                 'resumeTemplate' => 'classic',
-                'previewFont' => 'Helvetica',
+                'previewFont' => 'Times New Roman',
                 'lastUpdated' => null,
             ],
         ]);

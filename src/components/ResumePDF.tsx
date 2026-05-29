@@ -17,6 +17,9 @@ type ResumePDFProps = {
 
 const getFontFamily = (font: string) => {
   const normalized = font.trim().toLowerCase();
+  if (!normalized) {
+    return 'Times-Roman';
+  }
   if (normalized.includes('arial') || normalized.includes('calibri')) {
     return 'Helvetica';
   }
@@ -27,8 +30,26 @@ const getFontFamily = (font: string) => {
   ) {
     return 'Times-Roman';
   }
-  return 'Helvetica';
+  return 'Times-Roman';
 };
+
+const getFontVariants = (baseFontFamily: string) => {
+  if (baseFontFamily === 'Helvetica') {
+    return {
+      regular: 'Helvetica',
+      bold: 'Helvetica-Bold',
+      italic: 'Helvetica-Oblique',
+      boldItalic: 'Helvetica-BoldOblique',
+    }
+  }
+
+  return {
+    regular: 'Times-Roman',
+    bold: 'Times-Bold',
+    italic: 'Times-Italic',
+    boldItalic: 'Times-BoldItalic',
+  }
+}
 const getMoneyDisplay = (value: string | number | null | undefined) => {
   // add commas and ₱ symbol, handle invalid or empty values
   if (value === null || value === undefined || value === '') return 'Not provided';
@@ -104,6 +125,7 @@ const formatEmploymentRange = (entry: EmploymentHistory) => {
 
 export const ResumePDF = ({ applicant, jobApplication, education, employmentHistory, references, trainings, certificates, previewFont, resumeTemplate }: ResumePDFProps) => {
   const fontFamily = getFontFamily(previewFont);
+  const fontVariants = getFontVariants(fontFamily)
 
   // Template-specific style variables based on App.scss
   const isCompact = resumeTemplate === 'compact';
@@ -123,7 +145,7 @@ export const ResumePDF = ({ applicant, jobApplication, education, employmentHist
   const styles = StyleSheet.create({
     page: {
       padding: sidePadding,
-      fontFamily: fontFamily,
+      fontFamily: fontVariants.regular,
       fontSize: baseFontSize,
       lineHeight: lh,
       color: textStrong,
@@ -150,7 +172,7 @@ export const ResumePDF = ({ applicant, jobApplication, education, employmentHist
     name: {
       fontSize: baseFontSize * 1.5,
       marginBottom: 4,
-      fontWeight: 'bold',
+      fontFamily: fontVariants.bold,
       color: textStrong,
     },
     role: {
@@ -173,7 +195,7 @@ export const ResumePDF = ({ applicant, jobApplication, education, employmentHist
     },
     section: {
       paddingBottom: sectionPaddingBottom,
-      marginBottom: previewGap,
+      marginBottom: previewGap + 2,
       display: 'flex',
       flexDirection: 'column',
     },
@@ -202,7 +224,8 @@ export const ResumePDF = ({ applicant, jobApplication, education, employmentHist
       margin: 0,
       fontSize: h3FontSize,
       textTransform: 'uppercase',
-      fontWeight: 'bold',
+      fontFamily: fontVariants.bold,
+      letterSpacing: 0.4,
       color: textStrong,
     },
     sectionRule: {
@@ -212,26 +235,30 @@ export const ResumePDF = ({ applicant, jobApplication, education, employmentHist
       marginTop: 2,
     },
     previewList: {
-      marginTop: 6,
+      marginTop: 8,
     },
     lineBlock: {
-      marginBottom: baseFontSize * 0.5,
+      marginBottom: baseFontSize * 0.7,
     },
     lineFlex: {
       display: 'flex',
       flexDirection: 'row',
       justifyContent: 'space-between',
+      marginBottom: 2,
     },
     bold: {
-      fontWeight: 'bold',
+      fontFamily: fontVariants.bold,
     },
     italic: {
-      fontStyle: 'italic',
+      fontFamily: fontVariants.italic,
     },
-    emptyText: {
+    label: {
+      fontFamily: fontVariants.bold,
+      color: textStrong,
+    },
+    dateText: {
       color: textMuted,
-      fontStyle: 'italic',
-    }
+    },
   });
 
   const SectionTitle = ({ title }: { title: string }) => (
@@ -248,6 +275,14 @@ export const ResumePDF = ({ applicant, jobApplication, education, employmentHist
 	};
 
   const sectionsList = templateOrder[resumeTemplate];
+  const visibleSections = sectionsList.filter((sectionKey) => {
+    if (sectionKey === 'Education') return education.length > 0
+    if (sectionKey === 'Employment') return employmentHistory.length > 0
+    if (sectionKey === 'Trainings') return trainings.length > 0
+    if (sectionKey === 'Certificates') return certificates.length > 0
+    if (sectionKey === 'References') return references.length > 0
+    return true
+  })
 
   return (
     <Document>
@@ -265,26 +300,26 @@ export const ResumePDF = ({ applicant, jobApplication, education, employmentHist
             </View>
           </View>
 
-          {sectionsList.map((sectionKey) => {
+          {visibleSections.map((sectionKey) => {
             if (sectionKey === "Application Details") {
               return (
                 <View style={styles.section} key={sectionKey} wrap={false}>
                   <SectionTitle title="Application Details" />
                   <View style={styles.sectionCol}>
                     <View style={styles.sectionColItem}>
-                      <Text style={styles.bold}>Start date: </Text>
-                      <Text>{formatDateForPDF(jobApplication.availableStartDate) || getDisplayValue(jobApplication.availableStartDate)}</Text>
+                      <Text style={styles.label}>Start date: </Text>
+                      <Text style={styles.dateText}>{formatDateForPDF(jobApplication.availableStartDate) || getDisplayValue(jobApplication.availableStartDate)}</Text>
                     </View>
                     <View style={styles.sectionColItem}>
-                      <Text style={styles.bold}>Expected salary: </Text>
+                      <Text style={styles.label}>Expected salary: </Text>
                       <Text>{getMoneyDisplay(jobApplication.expectedSalary)}</Text>
                     </View>
                     <View style={styles.sectionColItem}>
-                      <Text style={styles.bold}>Citizenship: </Text>
+                      <Text style={styles.label}>Citizenship: </Text>
                       <Text>{getDisplayValue(applicant.citizenshipStatus)}</Text>
                     </View>
                     <View style={styles.sectionColItem}>
-                      <Text style={styles.bold}>LinkedIn: </Text>
+                      <Text style={styles.label}>LinkedIn: </Text>
                       <Text>{getDisplayValue(applicant.linkedInUrl)}</Text>
                     </View>
                   </View>
@@ -298,11 +333,11 @@ export const ResumePDF = ({ applicant, jobApplication, education, employmentHist
                   <SectionTitle title="Compliance" />
                   <View style={styles.sectionCol}>
                     <View style={styles.sectionColItem}>
-                      <Text style={styles.bold}>Criminal history: </Text>
+                      <Text style={styles.label}>Criminal history: </Text>
                       <Text>{getYesNo(applicant.hasCriminalHistory)}</Text>
                     </View>
                     <View style={styles.sectionColItem}>
-                      <Text style={styles.bold}>Drug test agreement: </Text>
+                      <Text style={styles.label}>Drug test agreement: </Text>
                       <Text>{getYesNo(applicant.agreesToDrugTest)}</Text>
                     </View>
                   </View>
@@ -314,28 +349,24 @@ export const ResumePDF = ({ applicant, jobApplication, education, employmentHist
               return (
                 <View style={styles.section} key={sectionKey}>
                   <SectionTitle title="Education" />
-                  {education.length === 0 ? (
-                    <Text style={styles.emptyText}>No entries yet.</Text>
-                  ) : (
-                    <View style={styles.previewList}>
-                      {education.map((entry, idx) => (
-                        <View key={idx} style={styles.lineBlock} wrap={false}>
-                          <View style={styles.lineFlex}>
-                            <Text style={styles.bold}>
-                              {entry.degreeReceived
-                                ? `${entry.degreeReceived}${entry.programName ? ` in ${entry.programName}` : ''}`
-                                : "Degree"}
-                            </Text>
-                            <Text>{formatEducationRange(entry)}</Text>
-                          </View>
-                          <View style={styles.lineFlex}>
-                            <Text style={styles.italic}>{entry.schoolName ? entry.schoolName : "School"}</Text>
-                            <Text>{entry.schoolLocation ? entry.schoolLocation : "Location - "}</Text>
-                          </View>
+                  <View style={styles.previewList}>
+                    {education.map((entry, idx) => (
+                      <View key={idx} style={styles.lineBlock} wrap={false}>
+                        <View style={styles.lineFlex}>
+                          <Text style={styles.bold}>
+                            {entry.degreeReceived
+                              ? `${entry.degreeReceived}${entry.programName ? ` in ${entry.programName}` : ''}`
+                              : "Degree"}
+                          </Text>
+                          <Text style={styles.dateText}>{formatEducationRange(entry)}</Text>
                         </View>
-                      ))}
-                    </View>
-                  )}
+                        <View style={styles.lineFlex}>
+                          <Text style={styles.italic}>{entry.schoolName ? entry.schoolName : "School"}</Text>
+                          <Text>{entry.schoolLocation ? entry.schoolLocation : "Location - "}</Text>
+                        </View>
+                      </View>
+                    ))}
+                  </View>
                 </View>
               )
             }
@@ -344,29 +375,29 @@ export const ResumePDF = ({ applicant, jobApplication, education, employmentHist
               return (
                  <View style={styles.section} key={sectionKey}>
                   <SectionTitle title="Employment" />
-                  {employmentHistory.length === 0 ? (
-                    <Text style={styles.emptyText}>No entries yet.</Text>
-                  ) : (
-                    <View style={styles.previewList}>
-                      {employmentHistory.map((entry, idx) => (
-                        <View key={idx} style={styles.lineBlock} wrap={false}>
+                  <View style={styles.previewList}>
+                    {employmentHistory.map((entry, idx) => (
+                      <View key={idx} style={styles.lineBlock} wrap={false}>
+                        <View style={styles.lineFlex}>
+                          <Text style={styles.bold}>{getDisplayValue(entry.workPosition, 'Position')}</Text>
                           <View style={styles.lineFlex}>
-                            <Text style={styles.italic}>{entry.companyName} | {entry.workPosition}</Text>
-                            <View style={styles.lineFlex}>
-                              <Text style={styles.italic}>{formatEmploymentRange(entry)}</Text>
-                            </View>
+                            <Text style={styles.dateText}>{formatEmploymentRange(entry)}</Text>
                           </View>
-                          <View style={styles.lineFlex}>
-                            <Text>{entry.companyAddress}</Text>
-                            <Text style={styles.italic}>{entry.companyPhone || 'N/A'}</Text>
-                          </View>
-                          {entry.reasonForLeaving && <View style={styles.lineFlex}>
-                            <Text>{entry.reasonForLeaving ? `Reason for leaving: ${entry.reasonForLeaving}` : ''}</Text>
-                          </View>}
                         </View>
-                      ))}
-                    </View>
-                  )}
+                        <View style={styles.lineFlex}>
+                          <Text style={styles.italic}>{getDisplayValue(entry.companyName, 'Company')}</Text>
+                          <Text>{getDisplayValue(entry.companyAddress, 'N/A')}</Text>
+                        </View>
+                        <View style={styles.lineFlex}>
+                          <Text>
+                            <Text style={styles.label}>Reason for leaving: </Text>
+                            {getDisplayValue(entry.reasonForLeaving, 'N/A')}
+                          </Text>
+                          <Text>{getDisplayValue(entry.companyPhone, 'N/A')}</Text>
+                        </View>
+                      </View>
+                    ))}
+                  </View>
                 </View>
               )
             }
@@ -375,29 +406,25 @@ export const ResumePDF = ({ applicant, jobApplication, education, employmentHist
               return (
                 <View style={styles.section} key={sectionKey}>
                   <SectionTitle title="Trainings" />
-                  {trainings.length === 0 ? (
-                    <Text style={styles.emptyText}>No entries yet.</Text>
-                  ) : (
-                    <View style={styles.previewList}>
-                      {trainings.map((entry, idx) => (
-                        <View key={idx} style={styles.lineBlock} wrap={false}>
-                          <View style={styles.lineFlex}>
-                            <Text style={styles.bold}>{getDisplayValue(entry.trainingTitle, "Title")}</Text>
-                            <Text>{formatDateForPDF(entry.completionDate) || 'N/A'}</Text>
-                          </View>
-                          <View style={styles.lineFlex}>
-                            <Text style={styles.italic}>{getDisplayValue(entry.trainingInstructor, "Instructor")}</Text>
-                            
-                            <Text>{getDisplayValue(entry.trainingDurationHours, "Duration") + " Hrs"}</Text>
-                          </View>
-                          <View style={styles.lineFlex}>
-                            <Text style={styles.italic}></Text>
-                            <Text>{getDisplayValue(entry.trainingDescription, "No description")}</Text>
-                          </View>
+                  <View style={styles.previewList}>
+                    {trainings.map((entry, idx) => (
+                      <View key={idx} style={styles.lineBlock} wrap={false}>
+                        <View style={styles.lineFlex}>
+                          <Text style={styles.bold}>{getDisplayValue(entry.trainingTitle, "Title")}</Text>
+                          <Text style={styles.dateText}>{formatDateForPDF(entry.completionDate) || 'N/A'}</Text>
                         </View>
-                      ))}
-                    </View>
-                  )}
+                        <View style={styles.lineFlex}>
+                          <Text style={styles.italic}>{getDisplayValue(entry.trainingInstructor, "Instructor")}</Text>
+                          
+                          <Text>{getDisplayValue(entry.trainingDurationHours, "Duration") + " Hrs"}</Text>
+                        </View>
+                        <View style={styles.lineFlex}>
+                          <Text style={styles.italic}></Text>
+                          <Text>{getDisplayValue(entry.trainingDescription, "No description")}</Text>
+                        </View>
+                      </View>
+                    ))}
+                  </View>
                 </View>
               )
             }
@@ -406,24 +433,20 @@ export const ResumePDF = ({ applicant, jobApplication, education, employmentHist
               return (
                  <View style={styles.section} key={sectionKey}>
                   <SectionTitle title="Certificates" />
-                  {certificates.length === 0 ? (
-                    <Text style={styles.emptyText}>No entries yet.</Text>
-                  ) : (
-                    <View style={styles.previewList}>
-                      {certificates.map((entry, idx) => (
-                        <View key={idx} style={styles.lineBlock} wrap={false}>
-                          <View style={styles.lineFlex}>
-                            <Text style={styles.bold}>{getDisplayValue(entry.certificateName, "Name")}</Text>
-                            <Text>{formatDateForPDF(entry.dateIssued) || 'N/A'}</Text>
-                          </View>
-                          <View style={styles.lineFlex}>
-                            <Text style={styles.italic}>{getDisplayValue(entry.issuingAuthority, "Authority")}</Text>
-                            <Text>{"Valid for " + getDisplayValue(entry.validityMonths, "N/A") + " Months"}</Text>
-                          </View>
+                  <View style={styles.previewList}>
+                    {certificates.map((entry, idx) => (
+                      <View key={idx} style={styles.lineBlock} wrap={false}>
+                        <View style={styles.lineFlex}>
+                          <Text style={styles.bold}>{getDisplayValue(entry.certificateName, "Name")}</Text>
+                          <Text style={styles.dateText}>{formatDateForPDF(entry.dateIssued) || 'N/A'}</Text>
                         </View>
-                      ))}
-                    </View>
-                  )}
+                        <View style={styles.lineFlex}>
+                          <Text style={styles.italic}>{getDisplayValue(entry.issuingAuthority, "Authority")}</Text>
+                          <Text>{"Valid for " + getDisplayValue(entry.validityMonths, "N/A") + " Months"}</Text>
+                        </View>
+                      </View>
+                    ))}
+                  </View>
                 </View>
               )
             }
@@ -432,28 +455,24 @@ export const ResumePDF = ({ applicant, jobApplication, education, employmentHist
               return (
                  <View style={styles.section} key={sectionKey}>
                   <SectionTitle title="References" />
-                  {references.length === 0 ? (
-                    <Text style={styles.emptyText}>No entries yet.</Text>
-                  ) : (
-                    <View style={styles.previewList}>
-                      {references.map((entry, idx) => (
-                        <View key={idx} style={styles.lineBlock} wrap={false}>
-                          <View style={styles.lineFlex}>
-                            <Text style={styles.bold}>{getDisplayValue(entry.referenceName, "Name")}</Text>
-                            <Text>{getDisplayValue(entry.referenceTitle, "Title")}</Text>
-                          </View>
-                          <View style={styles.lineFlex}>
-                            <Text style={styles.italic}>{getDisplayValue(entry.referenceCompany, "Company")}</Text>
-                            <Text>{getDisplayValue(entry.referencePhone, "Phone")}</Text>
-                          </View>
-                          <View style={styles.lineFlex}>
-                            <Text style={styles.italic}></Text>
-                            <Text>{getDisplayValue(entry.referenceEmail, "Email")}</Text>
-                          </View>
+                  <View style={styles.previewList}>
+                    {references.map((entry, idx) => (
+                      <View key={idx} style={styles.lineBlock} wrap={false}>
+                        <View style={styles.lineFlex}>
+                          <Text style={styles.bold}>{getDisplayValue(entry.referenceName, "Name")}</Text>
+                          <Text>{getDisplayValue(entry.referenceTitle, "Title")}</Text>
                         </View>
-                      ))}
-                    </View>
-                  )}
+                        <View style={styles.lineFlex}>
+                          <Text style={styles.italic}>{getDisplayValue(entry.referenceCompany, "Company")}</Text>
+                          <Text>{getDisplayValue(entry.referencePhone, "Phone")}</Text>
+                        </View>
+                        <View style={styles.lineFlex}>
+                          <Text></Text>
+                          <Text>{getDisplayValue(entry.referenceEmail, "Email")}</Text>
+                        </View>
+                      </View>
+                    ))}
+                  </View>
                 </View>
               )
             }

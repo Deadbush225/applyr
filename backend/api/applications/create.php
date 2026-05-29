@@ -125,7 +125,7 @@ try {
     $stmtSettings->execute([
         'jobApplicationId' => $jobApplicationId,
         'resumeTemplate' => (string)($input['resumeSettings']['resumeTemplate'] ?? 'classic'),
-        'previewFont' => (string)($input['resumeSettings']['previewFont'] ?? 'Helvetica'),
+        'previewFont' => (string)($input['resumeSettings']['previewFont'] ?? 'Times New Roman'),
     ]);
 
     // --- Education: find or create School and insert Education rows ---

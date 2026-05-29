@@ -163,7 +163,7 @@ DROP TABLE IF EXISTS `ApplicationResumeSettings`;
 CREATE TABLE `ApplicationResumeSettings` (
   `JobApplicationId` varchar(36) NOT NULL,  -- Matches UUID of JobApplication
   `resumeTemplate` varchar(20) NOT NULL DEFAULT 'classic' CHECK (`resumeTemplate` in ('classic','compact','modern')),
-  `previewFont` varchar(50) NOT NULL DEFAULT 'Helvetica',
+  `previewFont` varchar(50) NOT NULL DEFAULT 'Times New Roman',
   `lastUpdated` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   PRIMARY KEY (`JobApplicationId`),
   CONSTRAINT `fk_ResumeSet_JobApp` FOREIGN KEY (`JobApplicationId`) REFERENCES `JobApplication` (`JobApplicationId`) ON DELETE CASCADE

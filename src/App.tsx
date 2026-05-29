@@ -1107,7 +1107,7 @@ function App() {
             next[application.JobApplicationId] = {
               JobApplicationId: application.JobApplicationId,
               resumeTemplate: application.resumeTemplate || 'classic',
-              previewFont: application.previewFont || 'Helvetica',
+              previewFont: application.previewFont || 'Times New Roman',
               lastUpdated: application.settingsLastUpdated,
             }
           }
