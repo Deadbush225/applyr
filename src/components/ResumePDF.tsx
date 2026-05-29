@@ -1,57 +1,83 @@
-import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer';
+import { Document, Page, Text, View, StyleSheet, Font } from '@react-pdf/renderer';
 import type { Applicant, JobApplication, Education, EmploymentHistory, ApplicantReference, Training, Certificate } from '../types';
 
-type ResumeTemplateId = "classic" | "compact" | "modern";
+// ==========================================
+// 1. FONT REGISTRATION (The "Full 5")
+// ==========================================
 
-type ResumePDFProps = {
-  applicant: Applicant;
-  jobApplication: JobApplication;
-  education: Education[];
-  employmentHistory: EmploymentHistory[];
-  references: ApplicantReference[];
-  trainings: Training[];
-  certificates: Certificate[];
-  previewFont: string;
-  resumeTemplate: ResumeTemplateId;
-};
+// 1. Arial Equivalent
+Font.register({
+  family: 'Arimo',
+  fonts: [
+    { src: '/fonts/Arimo-Regular.ttf' },
+    { src: '/fonts/Arimo-Italic.ttf', fontStyle: 'italic' },
+    { src: '/fonts/Arimo-Bold.ttf', fontWeight: 'bold' },
+    { src: '/fonts/Arimo-BoldItalic.ttf', fontWeight: 'bold', fontStyle: 'italic' }
+  ]
+});
+
+// 2. Calibri Equivalent
+Font.register({
+  family: 'Carlito',
+  fonts: [
+    { src: '/fonts/Carlito-Regular.ttf' },
+    { src: '/fonts/Carlito-Italic.ttf', fontStyle: 'italic' },
+    { src: '/fonts/Carlito-Bold.ttf', fontWeight: 'bold' },
+    { src: '/fonts/Carlito-BoldItalic.ttf', fontWeight: 'bold', fontStyle: 'italic' }
+  ]
+});
+
+// 3. Garamond Equivalent
+Font.register({
+  family: 'EBGaramond',
+  fonts: [
+    { src: '/fonts/EBGaramond-Regular.ttf' },
+    { src: '/fonts/EBGaramond-Italic.ttf', fontStyle: 'italic' },
+    { src: '/fonts/EBGaramond-Bold.ttf', fontWeight: 'bold' },
+    { src: '/fonts/EBGaramond-BoldItalic.ttf', fontWeight: 'bold', fontStyle: 'italic' }
+  ]
+});
+
+// 4. Georgia Equivalent
+Font.register({
+  family: 'Gelasio',
+  fonts: [
+    { src: '/fonts/Gelasio-Regular.ttf' },
+    { src: '/fonts/Gelasio-Italic.ttf', fontStyle: 'italic' },
+    { src: '/fonts/Gelasio-Bold.ttf', fontWeight: 'bold' },
+    { src: '/fonts/Gelasio-BoldItalic.ttf', fontWeight: 'bold', fontStyle: 'italic' }
+  ]
+});
+
+// 5. Times New Roman Equivalent
+Font.register({
+  family: 'Tinos',
+  fonts: [
+    { src: '/fonts/Tinos-Regular.ttf' },
+    { src: '/fonts/Tinos-Italic.ttf', fontStyle: 'italic' },
+    { src: '/fonts/Tinos-Bold.ttf', fontWeight: 'bold' },
+    { src: '/fonts/Tinos-BoldItalic.ttf', fontWeight: 'bold', fontStyle: 'italic' }
+  ]
+});
+
+
+// ==========================================
+// 2. HELPER FUNCTIONS
+// ==========================================
 
 const getFontFamily = (font: string) => {
-  const normalized = font.trim().toLowerCase();
-  if (!normalized) {
-    return 'Times-Roman';
-  }
-  if (normalized.includes('arial') || normalized.includes('calibri')) {
-    return 'Helvetica';
-  }
-  if (
-    normalized.includes('times') ||
-    normalized.includes('georgia') ||
-    normalized.includes('garamond')
-  ) {
-    return 'Times-Roman';
-  }
-  return 'Times-Roman';
+  const normalized = font?.trim().toLowerCase() || '';
+  
+  if (normalized.includes('arial')) return 'Arimo';
+  if (normalized.includes('calibri')) return 'Carlito';
+  if (normalized.includes('georgia')) return 'Gelasio';
+  if (normalized.includes('garamond')) return 'EBGaramond';
+  
+  // Default to Times New Roman equivalent
+  return 'Tinos';
 };
 
-const getFontVariants = (baseFontFamily: string) => {
-  if (baseFontFamily === 'Helvetica') {
-    return {
-      regular: 'Helvetica',
-      bold: 'Helvetica-Bold',
-      italic: 'Helvetica-Oblique',
-      boldItalic: 'Helvetica-BoldOblique',
-    }
-  }
-
-  return {
-    regular: 'Times-Roman',
-    bold: 'Times-Bold',
-    italic: 'Times-Italic',
-    boldItalic: 'Times-BoldItalic',
-  }
-}
 const getMoneyDisplay = (value: string | number | null | undefined) => {
-  // add commas and ₱ symbol, handle invalid or empty values
   if (value === null || value === undefined || value === '') return 'Not provided';
   const num = typeof value === 'number' ? value : Number(value);
   if (Number.isNaN(num)) return 'Not provided';
@@ -62,23 +88,14 @@ const getDisplayValue = (value: string | null | undefined, fallback = "Not provi
   if (!value || typeof value !== 'string') return fallback
   return value.trim() ? value : fallback
 }
+
 const getYesNo = (value: boolean | null) => value === null ? "Not provided" : (value ? "Yes" : "No");
 
 const formatDateForPDF = (value: string | Date | null | undefined, includeDay= true) => {
   if (!value) return ''
   const months = [
-    'January',
-    'February',
-    'March',
-    'April',
-    'May',
-    'June',
-    'July',
-    'August',
-    'September',
-    'October',
-    'November',
-    'December',
+    'January', 'February', 'March', 'April', 'May', 'June', 
+    'July', 'August', 'September', 'October', 'November', 'December'
   ]
 
   if (value instanceof Date && !Number.isNaN(value.getTime())) {
@@ -123,11 +140,30 @@ const formatEmploymentRange = (entry: EmploymentHistory) => {
   return startLabel || endLabel || 'Not provided'
 }
 
-export const ResumePDF = ({ applicant, jobApplication, education, employmentHistory, references, trainings, certificates, previewFont, resumeTemplate }: ResumePDFProps) => {
-  const fontFamily = getFontFamily(previewFont);
-  const fontVariants = getFontVariants(fontFamily)
+// ==========================================
+// 3. MAIN COMPONENT
+// ==========================================
 
-  // Template-specific style variables based on App.scss
+type ResumeTemplateId = "classic" | "compact" | "modern";
+
+type ResumePDFProps = {
+  applicant: Applicant;
+  jobApplication: JobApplication;
+  education: Education[];
+  employmentHistory: EmploymentHistory[];
+  references: ApplicantReference[];
+  trainings: Training[];
+  certificates: Certificate[];
+  previewFont: string;
+  resumeTemplate: ResumeTemplateId;
+};
+
+export const ResumePDF = ({ applicant, jobApplication, education, employmentHistory, references, trainings, certificates, previewFont, resumeTemplate }: ResumePDFProps) => {
+  
+  // Resolve the exact custom font family
+  const baseFont = getFontFamily(previewFont);
+
+  // Template-specific style variables
   const isCompact = resumeTemplate === 'compact';
   const isModern = resumeTemplate === 'modern';
 
@@ -140,12 +176,12 @@ export const ResumePDF = ({ applicant, jobApplication, education, employmentHist
   const sectionPaddingBottom = isCompact ? 4 : 6;
   const textStrong = '#2f2417';
   const textMuted = '#6a553b';
-  const sidePadding = 50; // Approximate 1ch for PDF layout
+  const sidePadding = 50; 
 
   const styles = StyleSheet.create({
     page: {
       padding: sidePadding,
-      fontFamily: fontVariants.regular,
+      fontFamily: baseFont, // <--- Applied globally
       fontSize: baseFontSize,
       lineHeight: lh,
       color: textStrong,
@@ -172,8 +208,8 @@ export const ResumePDF = ({ applicant, jobApplication, education, employmentHist
     name: {
       fontSize: baseFontSize * 1.5,
       marginBottom: 4,
-      fontFamily: fontVariants.bold,
-      fontWeight: 'bold',
+      fontFamily: baseFont,
+      fontWeight: 'bold', // <--- Triggers the Bold .ttf
       color: textStrong,
     },
     role: {
@@ -186,12 +222,12 @@ export const ResumePDF = ({ applicant, jobApplication, education, employmentHist
       flexDirection: isModern ? 'row' : 'column',
       flexWrap: isModern ? 'wrap' : 'nowrap',
       textAlign: isModern ? 'left' : 'right',
-      alignItems: isModern ? 'center' : 'flex-end', // <-- Fix 1: Aligns the column items to the right
+      alignItems: isModern ? 'center' : 'flex-end', 
     },
     metaText: {
       fontSize: metaFontSize,
       marginRight: isModern ? 12 : 0,
-      marginBottom: isModern ? 0 : 2, // <-- Fix 2: Changed from 6 to 0 to remove the bottom margin in modern
+      marginBottom: isModern ? 0 : 2, 
       color: textMuted,
     },
     section: {
@@ -204,15 +240,14 @@ export const ResumePDF = ({ applicant, jobApplication, education, employmentHist
       display: 'flex',
       flexDirection: 'row',
       flexWrap: 'wrap',
-      width: '100%', // <-- CRUCIAL: Forces the container to fill the page so 25% works
+      width: '100%', 
     },
     sectionColItem: {
       width: '50%',
-      // width: isCompact ? '50%' : '25%',
       display: 'flex',
       flexDirection: 'row',
-      flexWrap: 'wrap', // <-- Prevents the label and value from overlapping
-      paddingRight: 15, // Adds a strict gutter between columns
+      flexWrap: 'wrap', 
+      paddingRight: 15, 
       marginBottom: 8,
     },
     sectionHeader: {
@@ -225,7 +260,7 @@ export const ResumePDF = ({ applicant, jobApplication, education, employmentHist
       margin: 0,
       fontSize: h3FontSize,
       textTransform: 'uppercase',
-      fontFamily: fontVariants.bold,
+      fontFamily: baseFont,
       fontWeight: 'bold',
       letterSpacing: 0.4,
       color: textStrong,
@@ -249,15 +284,15 @@ export const ResumePDF = ({ applicant, jobApplication, education, employmentHist
       marginBottom: 2,
     },
     bold: {
-      fontFamily: fontVariants.bold,
+      fontFamily: baseFont,
       fontWeight: 'bold',
     },
     italic: {
-      fontFamily: fontVariants.italic,
-      fontStyle: 'italic',
+      fontFamily: baseFont,
+      fontStyle: 'italic', // <--- Triggers the Italic .ttf
     },
     label: {
-      fontFamily: fontVariants.bold,
+      fontFamily: baseFont,
       fontWeight: 'bold',
       color: textStrong,
     },
@@ -420,7 +455,6 @@ export const ResumePDF = ({ applicant, jobApplication, education, employmentHist
                         </View>
                         <View style={styles.lineFlex}>
                           <Text style={styles.italic}>{getDisplayValue(entry.trainingInstructor, "Instructor")}</Text>
-                          
                           <Text>{getDisplayValue(entry.trainingDurationHours, "Duration") + " Hrs"}</Text>
                         </View>
                         <View style={styles.lineFlex}>
