@@ -569,7 +569,7 @@ const ResumeAccordion = ({
       </Accordion>
 
       <SectionRow
-          title="Compliance & Upload"
+          title="Compliance"
           subtitle="Agreements and resume file"
           callback={() => setActivePanel({ type: 'compliance' })}
         />
@@ -1207,7 +1207,7 @@ const ResumeAccordion = ({
 
   const renderCompliance = () => (
     <div className="section-editor">
-      {renderEditorHeader('Compliance & Upload', () => setActivePanel({ type: 'list' }), applicant.hasCriminalHistory !== null && typeof jobApplication.agreesToDrugTest === 'boolean')}
+      {renderEditorHeader('Compliance', () => setActivePanel({ type: 'list' }), applicant.hasCriminalHistory !== null && typeof jobApplication.agreesToDrugTest === 'boolean')}
       <div className="form-grid">
         <label>
           <p className="required-asterisk">Have you ever had a criminal conviction?</p>
