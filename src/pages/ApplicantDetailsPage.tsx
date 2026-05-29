@@ -160,17 +160,29 @@ const ApplicantDetailsPage = ({
     [certificates, education, employmentHistory, trainings, validationErrors],
   )
 
+  const removeEducationRef = useRef(removeEducation)
+  const removeEmploymentRef = useRef(removeEmployment)
+  const removeTrainingRef = useRef(removeTraining)
+  const removeCertificateRef = useRef(removeCertificate)
+
+  useEffect(() => {
+    removeEducationRef.current = removeEducation
+    removeEmploymentRef.current = removeEmployment
+    removeTrainingRef.current = removeTraining
+    removeCertificateRef.current = removeCertificate
+  }, [removeEducation, removeEmployment, removeTraining, removeCertificate])
+
   const discardActivePanelItem = useCallback(
     async (nextPanel: ActivePanel = { type: 'list' }) => {
       try {
         if (activePanel.type === 'education') {
-          await removeEducation(activePanel.index)
+          await removeEducationRef.current?.(activePanel.index)
         } else if (activePanel.type === 'employment') {
-          await removeEmployment(activePanel.index)
+          await removeEmploymentRef.current?.(activePanel.index)
         } else if (activePanel.type === 'training') {
-          await removeTraining(activePanel.index)
+          await removeTrainingRef.current?.(activePanel.index)
         } else if (activePanel.type === 'certificate') {
-          await removeCertificate(activePanel.index)
+          await removeCertificateRef.current?.(activePanel.index)
         }
       } catch (err) {
         console.error('Failed to discard item before switching:', err)
@@ -178,7 +190,7 @@ const ApplicantDetailsPage = ({
       setActivePanel(nextPanel)
       setShowSectionSwitchModal(false)
     },
-    [activePanel, removeEducation, removeEmployment, removeTraining, removeCertificate],
+    [activePanel],
   )
 
   const _setActivePanel = (panel: ActivePanel) => {

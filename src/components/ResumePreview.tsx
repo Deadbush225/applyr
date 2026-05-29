@@ -42,8 +42,34 @@ const ResumePreview = (props: ResumePreviewProps) => {
 
   const [isCompiling, setIsCompiling] = useState(false);
   const generationIdRef = useRef(0);
+  const lastSerializedRef = useRef<string | null>(null);
 
   useEffect(() => {
+    // Avoid recompiling when props haven't changed (prevents transient "Syncing..." flashes)
+    let snapshot: string | null = null
+    try {
+      snapshot = JSON.stringify({
+        applicant: props.applicant,
+        jobApplication: props.jobApplication,
+        education: props.education,
+        employmentHistory: props.employmentHistory,
+        references: props.references,
+        trainings: props.trainings,
+        certificates: props.certificates,
+        previewFont: props.previewFont,
+        resumeTemplate: props.resumeTemplate,
+      })
+    } catch (err) {
+      // Fallback: if serialization fails, force compile
+      snapshot = null
+    }
+
+    if (snapshot !== null && lastSerializedRef.current === snapshot) {
+      return
+    }
+
+    if (snapshot !== null) lastSerializedRef.current = snapshot
+
     const currentGenerationId = ++generationIdRef.current;
     setIsCompiling(true);
 
@@ -79,8 +105,8 @@ const ResumePreview = (props: ResumePreviewProps) => {
 
     return () => clearTimeout(compileTimeout);
   }, [
-    props.applicant, props.jobApplication, props.education, 
-    props.employmentHistory, props.references, props.trainings, 
+    props.applicant, props.jobApplication, props.education,
+    props.employmentHistory, props.references, props.trainings,
     props.certificates, props.previewFont, props.resumeTemplate
   ]);
 
