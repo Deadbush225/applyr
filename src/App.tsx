@@ -642,10 +642,42 @@ function App() {
 
   const updateReference = (index: number, field: keyof ApplicantReference, value: string) => 
     updateNestedArray('references', arr => arr.map((item, i) => i === index ? { ...item, [field]: value } : item))
-  const updateTraining = (index: number, field: keyof Training, value: string) => 
-    updateNestedArray('trainings', arr => arr.map((item, i) => i === index ? { ...item, [field]: value } : item))
-  const updateCertificate = (index: number, field: keyof Certificate, value: string) => 
-    updateNestedArray('certificates', arr => arr.map((item, i) => i === index ? { ...item, [field]: value } : item))
+  
+  const updateTraining = (index: number, field: keyof Training, value: string) => {
+    updateNestedArray('trainings', arr => {
+      // Prevent duplicate training titles (case-insensitive, only for non-empty titles)
+      if (field === 'trainingTitle' && value.trim() !== '') {
+        const isDuplicate = arr.some(
+          (training, i) => 
+            i !== index && 
+            training.trainingTitle.toLowerCase().trim() === value.toLowerCase().trim()
+        )
+        if (isDuplicate) {
+          console.warn(`A training with the title "${value}" already exists`)
+          return arr // Reject the change
+        }
+      }
+      return arr.map((item, i) => i === index ? { ...item, [field]: value } : item)
+    })
+  }
+  
+  const updateCertificate = (index: number, field: keyof Certificate, value: string) => {
+    updateNestedArray('certificates', arr => {
+      // Prevent duplicate certificate names (case-insensitive, only for non-empty names)
+      if (field === 'certificateName' && value.trim() !== '') {
+        const isDuplicate = arr.some(
+          (cert, i) => 
+            i !== index && 
+            cert.certificateName.toLowerCase().trim() === value.toLowerCase().trim()
+        )
+        if (isDuplicate) {
+          console.warn(`A certificate with the name "${value}" already exists`)
+          return arr // Reject the change
+        }
+      }
+      return arr.map((item, i) => i === index ? { ...item, [field]: value } : item)
+    })
+  }
 
   const addReference = () => updateNestedArray('references', arr => [...arr, createReference(applicant.applicantId)])
   const addTraining = () => updateNestedArray('trainings', arr => [...arr, createTraining()])

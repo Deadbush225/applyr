@@ -103,7 +103,18 @@ const ResumePreview = (props: ResumePreviewProps) => {
       }
     }, 300);
 
-    return () => clearTimeout(compileTimeout);
+    // Fallback: reset isCompiling if document doesn't load within 10 seconds (prevents stuck state)
+    const fallbackTimeout = setTimeout(() => {
+      if (currentGenerationId === generationIdRef.current) {
+        console.warn('PDF compilation fallback: Document did not load, resetting isCompiling flag');
+        setIsCompiling(false);
+      }
+    }, 10000);
+
+    return () => {
+      clearTimeout(compileTimeout);
+      clearTimeout(fallbackTimeout);
+    };
   }, [
     props.applicant, props.jobApplication, props.education,
     props.employmentHistory, props.references, props.trainings,
