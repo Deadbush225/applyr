@@ -611,7 +611,7 @@ const ResumeAccordion = ({
                   resumeTemplate={resumeTemplate}
                 />
               }
-              fileName={`${applicant.applicantName || 'Resume'}.pdf`}
+              fileName={`${applicant.applicantName || 'Resume'} - ${jobApplication.appliedPosition || 'Position'}.pdf`}
             >
               {() => 'Download'}
             </PDFDownloadLink>
