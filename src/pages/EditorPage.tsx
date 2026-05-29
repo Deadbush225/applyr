@@ -54,6 +54,8 @@ export type EditorPageProps = {
   handleResumeUpload: (file: File | null) => Promise<void>
   validationErrors: ValidationError[]
   isValidationBlocked: boolean
+    trainingDuplicateWarnings?: Record<number, { attemptedValue: string; lastValid: string }>
+    certificateDuplicateWarnings?: Record<number, { attemptedValue: string; lastValid: string }>
 }
 
 const EditorPage = ({
@@ -97,6 +99,8 @@ const EditorPage = ({
   handleResumeUpload,
   validationErrors,
   isValidationBlocked,
+    trainingDuplicateWarnings = {},
+    certificateDuplicateWarnings = {},
 }: EditorPageProps) => {
   const { applicationId } = useParams()
   const navigate = useNavigate()
@@ -207,6 +211,8 @@ const EditorPage = ({
             onSyncRequest={onSyncRequest}
             validationErrors={validationErrors}
             isValidationBlocked={isValidationBlocked}
+              trainingDuplicateWarnings={trainingDuplicateWarnings}
+              certificateDuplicateWarnings={certificateDuplicateWarnings}
           />
         </section>
         <section

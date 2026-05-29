@@ -63,6 +63,8 @@ type ResumeAccordionProps = {
   onDeleteJobApplication: (jobApplicationId: string) => Promise<void>
   validationErrors: ValidationError[]
   isValidationBlocked: boolean
+    trainingDuplicateWarnings?: Record<number, { attemptedValue: string; lastValid: string }>
+    certificateDuplicateWarnings?: Record<number, { attemptedValue: string; lastValid: string }>
 }
 
 const isValidPhoneNumber = (value: string) => {
@@ -132,6 +134,8 @@ const ResumeAccordion = ({
   validationErrors,
   isValidationBlocked,
   onSyncRequest,
+    trainingDuplicateWarnings = {},
+    certificateDuplicateWarnings = {},
 }: ResumeAccordionPropsWithSync) => {
   const today = new Date().toISOString().split('T')[0]
   const currentMonth = new Date().toISOString().slice(0, 7)
@@ -193,6 +197,18 @@ const ResumeAccordion = ({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const pdfLinkRef = useRef<any>(null)
   const [showAgreeModal, setShowAgreeModal] = useState(false)
+
+  useEffect(() => {
+    setIsSyncing(false)
+    setShowAgreeModal(false)
+  }, [jobApplication.JobApplicationId])
+
+  useEffect(() => {
+    return () => {
+      setIsSyncing(false)
+      setShowAgreeModal(false)
+    }
+  }, [])
 
   // Handle PDF download with sync - ensure data is saved before downloading
   const handlePDFDownload = async () => {
@@ -979,7 +995,8 @@ const ResumeAccordion = ({
             entry.trainingTitle !== '' &&
             entry.trainingInstructor !== '' &&
             entry.trainingDurationHours !== '' &&
-            entry.completionDate !== '',
+             entry.completionDate !== '' &&
+             !trainingDuplicateWarnings[index],
         )}
         {hasTrainingError ? (
           <div
@@ -996,6 +1013,26 @@ const ResumeAccordion = ({
             {trainingErrorMessages.join(' ')}
           </div>
         ) : null}
+          {trainingDuplicateWarnings[index] ? (
+            <div
+              style={{
+                backgroundColor: '#fef3c7',
+                border: '1px solid #fbbf24',
+                borderRadius: '6px',
+                padding: '10px 12px',
+                marginBottom: '12px',
+                color: '#92400e',
+              }}
+            >
+              <strong>⚠️ Duplicate Training Title</strong>
+              <p style={{ margin: '8px 0 0 0' }}>
+                A training with title "{trainingDuplicateWarnings[index].attemptedValue}" already exists.
+              </p>
+              <p style={{ margin: '4px 0 0 0' }}>
+                Using last valid: "{trainingDuplicateWarnings[index].lastValid}"
+              </p>
+            </div>
+          ) : null}
         <div className="form-grid">
           <label>
             <p className="required-asterisk">Title</p>
@@ -1076,7 +1113,8 @@ const ResumeAccordion = ({
             entry.certificateName !== '' &&
             entry.issuingAuthority !== '' &&
             entry.validityMonths !== '' &&
-            entry.dateIssued !== '',
+             entry.dateIssued !== '' &&
+             !certificateDuplicateWarnings[index],
         )}
         {hasCertificateError ? (
           <div
@@ -1093,6 +1131,26 @@ const ResumeAccordion = ({
             {certificateErrorMessages.join(' ')}
           </div>
         ) : null}
+          {certificateDuplicateWarnings[index] ? (
+            <div
+              style={{
+                backgroundColor: '#fef3c7',
+                border: '1px solid #fbbf24',
+                borderRadius: '6px',
+                padding: '10px 12px',
+                marginBottom: '12px',
+                color: '#92400e',
+              }}
+            >
+              <strong>⚠️ Duplicate Certificate Name</strong>
+              <p style={{ margin: '8px 0 0 0' }}>
+                A certificate with name "{certificateDuplicateWarnings[index].attemptedValue}" already exists.
+              </p>
+              <p style={{ margin: '4px 0 0 0' }}>
+                Using last valid: "{certificateDuplicateWarnings[index].lastValid}"
+              </p>
+            </div>
+          ) : null}
         <div className="form-grid">
           <label>
             <p className="required-asterisk">Name</p>

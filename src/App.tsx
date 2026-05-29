@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import './styles/App.scss'
 
@@ -445,6 +445,10 @@ function App() {
   const [validationErrors, setValidationErrors] = useState<ValidationError[]>([])
   const [profileNavigationGuard, setProfileNavigationGuard] = useState<ProfileNavigationGuard | null>(null)
   const [pendingNavigationTarget, setPendingNavigationTarget] = useState<string | null>(null)
+  const [trainingDuplicateWarnings, setTrainingDuplicateWarnings] = useState<Record<number, { attemptedValue: string; lastValid: string }>>({})
+  const [certificateDuplicateWarnings, setCertificateDuplicateWarnings] = useState<Record<number, { attemptedValue: string; lastValid: string }>>({})
+  const pendingTrainingDuplicateSelectionRef = useRef<Record<number, string>>({})
+  const pendingCertificateDuplicateSelectionRef = useRef<Record<number, string>>({})
   const location = useLocation()
   const navigate = useNavigate()
 
@@ -644,8 +648,11 @@ function App() {
     updateNestedArray('references', arr => arr.map((item, i) => i === index ? { ...item, [field]: value } : item))
   
   const updateTraining = (index: number, field: keyof Training, value: string) => {
+    const currentTraining = activeJobApplication?.trainings?.[index]
+    const pendingTrainingDuplicateValue = pendingTrainingDuplicateSelectionRef.current[index]
+    
     updateNestedArray('trainings', arr => {
-      // Prevent duplicate training titles (case-insensitive, only for non-empty titles)
+      // Check for duplicates when updating trainingTitle
       if (field === 'trainingTitle' && value.trim() !== '') {
         const isDuplicate = arr.some(
           (training, i) => 
@@ -653,17 +660,40 @@ function App() {
             training.trainingTitle.toLowerCase().trim() === value.toLowerCase().trim()
         )
         if (isDuplicate) {
-          console.warn(`A training with the title "${value}" already exists`)
-          return arr // Reject the change
+          pendingTrainingDuplicateSelectionRef.current[index] = value.trim().toLowerCase()
+          // Store warning with the last valid value
+          setTrainingDuplicateWarnings(prev => ({
+            ...prev,
+            [index]: {
+              attemptedValue: value,
+              lastValid: currentTraining?.trainingTitle || ''
+            }
+          }))
+          return arr // Don't update state, but UI will show warning
+        } else {
+          delete pendingTrainingDuplicateSelectionRef.current[index]
+          // Clear warning if user fixed the duplicate
+          setTrainingDuplicateWarnings(prev => {
+            const next = { ...prev }
+            delete next[index]
+            return next
+          })
         }
+      } else if (field === 'trainingId' && pendingTrainingDuplicateValue) {
+        delete pendingTrainingDuplicateSelectionRef.current[index]
+        return arr
       }
+      
       return arr.map((item, i) => i === index ? { ...item, [field]: value } : item)
     })
   }
   
   const updateCertificate = (index: number, field: keyof Certificate, value: string) => {
+    const currentCert = activeJobApplication?.certificates?.[index]
+    const pendingCertificateDuplicateValue = pendingCertificateDuplicateSelectionRef.current[index]
+    
     updateNestedArray('certificates', arr => {
-      // Prevent duplicate certificate names (case-insensitive, only for non-empty names)
+      // Check for duplicates when updating certificateName
       if (field === 'certificateName' && value.trim() !== '') {
         const isDuplicate = arr.some(
           (cert, i) => 
@@ -671,10 +701,30 @@ function App() {
             cert.certificateName.toLowerCase().trim() === value.toLowerCase().trim()
         )
         if (isDuplicate) {
-          console.warn(`A certificate with the name "${value}" already exists`)
-          return arr // Reject the change
+          pendingCertificateDuplicateSelectionRef.current[index] = value.trim().toLowerCase()
+          // Store warning with the last valid value
+          setCertificateDuplicateWarnings(prev => ({
+            ...prev,
+            [index]: {
+              attemptedValue: value,
+              lastValid: currentCert?.certificateName || ''
+            }
+          }))
+          return arr // Don't update state, but UI will show warning
+        } else {
+          delete pendingCertificateDuplicateSelectionRef.current[index]
+          // Clear warning if user fixed the duplicate
+          setCertificateDuplicateWarnings(prev => {
+            const next = { ...prev }
+            delete next[index]
+            return next
+          })
         }
+      } else if (field === 'certificateId' && pendingCertificateDuplicateValue) {
+        delete pendingCertificateDuplicateSelectionRef.current[index]
+        return arr
       }
+      
       return arr.map((item, i) => i === index ? { ...item, [field]: value } : item)
     })
   }
@@ -1468,6 +1518,8 @@ function App() {
                 isValidationBlocked={isValidationBlocked}
                 onDeleteJobApplication={deleteJobApplication}
                 onSyncRequest={syncCurrentApplication}
+                trainingDuplicateWarnings={trainingDuplicateWarnings}
+                certificateDuplicateWarnings={certificateDuplicateWarnings}
               />
             ) : (
               <Navigate to="/" replace />
@@ -1517,6 +1569,8 @@ function App() {
                 isValidationBlocked={isValidationBlocked}
                 onSyncRequest={syncCurrentApplication}
                 onNavigationGuardChange={handleProfileNavigationGuardChange}
+                trainingDuplicateWarnings={trainingDuplicateWarnings}
+                certificateDuplicateWarnings={certificateDuplicateWarnings}
               />
             ) : (
               <Navigate to="/" replace />

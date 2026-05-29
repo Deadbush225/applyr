@@ -50,6 +50,8 @@ export type ApplicantDetailsPageProps = {
   onNavigationGuardChange?: (
     guard: { blocked: boolean; discardCurrentItem: () => Promise<void> } | null,
   ) => void
+    trainingDuplicateWarnings?: Record<number, { attemptedValue: string; lastValid: string }>
+    certificateDuplicateWarnings?: Record<number, { attemptedValue: string; lastValid: string }>
 }
 
 const ApplicantDetailsPage = ({
@@ -75,6 +77,8 @@ const ApplicantDetailsPage = ({
   isValidationBlocked,
   validationErrors,
   onNavigationGuardChange,
+  trainingDuplicateWarnings = {},
+  certificateDuplicateWarnings = {},
 }: ApplicantDetailsPageProps) => {
   const today = new Date().toISOString().split('T')[0]
   const currentMonth = new Date().toISOString().slice(0, 7)
@@ -662,6 +666,26 @@ const renderEducation = (index: number) => {
           <div className="form-grid">
             <label>
               <p className="required-asterisk">Title</p>
+               {trainingDuplicateWarnings[index] ? (
+                 <div
+                   style={{
+                     backgroundColor: '#fef3c7',
+                     border: '1px solid #fbbf24',
+                     borderRadius: '6px',
+                     padding: '10px 12px',
+                     marginBottom: '12px',
+                     color: '#92400e',
+                   }}
+                 >
+                   <strong>⚠️ Duplicate Training Title</strong>
+                   <p style={{ margin: '8px 0 0 0' }}>
+                     A training with title "{trainingDuplicateWarnings[index].attemptedValue}" already exists.
+                   </p>
+                   <p style={{ margin: '4px 0 0 0' }}>
+                     Using last valid: "{trainingDuplicateWarnings[index].lastValid}"
+                   </p>
+                 </div>
+               ) : null}
               <SmartCombobox
                 fetchUrl="/backend/api/trainings/list.php"
                 valueName={entry.trainingTitle}
@@ -732,7 +756,8 @@ const renderEducation = (index: number) => {
               entry.trainingTitle !== '' &&
               entry.trainingInstructor !== '' &&
               entry.trainingDurationHours !== '' &&
-              entry.completionDate !== '')}
+               entry.completionDate !== '' &&
+               !trainingDuplicateWarnings[index])}
           >
             Submit
           </button>
@@ -772,6 +797,26 @@ const renderEducation = (index: number) => {
           <div className="form-grid">
             <label>
               <p className="required-asterisk">Name</p>
+               {certificateDuplicateWarnings[index] ? (
+                 <div
+                   style={{
+                     backgroundColor: '#fef3c7',
+                     border: '1px solid #fbbf24',
+                     borderRadius: '6px',
+                     padding: '10px 12px',
+                     marginBottom: '12px',
+                     color: '#92400e',
+                   }}
+                 >
+                   <strong>⚠️ Duplicate Certificate Name</strong>
+                   <p style={{ margin: '8px 0 0 0' }}>
+                     A certificate with name "{certificateDuplicateWarnings[index].attemptedValue}" already exists.
+                   </p>
+                   <p style={{ margin: '4px 0 0 0' }}>
+                     Using last valid: "{certificateDuplicateWarnings[index].lastValid}"
+                   </p>
+                 </div>
+               ) : null}
               <SmartCombobox
                 fetchUrl="/backend/api/certificates/list.php"
                 valueName={entry.certificateName}
@@ -833,7 +878,8 @@ const renderEducation = (index: number) => {
               entry.certificateName !== '' &&
               entry.issuingAuthority !== '' &&
               entry.validityMonths !== '' &&
-              entry.dateIssued !== '')}
+               entry.dateIssued !== '' &&
+               !certificateDuplicateWarnings[index])}
           >
             Submit
           </button>
