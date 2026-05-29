@@ -16,6 +16,7 @@ export type JobApplication = {
   appliedPosition: string
   JobApplicationDate: string
   JobApplicationStatus?: string
+  agreesToDrugTest?: boolean
   lastUpdated: string
   availableStartDate: string
   expectedSalary: string

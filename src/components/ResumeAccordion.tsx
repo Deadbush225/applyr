@@ -45,7 +45,6 @@ type ResumeAccordionProps = {
   onPreviewFontChange: (fontFamily: string) => void
   resumeTemplate: 'classic' | 'compact' | 'modern'
   onResumeTemplateChange: (template: 'classic' | 'compact' | 'modern') => void
-  updateApplicant: <K extends keyof Applicant>(key: K, value: Applicant[K]) => void
   updateApplication: <K extends keyof JobApplication>(key: K, value: JobApplication[K]) => void
   updateEducation: <K extends keyof Education>(index: number, field: K, value: Education[K]) => void
   updateEmployment: <K extends keyof EmploymentHistory>(index: number, field: K, value: EmploymentHistory[K]) => void
@@ -116,7 +115,6 @@ const ResumeAccordion = ({
   onPreviewFontChange,
   resumeTemplate,
   onResumeTemplateChange,
-  updateApplicant,
   updateApplication,
   updateEducation,
   updateEmployment,
@@ -1207,23 +1205,18 @@ const ResumeAccordion = ({
 
   const renderCompliance = () => (
     <div className="section-editor">
-      {renderEditorHeader('Compliance & Upload', () => setActivePanel({ type: 'list' }), applicant.hasCriminalHistory !== null && applicant.agreesToDrugTest !== null)}
+      {renderEditorHeader('Compliance & Upload', () => setActivePanel({ type: 'list' }), applicant.hasCriminalHistory !== null && typeof jobApplication.agreesToDrugTest === 'boolean')}
       <div className="form-grid">
         <label>
           <p className="required-asterisk">Have you ever had a criminal conviction?</p>
           <select
+            disabled
             value={
               applicant.hasCriminalHistory === null
                 ? ''
                 : applicant.hasCriminalHistory
                   ? 'yes'
                   : 'no'
-            }
-            onChange={(event) =>
-              updateApplicant(
-                'hasCriminalHistory',
-                event.target.value === '' ? null : event.target.value === 'yes',
-              )
             }
           >
             <option value="">Choose</option>
@@ -1236,17 +1229,14 @@ const ResumeAccordion = ({
           <p className="required-asterisk">Do you agree to a drug test?</p>
           <select
             value={
-              applicant.agreesToDrugTest === null
+              jobApplication.agreesToDrugTest === null || jobApplication.agreesToDrugTest === undefined
                 ? ''
-                : applicant.agreesToDrugTest
+                : jobApplication.agreesToDrugTest
                   ? 'yes'
                   : 'no'
             }
             onChange={(event) =>
-              updateApplicant(
-                'agreesToDrugTest',
-                event.target.value === '' ? null : event.target.value === 'yes',
-              )
+              updateApplication('agreesToDrugTest', event.target.value === '' ? false : event.target.value === 'yes')
             }
           >
             <option value="">Choose</option>

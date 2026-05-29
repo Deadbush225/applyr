@@ -49,7 +49,7 @@ const createEmptyApplicant = (): Applicant => ({
   linkedInUrl: '',
   citizenshipStatus: '',
   hasCriminalHistory: null,
-  agreesToDrugTest: null,
+  agreesToDrugTest: false,
 })
 
 const createEmptyApplication = (applicantId: number | string): JobApplication => ({
@@ -57,6 +57,7 @@ const createEmptyApplication = (applicantId: number | string): JobApplication =>
   applicantId: String(applicantId),
   appliedPosition: '',
   JobApplicationDate: new Date().toISOString().slice(0, 10),
+  agreesToDrugTest: false,
   lastUpdated: new Date().toISOString(),
   availableStartDate: '',
   expectedSalary: '',
@@ -319,6 +320,7 @@ const normalizeJobApplication = (
   ...value,
   JobApplicationId: String(value.JobApplicationId || value.id || fallbackId),
   applicantId,
+  agreesToDrugTest: toBooleanFlag(value.agreesToDrugTest),
   references: value.references ?? [],
   trainings: value.trainings ?? [],
   certificates: value.certificates ?? [],
@@ -335,6 +337,7 @@ const normalizeBackendApplication = (
   ...createEmptyApplication(fallbackApplicantId),
   ...value,
   applicantId: value.applicantId || fallbackApplicantId,
+  agreesToDrugTest: toBooleanFlag(value.agreesToDrugTest),
   references: value.references ?? [],
   trainings: value.trainings ?? [],
   certificates: value.certificates ?? [],
@@ -837,7 +840,7 @@ function App() {
       jobApplication: {
         ...activeJobApplication,
         JobApplicationId: activeJobApplication.JobApplicationId,
-        agreesToDrugTest: applicant.agreesToDrugTest ?? false,
+        agreesToDrugTest: activeJobApplication.agreesToDrugTest ?? false,
         JobApplicationStatus: 'Pending',
       },
       references: sanitizeReferences(activeJobApplication.references || []).map((item) => {

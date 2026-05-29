@@ -378,7 +378,7 @@ export const ResumePDF = ({ applicant, jobApplication, education, employmentHist
                     </View>
                     <View style={styles.sectionColItem}>
                       <Text style={styles.label}>Drug test agreement: </Text>
-                      <Text>{getYesNo(applicant.agreesToDrugTest)}</Text>
+                      <Text>{getYesNo(jobApplication.agreesToDrugTest ?? false)}</Text>
                     </View>
                   </View>
                 </View>
