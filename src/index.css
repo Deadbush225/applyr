@@ -32,6 +32,11 @@ body,
 #root {
   height: 100dvh;
   /* overflow: hidden; */
+  font-size: large !important;
+}
+
+input {
+  font-size: 1em !important;
 }
 
 body {
