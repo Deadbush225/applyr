@@ -46,10 +46,8 @@ export type EditorPageProps = {
   removeReference: (index: number) => Promise<void>
   reorderReferences: (fromIndex: number, toIndex: number) => void
   addTraining: () => void
-  removeTraining: (index: number) => Promise<void>
   reorderTrainings: (fromIndex: number, toIndex: number) => void
   addCertificate: () => void
-  removeCertificate: (index: number) => Promise<void>
   reorderCertificates: (fromIndex: number, toIndex: number) => void
   handleResumeUpload: (file: File | null) => Promise<void>
   validationErrors: ValidationError[]
@@ -74,7 +72,6 @@ const EditorPage = ({
   resumeTemplate,
   onPreviewFontChange,
   onResumeTemplateChange,
-  updateApplicant,
   updateApplication,
   updateEducation,
   updateEmployment,
@@ -90,11 +87,9 @@ const EditorPage = ({
   addReference,
   removeReference,
   reorderReferences,
-  // addTraining,
-  // removeTraining,
+  addTraining,
   reorderTrainings,
-  // addCertificate,
-  // removeCertificate,
+  addCertificate,
   reorderCertificates,
   handleResumeUpload,
   validationErrors,
@@ -184,7 +179,6 @@ const EditorPage = ({
             onPreviewFontChange={onPreviewFontChange}
             resumeTemplate={resumeTemplate}
             onResumeTemplateChange={onResumeTemplateChange}
-            updateApplicant={updateApplicant}
             updateApplication={updateApplication}
             updateEducation={updateEducation}
             updateEmployment={updateEmployment}
@@ -200,11 +194,9 @@ const EditorPage = ({
             addReference={addReference}
             removeReference={removeReference}
             reorderReferences={reorderReferences}
-            // addTraining={addTraining}
-            // removeTraining={removeTraining}
+            addTraining={addTraining}
             reorderTrainings={reorderTrainings}
-            // addCertificate={addCertificate}
-            // removeCertificate={removeCertificate}
+            addCertificate={addCertificate}
             reorderCertificates={reorderCertificates}
             handleResumeUpload={handleResumeUpload}
             onDeleteJobApplication={handleDeleteJobApplication}

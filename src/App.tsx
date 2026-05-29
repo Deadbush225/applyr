@@ -343,6 +343,12 @@ const normalizeBackendApplication = (
   certificates: value.certificates ?? [],
   lastUpdated: value.lastUpdated || value.JobApplicationDate || new Date().toISOString(),
 })
+
+const preferNonEmptyArray = <T,>(primary?: T[] | null, secondary?: T[] | null, fallback: T[] = []) => {
+  if (primary && primary.length > 0) return primary
+  if (secondary && secondary.length > 0) return secondary
+  return fallback
+}
 function App() {
   const storedAuthSession = loadStoredValue<AuthSession | null>(storageKeys.authSession, null)
   const initialStorageScope = getStorageScope(storedAuthSession?.user.id)
@@ -806,46 +812,6 @@ function App() {
     }
   }
 
-  const removeTraining = async (index: number) => {
-    const entry = activeJobApplication?.trainings?.[index]
-    if (!entry) {
-      return
-    }
-
-    try {
-      const nestedId = entry.trainingId ?? ((entry as Training & { id?: number | string }).id)
-      if (nestedId == null || nestedId === '') {
-        console.warn('Training has no id, skipping backend delete and removing locally')
-        updateNestedArray('trainings', (arr) => arr.filter((_, i) => i !== index))
-        return
-      }
-      await deleteNestedItem('training', nestedId, authSession?.token)
-      updateNestedArray('trainings', (arr) => arr.filter((_, i) => i !== index))
-    } catch (error) {
-      console.error('Failed to delete training:', error)
-    }
-  }
-
-  const removeCertificate = async (index: number) => {
-    const entry = activeJobApplication?.certificates?.[index]
-    if (!entry) {
-      return
-    }
-
-    try {
-      const nestedId = entry.certificateId ?? ((entry as Certificate & { id?: number | string }).id)
-      if (nestedId == null || nestedId === '') {
-        console.warn('Certificate has no id, skipping backend delete and removing locally')
-        updateNestedArray('certificates', (arr) => arr.filter((_, i) => i !== index))
-        return
-      }
-      await deleteNestedItem('certificate', nestedId, authSession?.token)
-      updateNestedArray('certificates', (arr) => arr.filter((_, i) => i !== index))
-    } catch (error) {
-      console.error('Failed to delete certificate:', error)
-    }
-  }
-
   const reorderReferences = (fromIndex: number, toIndex: number) => updateNestedArray('references', arr => moveItem(arr, fromIndex, toIndex))
   const reorderTrainings = (fromIndex: number, toIndex: number) => updateNestedArray('trainings', arr => moveItem(arr, fromIndex, toIndex))
   const reorderCertificates = (fromIndex: number, toIndex: number) => updateNestedArray('certificates', arr => moveItem(arr, fromIndex, toIndex))
@@ -1147,9 +1113,9 @@ function App() {
             const local = localById.get(application.JobApplicationId)
             return {
               ...application,
-              references: local?.references ?? application.references ?? [],
-              trainings: local?.trainings ?? application.trainings ?? backendTrainings,
-              certificates: local?.certificates ?? application.certificates ?? backendCertificates,
+              references: preferNonEmptyArray(local?.references, application.references),
+              trainings: preferNonEmptyArray(local?.trainings, application.trainings, backendTrainings),
+              certificates: preferNonEmptyArray(local?.certificates, application.certificates, backendCertificates),
             }
           })
         })
@@ -1549,8 +1515,8 @@ function App() {
                 updateEducation={updateEducation}
                 updateEmployment={updateEmployment}
                 updateReference={updateReference}
-                updateTraining={updateApplicantTraining}
-                updateCertificate={updateApplicantCertificate}
+                updateTraining={updateTraining}
+                updateCertificate={updateCertificate}
                 addEducation={addEducation}
                 removeEducation={removeEducation}
                 reorderEducation={reorderEducation}
@@ -1560,12 +1526,10 @@ function App() {
                 addReference={addReference}
                 removeReference={removeReference}
                 reorderReferences={reorderReferences}
-                addTraining={addApplicantTraining}
-                removeTraining={removeApplicantTraining}
-                reorderTrainings={reorderApplicantTrainings}
-                addCertificate={addApplicantCertificate}
-                removeCertificate={removeApplicantCertificate}
-                reorderCertificates={reorderApplicantCertificates}
+                addTraining={addTraining}
+                reorderTrainings={reorderTrainings}
+                addCertificate={addCertificate}
+                reorderCertificates={reorderCertificates}
                 handleResumeUpload={handleResumeUpload}
                 validationErrors={validationErrors}
                 isValidationBlocked={isValidationBlocked}
