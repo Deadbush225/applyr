@@ -44,6 +44,25 @@ const ResumePreview = (props: ResumePreviewProps) => {
   const generationIdRef = useRef(0);
   const lastSerializedRef = useRef<string | null>(null);
 
+  // Cleanup on unmount: revoke blob URLs and reset generation ID to prevent stale renders
+  useEffect(() => {
+    return () => {
+      if (urlA) URL.revokeObjectURL(urlA);
+      if (urlB) URL.revokeObjectURL(urlB);
+      generationIdRef.current = 0;
+      lastSerializedRef.current = null;
+    };
+  }, []);
+
+  // When application changes, revoke old blob URLs and reset state to force recompilation
+  useEffect(() => {
+    return () => {
+      if (urlA) URL.revokeObjectURL(urlA);
+      if (urlB) URL.revokeObjectURL(urlB);
+      lastSerializedRef.current = null;
+    };
+  }, [props.jobApplication.JobApplicationId, urlA, urlB]);
+
   useEffect(() => {
     // Avoid recompiling when props haven't changed (prevents transient "Syncing..." flashes)
     let snapshot: string | null = null
@@ -83,6 +102,9 @@ const ResumePreview = (props: ResumePreviewProps) => {
           URL.revokeObjectURL(newBlobUrl);
           return;
         }
+
+        // Reset isCompiling as soon as PDF is created (don't wait for Document onLoadSuccess)
+        setIsCompiling(false);
 
         // The Ping-Pong Logic: Render the update in whichever buffer is currently hidden
         if (!urlA && !urlB) {

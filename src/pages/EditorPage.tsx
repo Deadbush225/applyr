@@ -228,6 +228,7 @@ const EditorPage = ({
           }}
         >
           <ResumePreview
+            key={`preview-main-${jobApplication.JobApplicationId}`}
             applicant={applicant}
             jobApplication={jobApplication}
             education={education}
@@ -252,6 +253,7 @@ const EditorPage = ({
               Close Preview
             </button>
             <ResumePreview
+              key={`preview-modal-${jobApplication.JobApplicationId}`}
               applicant={applicant}
               jobApplication={jobApplication}
               education={education}

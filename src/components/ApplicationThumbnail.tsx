@@ -37,22 +37,18 @@ const ApplicationThumbnail = (props: ApplicationThumbnailProps) => {
     return `applyr:thumb:${props.jobApplication.JobApplicationId}:${hash}`;
   }, [props]);
 
-  // 1. Initialize lazily so it grabs the cache on the very first render instantly
-  const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(() => {
-    return typeof window !== 'undefined' ? window.localStorage.getItem(cacheKey) : null;
-  });
-
-  // 2. Track the previous cache key to detect when the application data changes
-  const [prevCacheKey, setPrevCacheKey] = useState(cacheKey);
-
-  // 3. "Render-Phase Update"
-  if (cacheKey !== prevCacheKey) {
-    setPrevCacheKey(cacheKey);
-    setThumbnailUrl(window.localStorage.getItem(cacheKey));
-  }
+  // 1. Initialize state without cache; cache lookup happens in effect
+  const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    if (thumbnailUrl || !captureRef.current) return;
+    // Always check cache first when cacheKey changes
+    const cached = typeof window !== 'undefined' ? window.localStorage.getItem(cacheKey) : null;
+    if (cached) {
+      setThumbnailUrl(cached);
+      return;
+    }
+
+    if (!captureRef.current) return;
     
     let canceled = false;
     
@@ -133,7 +129,7 @@ const ApplicationThumbnail = (props: ApplicationThumbnailProps) => {
       canceled = true;
       window.clearInterval(checkInterval);
     };
-  }, [thumbnailUrl, cacheKey, props.jobApplication.JobApplicationId]);
+  }, [cacheKey]);
 
   return (
     <div className="thumbnail-preview">
@@ -143,7 +139,7 @@ const ApplicationThumbnail = (props: ApplicationThumbnailProps) => {
         <>
           <div className="thumbnail-skeleton">Updating...</div>
           <div className="thumbnail-capture" ref={captureRef}>
-            <ResumePreview {...props} />
+            <ResumePreview key={`thumb-${props.jobApplication.JobApplicationId}`} {...props} />
           </div>
         </>
       )}
