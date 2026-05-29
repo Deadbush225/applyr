@@ -199,5 +199,9 @@ try {
     jsonResponse(500, [
         'success' => false,
         'message' => 'Failed to sync applicant profile.',
+        // Temporarily add these to see the exact issue in your browser network tab
+        'debug_error' => $error->getMessage(),
+        'debug_line' => $error->getLine(),
+        'debug_file' => $error->getFile()
     ]);
 }

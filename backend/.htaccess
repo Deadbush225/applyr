@@ -1,8 +1,17 @@
 <IfModule mod_headers.c>
-    # 1. Set CORS headers globally for all files (login.php, index.php, etc.)
-    Header always set Access-Control-Allow-Origin "https://applyr-chi.vercel.app"
+    # 1. Define allowed origins (separate multiple domains with a pipe | )
+    # Note: Escape the dots in your domains with a backslash \ for proper regex
+    SetEnvIf Origin "^(https://applyr-chi\.vercel\.app|http://localhost:5173)$" ALLOWED_ORIGIN=$0
+
+    # 2. Dynamically set the Allow-Origin header ONLY if the origin matched the list above
+    Header always set Access-Control-Allow-Origin "%{ALLOWED_ORIGIN}e" env=ALLOWED_ORIGIN
+    
+    # 3. Standard CORS headers
     Header always set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
     Header always set Access-Control-Allow-Headers "Content-Type, Authorization, X-Requested-With"
+    
+    # Optional: If you ever need to send cookies across domains, uncomment the line below
+    # Header always set Access-Control-Allow-Credentials "true" env=ALLOWED_ORIGIN
 </IfModule>
 
 RewriteEngine On
