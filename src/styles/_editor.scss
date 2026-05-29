@@ -142,6 +142,12 @@
     flex-direction: column;
     align-items: flex-start;
     gap: 4px;
+
+    :first-child {
+      font-weight: bolder;
+      font-family: 'DM Sans';
+      font-size: 1.5em;
+    }
   }
 
   &:hover {
