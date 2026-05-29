@@ -42,13 +42,15 @@ const Navbar = ({ authSession, onLogout }: NavbarProps) => {
     // setTimeout ensures the DOM updates the '.active' class first
     const timer = setTimeout(() => {
       if (navLinksRef.current) {
-        const activeLink = navLinksRef.current.querySelector('.nav-link.active') as HTMLElement;
+        const activeLink = navLinksRef.current.querySelector('.nav-link.active') as HTMLElement | null;
         if (activeLink) {
           setIndicatorStyle({
             width: activeLink.offsetWidth,
             left: activeLink.offsetLeft,
             opacity: 1
           });
+        } else {
+          setIndicatorStyle({ width: 0, left: 0, opacity: 0 });
         }
       }
     }, 50);
@@ -111,7 +113,7 @@ const Navbar = ({ authSession, onLogout }: NavbarProps) => {
           <Link to="/profile" className={`nav-link ${location.pathname.startsWith('/profile') ? 'active' : ''}`}>
             My Profile
           </Link>
-          <Link to="/applicant" className={`nav-link ${location.pathname.startsWith('/applicant') || location.pathname.startsWith('/editor') ? 'active' : ''}`}>
+          <Link to="/applicant" className={`nav-link ${location.pathname.startsWith('/applicant') ? 'active' : ''}`}>
             Applicant Info
           </Link>
         </div>

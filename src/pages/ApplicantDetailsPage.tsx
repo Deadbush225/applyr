@@ -157,12 +157,26 @@ const ApplicantDetailsPage = ({
     return `${startYear}${endYear ? ` – ${endYear}` : ''}`
   }
 
+  //get month from "2023-08" format and convert to "Aug, 2023"
+  const getMonthName = (month: string) => {
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ]
+    return months[parseInt(month) - 1]
+  }
+
   const formatEmploymentTitle = (item: EmploymentHistory) => item.companyName || 'Company'
   const formatEmploymentRange = (item: EmploymentHistory) => {
     if (!item.startDate) return ''
-    const startYear = item.startDate.split('-')[0]
-    const endYear = item.isEmployed ? 'Present' : item.endDate?.split('-')[0] || ''
-    return `${startYear}${endYear ? ` – ${endYear}` : ''}`
+    const startArr = item.startDate.split('-')
+    const endArr = item.endDate ? item.endDate.split('-') : null
+
+    const [startYear, startMonth] = [startArr[0], startArr[1]]
+
+    const endString = item.isEmployed ? 'Present' : endArr ? `${getMonthName(endArr[1])}, ${endArr[0]}` : ''
+
+    return `${getMonthName(startMonth)}, ${startYear}${endString ? ` – ${endString}` : ''}`
   }
 
   const getFieldErrors = (fieldPath: string) =>
@@ -250,6 +264,23 @@ const renderEducation = (index: number) => {
             {renderFieldError(`education.${index}.startYear`)}
           </label>
           <label>
+            <p className={entry.isCurrent ? 'disabled-label' : 'required-asterisk'}>End Year</p>
+            <input
+              type="number"
+              min={entry.startYear ? Number(entry.startYear) : 1900}
+              max={currentYear}
+              minLength={4}
+              maxLength={4}
+              value={entry.endYear || ''}
+              onChange={(event) => updateEducation(index, 'endYear', event.target.value)}
+              onKeyDown={blockInvalidNumberKey}
+              placeholder="e.g., 2023"
+              disabled={entry.isCurrent ?? false}
+              style={{ opacity: entry.isCurrent ? 0.5 : 1, cursor: entry.isCurrent ? 'not-allowed' : 'auto' }}
+            />
+            {renderFieldError(`education.${index}.endYear`)}
+          </label>
+          <label>
             <p className="required-asterisk">Degree Received</p>
             <input
               value={entry.degreeReceived}
@@ -277,23 +308,6 @@ const renderEducation = (index: number) => {
               style={{ width: 'auto', margin: 0 }}
             />
             <span>Currently Attending</span>
-          </label>
-          <label>
-            <p className={entry.isCurrent ? 'disabled-label' : 'required-asterisk'}>End Year</p>
-            <input
-              type="number"
-              min={entry.startYear ? Number(entry.startYear) : 1900}
-              max={currentYear}
-              minLength={4}
-              maxLength={4}
-              value={entry.endYear || ''}
-              onChange={(event) => updateEducation(index, 'endYear', event.target.value)}
-              onKeyDown={blockInvalidNumberKey}
-              placeholder="e.g., 2023"
-              disabled={entry.isCurrent ?? false}
-              style={{ opacity: entry.isCurrent ? 0.5 : 1, cursor: entry.isCurrent ? 'not-allowed' : 'auto' }}
-            />
-            {renderFieldError(`education.${index}.endYear`)}
           </label>
         </div>
         <button
@@ -386,7 +400,7 @@ const renderEducation = (index: number) => {
               <input
                 value={entry.reasonForLeaving ?? ''}
                 onChange={(event) => updateEmployment(index, 'reasonForLeaving', event.target.value)}
-                placeholder="e.g., Career growth, Relocation (Optional)"
+                placeholder="e.g., Career growth, Relocation"
               />
               {renderFieldError(`employmentHistory.${index}.reasonForLeaving`)}
             </label>

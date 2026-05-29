@@ -837,7 +837,7 @@ const ResumeAccordion = ({
             <input
               value={entry.reasonForLeaving ?? ''}
               onChange={(event) => updateEmployment(index, 'reasonForLeaving', event.target.value)}
-              placeholder="e.g., Career growth, Relocation (Optional)"
+              placeholder="e.g., Career growth, Relocation"
             />
             {renderFieldError(`employmentHistory.${index}.reasonForLeaving`)}
           </label>
@@ -945,6 +945,16 @@ const ResumeAccordion = ({
             />
             {renderFieldError(`references.${index}.referenceEmail`)}
           </label>
+            <button
+          type="button"
+          className="remove-button"
+          onClick={() => {
+            void removeReference(index)
+            setActivePanel({ type: 'list' })
+          }}
+        >
+          Remove Reference
+        </button>
         </div>
       </div>
     )

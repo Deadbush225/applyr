@@ -32,7 +32,7 @@ CREATE TABLE `Applicant` (
 -- --------------------------------------------------------
 DROP TABLE IF EXISTS `Certificate`;
 CREATE TABLE `Certificate` (
-  `certificateId` char(36) NOT NULL,
+  `certificateId` int(10) NOT NULL AUTO_INCREMENT,
   `certificateName` varchar(80) NOT NULL,
   `issuingAuthority` varchar(80) NOT NULL,
   `validityMonths` int(2) NOT NULL,
@@ -45,10 +45,10 @@ CREATE TABLE `Certificate` (
 -- --------------------------------------------------------
 DROP TABLE IF EXISTS `Company`;
 CREATE TABLE `Company` (
-  `companyId` char(36) NOT NULL,
+  `companyId` int(10) NOT NULL AUTO_INCREMENT,
   `companyName` varchar(80) NOT NULL,
   `companyAddress` varchar(100) NOT NULL,
-  `companyPhone` varchar(16) NOT NULL,
+  `companyPhone` varchar(11) NOT NULL,
   PRIMARY KEY (`companyId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -57,7 +57,7 @@ CREATE TABLE `Company` (
 -- --------------------------------------------------------
 DROP TABLE IF EXISTS `School`;
 CREATE TABLE `School` (
-  `schoolId` char(36) NOT NULL,
+  `schoolId` int(10) NOT NULL AUTO_INCREMENT,
   `schoolName` varchar(80) NOT NULL,
   `schoolLocation` varchar(100) NOT NULL,
   PRIMARY KEY (`schoolId`)
@@ -68,7 +68,7 @@ CREATE TABLE `School` (
 -- --------------------------------------------------------
 DROP TABLE IF EXISTS `Training`;
 CREATE TABLE `Training` (
-  `trainingId` char(36) NOT NULL,
+  `trainingId` int(10) NOT NULL AUTO_INCREMENT,
   `trainingTitle` varchar(80) NOT NULL,
   `trainingDescription` varchar(255) NOT NULL,
   `trainingDurationHours` int(3) NOT NULL,
