@@ -665,7 +665,7 @@ const ResumeAccordion = ({
           {renderFieldError('jobApplication.availableStartDate')}
         </label>
         <label>
-          Expected Salary
+          Expected Monthly Salary (₱)
           <input
             type="number"
             value={jobApplication.expectedSalary}

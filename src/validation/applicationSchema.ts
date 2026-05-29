@@ -285,6 +285,21 @@ export const JobApplicationSchema = z.object({
     })
   }
 
+  // Disallow job application dates that are earlier than today (in UTC)
+  if (value.JobApplicationDate && isValidDateString(value.JobApplicationDate)) {
+    const appDate = parseDateUTC(value.JobApplicationDate)
+    const today = new Date()
+    const todayUTC = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()))
+
+    if (appDate.getTime() < todayUTC.getTime()) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['JobApplicationDate'],
+        message: 'Job application date cannot be earlier than today',
+      })
+    }
+  }
+
   if (
     value.availableStartDate &&
     value.JobApplicationDate &&

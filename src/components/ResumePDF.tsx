@@ -29,6 +29,13 @@ const getFontFamily = (font: string) => {
   }
   return 'Helvetica';
 };
+const getMoneyDisplay = (value: string | number | null | undefined) => {
+  // add commas and ₱ symbol, handle invalid or empty values
+  if (value === null || value === undefined || value === '') return 'Not provided';
+  const num = typeof value === 'number' ? value : Number(value);
+  if (Number.isNaN(num)) return 'Not provided';
+  return `Php ${num.toLocaleString()}`;
+}
 
 const getDisplayValue = (value: string | null | undefined, fallback = "Not provided") => {
   if (!value || typeof value !== 'string') return fallback
@@ -270,7 +277,7 @@ export const ResumePDF = ({ applicant, jobApplication, education, employmentHist
                     </View>
                     <View style={styles.sectionColItem}>
                       <Text style={styles.bold}>Expected salary: </Text>
-                      <Text>{getDisplayValue(jobApplication.expectedSalary)}</Text>
+                      <Text>{getMoneyDisplay(jobApplication.expectedSalary)}</Text>
                     </View>
                     <View style={styles.sectionColItem}>
                       <Text style={styles.bold}>Citizenship: </Text>

@@ -32,6 +32,35 @@ $defaults = [
 
 $jobApplication = array_merge($defaults, $jobApplication);
 
+// Validate JobApplicationDate: must be YYYY-MM-DD and not earlier than today
+function is_valid_date_ymd(string $s): bool
+{
+    if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $s)) {
+        return false;
+    }
+
+    $ts = strtotime($s);
+    if ($ts === false) {
+        return false;
+    }
+
+    return date('Y-m-d', $ts) === $s;
+}
+
+$jobAppDate = (string)($jobApplication['JobApplicationDate'] ?? '');
+if ($jobAppDate !== '') {
+    if (!is_valid_date_ymd($jobAppDate)) {
+        jsonResponse(422, ['success' => false, 'message' => 'JobApplicationDate must be a valid date (YYYY-MM-DD).']);
+        exit;
+    }
+
+    $today = date('Y-m-d');
+    if (strtotime($jobAppDate) < strtotime($today)) {
+        jsonResponse(422, ['success' => false, 'message' => 'Job application date cannot be earlier than today.']);
+        exit;
+    }
+}
+
 try {
     $db->beginTransaction();
 
