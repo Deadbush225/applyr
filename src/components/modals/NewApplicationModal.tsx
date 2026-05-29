@@ -38,9 +38,9 @@ const NewApplicationModal = ({ isOpen, onClose, onCreate }: Props) => {
         <h3>Create New Application</h3>
         <form onSubmit={handleSubmit} className='form-grid'>
           <label>
-            <p className='required-asterisk'>
+            <span className='required-asterisk'>
               Applied Position
-            </p>
+            </span>
             <input
               value={appliedPosition}
               onChange={(e) => setAppliedPosition(e.target.value)}
@@ -48,7 +48,10 @@ const NewApplicationModal = ({ isOpen, onClose, onCreate }: Props) => {
             />
           </label>
           <label>
+            <span className='required-asterisk'>
+
             Application Date
+            </span>
             <input type="date" value={jobDate} min={today} onChange={(e) => setJobDate(e.target.value)} />
           </label>
           <label className="modal-checkbox-row">

@@ -311,6 +311,13 @@ input {
   gap: 8px;
 }
 
+label {
+  p {
+    margin-left: 4px;
+    color: var(--text-strong);
+  }
+}
+
 /* mouse-follow blur that sits behind content */
 .mouse-blur {
   position: fixed;
