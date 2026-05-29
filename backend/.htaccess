@@ -1,16 +1,23 @@
+<IfModule mod_headers.c>
+    # 1. Set CORS headers globally for all files (login.php, index.php, etc.)
+    Header always set Access-Control-Allow-Origin "https://applyr-chi.vercel.app"
+    Header always set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+    Header always set Access-Control-Allow-Headers "Content-Type, Authorization, X-Requested-With"
+</IfModule>
+
 RewriteEngine On
 
 # --- TO ENABLE AUTHORIZATION ---
 SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
 
-# Allow CORS preflight requests to be handled properly
+# 2. Catch OPTIONS requests and return 200 OK immediately (Bypasses PHP entirely)
 RewriteCond %{REQUEST_METHOD} OPTIONS
-RewriteRule ^(.*)$ index.php [QSA,L]
+RewriteRule ^(.*)$ $1 [R=200,L]
 
-# Check if the requested file or directory actually exists
+# 3. Check if the requested file or directory actually exists
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 
-# Route all requests to index.php ONLY if the file does not exist
+# 4. Route all requests to index.php ONLY if the file does not exist
 RewriteCond %{REQUEST_URI} !index\.php$
 RewriteRule ^(.*)$ index.php?url=$1 [QSA,L]
