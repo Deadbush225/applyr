@@ -21,15 +21,22 @@ if ($applicantId !== (string)($input['applicantId'] ?? '')) {
 try {
     $db->beginTransaction();
 
-    $education = isset($input['education']) && is_array($input['education']) ? $input['education'] : [];
-    $employmentHistory = isset($input['employmentHistory']) && is_array($input['employmentHistory']) ? $input['employmentHistory'] : [];
-    $trainings = isset($input['trainings']) && is_array($input['trainings']) ? $input['trainings'] : [];
-    $certificates = isset($input['certificates']) && is_array($input['certificates']) ? $input['certificates'] : [];
+    $hasEducation = array_key_exists('education', $input) && is_array($input['education']);
+    $hasEmploymentHistory = array_key_exists('employmentHistory', $input) && is_array($input['employmentHistory']);
+    $hasTrainings = array_key_exists('trainings', $input) && is_array($input['trainings']);
+    $hasCertificates = array_key_exists('certificates', $input) && is_array($input['certificates']);
 
-    $db->prepare('DELETE FROM Education WHERE applicantId = :applicantId')->execute(['applicantId' => $applicantId]);
-    $db->prepare('DELETE FROM EmploymentHistory WHERE applicantId = :applicantId')->execute(['applicantId' => $applicantId]);
-    $db->prepare('DELETE FROM ApplicantTraining WHERE applicantId = :applicantId')->execute(['applicantId' => $applicantId]);
-    $db->prepare('DELETE FROM ApplicantCertificate WHERE applicantId = :applicantId')->execute(['applicantId' => $applicantId]);
+    $education = $hasEducation ? $input['education'] : [];
+    $employmentHistory = $hasEmploymentHistory ? $input['employmentHistory'] : [];
+    $trainings = $hasTrainings ? $input['trainings'] : [];
+    $certificates = $hasCertificates ? $input['certificates'] : [];
+
+    if ($hasEducation) {
+        $db->prepare('DELETE FROM Education WHERE applicantId = :applicantId')->execute(['applicantId' => $applicantId]);
+    }
+    if ($hasEmploymentHistory) {
+        $db->prepare('DELETE FROM EmploymentHistory WHERE applicantId = :applicantId')->execute(['applicantId' => $applicantId]);
+    }
 
     if ($education !== []) {
         $stmtFindSchool = $db->prepare('SELECT schoolId FROM School WHERE schoolName = :name AND schoolLocation = :loc LIMIT 1');
@@ -95,7 +102,7 @@ try {
         }
     }
 
-    if ($certificates !== []) {
+    if ($hasCertificates && $certificates !== []) {
         $stmtFindCert = $db->prepare('SELECT certificateId FROM Certificate WHERE certificateName = :name AND issuingAuthority = :authority LIMIT 1');
         $stmtCert = $db->prepare('INSERT INTO Certificate (certificateId, certificateName, issuingAuthority, validityMonths) VALUES (:certificateId, :certificateName, :issuingAuthority, :validityMonths) ON DUPLICATE KEY UPDATE certificateName = VALUES(certificateName), issuingAuthority = VALUES(issuingAuthority), validityMonths = VALUES(validityMonths)');
         $stmtAppCert = $db->prepare('INSERT INTO ApplicantCertificate (applicantId, certificateId, dateIssued) VALUES (:applicantId, :certificateId, :dateIssued) ON DUPLICATE KEY UPDATE dateIssued = VALUES(dateIssued)');
@@ -139,7 +146,7 @@ try {
         }
     }
 
-    if ($trainings !== []) {
+    if ($hasTrainings && $trainings !== []) {
         $stmtFindTrain = $db->prepare('SELECT trainingId FROM Training WHERE trainingTitle = :title LIMIT 1');
         $stmtTrain = $db->prepare('INSERT INTO Training (trainingId, trainingTitle, trainingDescription, trainingDurationHours) VALUES (:trainingId, :trainingTitle, :trainingDescription, :trainingDurationHours) ON DUPLICATE KEY UPDATE trainingTitle = VALUES(trainingTitle), trainingDescription = VALUES(trainingDescription), trainingDurationHours = VALUES(trainingDurationHours)');
         $stmtAppTrain = $db->prepare('INSERT INTO ApplicantTraining (applicantId, trainingId, completionDate, trainingInstructor) VALUES (:applicantId, :trainingId, :completionDate, :trainingInstructor) ON DUPLICATE KEY UPDATE completionDate = VALUES(completionDate), trainingInstructor = VALUES(trainingInstructor)');

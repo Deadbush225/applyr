@@ -736,6 +736,57 @@ function App() {
   const addTraining = () => updateNestedArray('trainings', arr => [...arr, createTraining()])
   const addCertificate = () => updateNestedArray('certificates', arr => [...arr, createCertificate()])
 
+  // Applicant-level helpers (operate on applicant.trainings / applicant.certificates)
+  const addApplicantTraining = () => setApplicant((prev) => ({
+    ...prev,
+    trainings: [...(prev.trainings || []), createTraining()],
+  }))
+
+  const updateApplicantTraining = (index: number, field: keyof Training, value: string) => {
+    setApplicant((prev) => {
+      const arr = prev.trainings || []
+      return { ...prev, trainings: arr.map((item, i) => (i === index ? { ...item, [field]: value } : item)) }
+    })
+  }
+
+  const removeApplicantTraining = async (index: number) => {
+    setApplicant((prev) => {
+      const arr = prev.trainings || []
+      return { ...prev, trainings: arr.filter((_, i) => i !== index) }
+    })
+  }
+
+  const addApplicantCertificate = () => setApplicant((prev) => ({
+    ...prev,
+    certificates: [...(prev.certificates || []), createCertificate()],
+  }))
+
+  const updateApplicantCertificate = (index: number, field: keyof Certificate, value: string) => {
+    setApplicant((prev) => {
+      const arr = prev.certificates || []
+      return { ...prev, certificates: arr.map((item, i) => (i === index ? { ...item, [field]: value } : item)) }
+    })
+  }
+
+  const removeApplicantCertificate = async (index: number) => {
+    setApplicant((prev) => {
+      const arr = prev.certificates || []
+      return { ...prev, certificates: arr.filter((_, i) => i !== index) }
+    })
+  }
+
+  const reorderApplicantTrainings = (fromIndex: number, toIndex: number) =>
+    setApplicant((prev) => ({
+      ...prev,
+      trainings: moveItem(prev.trainings || [], fromIndex, toIndex),
+    }))
+
+  const reorderApplicantCertificates = (fromIndex: number, toIndex: number) =>
+    setApplicant((prev) => ({
+      ...prev,
+      certificates: moveItem(prev.certificates || [], fromIndex, toIndex),
+    }))
+
   const removeReference = async (index: number) => {
     const entry = activeJobApplication?.references?.[index]
     if (!entry) {
@@ -820,16 +871,16 @@ function App() {
         EmploymentHistoryId: toPersistableId(item.EmploymentHistoryId),
         companyId: toPersistableId(item.companyId),
       })),
-      trainings: sanitizeTrainings(activeJobApplication?.trainings || []).map((item) => ({
+      trainings: sanitizeTrainings(applicant.trainings || []).map((item) => ({
         ...item,
         trainingId: toPersistableId(item.trainingId),
       })),
-      certificates: sanitizeCertificates(activeJobApplication?.certificates || []).map((item) => ({
+      certificates: sanitizeCertificates(applicant.certificates || []).map((item) => ({
         ...item,
         certificateId: toPersistableId(item.certificateId),
       })),
     }
-  }, [activeJobApplication, applicant.applicantId, education, employmentHistory])
+  }, [applicant, education, employmentHistory])
 
   const buildApplicationSyncPayload = useCallback(() => {
     if (!activeJobApplication) {
@@ -867,7 +918,6 @@ function App() {
   }, [
     activeJobApplication,
     activeJobApplicationId,
-    applicant,
     previewFont,
     resumeTemplate,
   ])
@@ -1440,8 +1490,8 @@ function App() {
                 resumeSettingsMap={resumeSettingsMap}
                 education={education}
                 employmentHistory={employmentHistory}
-                trainings={activeJobApplication?.trainings || []}
-                certificates={activeJobApplication?.certificates || []}
+                trainings={applicant.trainings || []}
+                certificates={applicant.certificates || []}
                 authSession={authSession}
                 isAuthLoading={isAuthLoading}
                 authError={authError}
@@ -1499,8 +1549,8 @@ function App() {
                 updateEducation={updateEducation}
                 updateEmployment={updateEmployment}
                 updateReference={updateReference}
-                updateTraining={updateTraining}
-                updateCertificate={updateCertificate}
+                updateTraining={updateApplicantTraining}
+                updateCertificate={updateApplicantCertificate}
                 addEducation={addEducation}
                 removeEducation={removeEducation}
                 reorderEducation={reorderEducation}
@@ -1510,12 +1560,12 @@ function App() {
                 addReference={addReference}
                 removeReference={removeReference}
                 reorderReferences={reorderReferences}
-                addTraining={addTraining}
-                removeTraining={removeTraining}
-                reorderTrainings={reorderTrainings}
-                addCertificate={addCertificate}
-                removeCertificate={removeCertificate}
-                reorderCertificates={reorderCertificates}
+                addTraining={addApplicantTraining}
+                removeTraining={removeApplicantTraining}
+                reorderTrainings={reorderApplicantTrainings}
+                addCertificate={addApplicantCertificate}
+                removeCertificate={removeApplicantCertificate}
+                reorderCertificates={reorderApplicantCertificates}
                 handleResumeUpload={handleResumeUpload}
                 validationErrors={validationErrors}
                 isValidationBlocked={isValidationBlocked}
@@ -1547,26 +1597,26 @@ function App() {
                 applicant={applicant}
                 education={education}
                 employmentHistory={employmentHistory}
-                trainings={activeJobApplication?.trainings || []}
-                certificates={activeJobApplication?.certificates || []}
+                trainings={applicant.trainings || []}
+                certificates={applicant.certificates || []}
                 uploadState={uploadState}
                 updateApplicant={updateApplicant}
                 updateEducation={updateEducation}
                 updateEmployment={updateEmployment}
-                updateTraining={updateTraining}
-                updateCertificate={updateCertificate}
+                updateTraining={updateApplicantTraining}
+                updateCertificate={updateApplicantCertificate}
                 addEducation={addEducation}
                 removeEducation={removeEducation}
                 reorderEducation={reorderEducation}
                 addEmployment={addEmployment}
                 removeEmployment={removeEmployment}
                 reorderEmployment={reorderEmployment}
-                addTraining={addTraining}
-                removeTraining={removeTraining}
-                reorderTrainings={reorderTrainings}
-                addCertificate={addCertificate}
-                removeCertificate={removeCertificate}
-                reorderCertificates={reorderCertificates}
+                addTraining={addApplicantTraining}
+                removeTraining={removeApplicantTraining}
+                reorderTrainings={reorderApplicantTrainings}
+                addCertificate={addApplicantCertificate}
+                removeCertificate={removeApplicantCertificate}
+                reorderCertificates={reorderApplicantCertificates}
                 handleResumeUpload={handleResumeUpload}
                 validationErrors={validationErrors}
                 isValidationBlocked={isValidationBlocked}

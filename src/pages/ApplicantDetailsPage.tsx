@@ -1097,7 +1097,8 @@ const renderEducation = (index: number) => {
                 className="add-button small"
                 onClick={() => {
                   addTraining()
-                  _setActivePanel({ type: 'training', index: trainings.length })
+                  // wait a tick so the new item appears in `trainings` props
+                  setTimeout(() => _setActivePanel({ type: 'training', index: trainings.length }), 0)
                 }}
                 disabled={isValidationBlocked}
               >
@@ -1142,7 +1143,8 @@ const renderEducation = (index: number) => {
                 className="add-button small"
                 onClick={() => {
                   addCertificate()
-                  _setActivePanel({ type: 'certificate', index: certificates.length })
+                  // wait a tick so the new item appears in `certificates` props
+                  setTimeout(() => _setActivePanel({ type: 'certificate', index: certificates.length }), 0)
                 }}
                 disabled={isValidationBlocked}
               >

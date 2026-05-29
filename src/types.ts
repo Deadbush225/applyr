@@ -8,6 +8,8 @@ export type Applicant = {
   citizenshipStatus: string
   hasCriminalHistory: boolean | null
   agreesToDrugTest: boolean | null
+  trainings?: Training[]
+  certificates?: Certificate[]
 }
 
 export type JobApplication = {
