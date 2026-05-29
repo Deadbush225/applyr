@@ -265,6 +265,8 @@ const renderEducation = (index: number) => {
           </label>
           <label>
             <p className={entry.isCurrent ? 'disabled-label' : 'required-asterisk'}>End Year</p>
+            <div className="flex-row">
+
             <input
               type="number"
               min={entry.startYear ? Number(entry.startYear) : 1900}
@@ -276,9 +278,19 @@ const renderEducation = (index: number) => {
               onKeyDown={blockInvalidNumberKey}
               placeholder="e.g., 2023"
               disabled={entry.isCurrent ?? false}
-              style={{ opacity: entry.isCurrent ? 0.5 : 1, cursor: entry.isCurrent ? 'not-allowed' : 'auto' }}
-            />
+              style={{ opacity: entry.isCurrent ? 0.5 : 1, cursor: entry.isCurrent ? 'not-allowed' : 'auto', flex: '3' }}
+              />
             {renderFieldError(`education.${index}.endYear`)}
+            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: '1em' }}>
+                <input
+                  type="checkbox"
+                  checked={entry.isCurrent ?? false}
+                  onChange={(event) => updateEducation(index, 'isCurrent', event.target.checked)}
+                  style={{ width: 'auto', margin: 0 }}
+                  />
+                <span>Currently Attending</span>
+              </label>
+            </div>
           </label>
           <label>
             <p className="required-asterisk">Degree Received</p>
@@ -299,15 +311,6 @@ const renderEducation = (index: number) => {
               placeholder="e.g., Computer Science"
             />
             {renderFieldError(`education.${index}.programName`)}
-          </label>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <input
-              type="checkbox"
-              checked={entry.isCurrent ?? false}
-              onChange={(event) => updateEducation(index, 'isCurrent', event.target.checked)}
-              style={{ width: 'auto', margin: 0 }}
-            />
-            <span>Currently Attending</span>
           </label>
         </div>
         <button
@@ -414,17 +417,10 @@ const renderEducation = (index: number) => {
               />
               {renderFieldError(`employmentHistory.${index}.startDate`)}
             </label>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <input
-                type="checkbox"
-                checked={entry.isEmployed ?? false}
-                onChange={(event) => updateEmployment(index, 'isEmployed', event.target.checked)}
-                style={{ width: 'auto', margin: 0 }}
-              />
-              <span>Currently Employed</span>
-            </label>
             <label>
               <p className={entry.isEmployed ? 'disabled-label' : 'required-asterisk'}>End Date</p>
+              <div className="flex-row">
+
               <input
                 type="month"
                 value={entry.endDate}
@@ -432,9 +428,19 @@ const renderEducation = (index: number) => {
                 max={currentMonth}
                 onChange={(event) => updateEmployment(index, 'endDate', event.target.value)}
                 disabled={entry.isEmployed ?? false}
-                style={{ opacity: entry.isEmployed ? 0.5 : 1, cursor: entry.isEmployed ? 'not-allowed' : 'auto' }}
-              />
+                style={{ opacity: entry.isEmployed ? 0.5 : 1, cursor: entry.isEmployed ? 'not-allowed' : 'auto', flex: '3' }}
+                />
               {renderFieldError(`employmentHistory.${index}.endDate`)}
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: '1em' }}>
+                <input
+                  type="checkbox"
+                  checked={entry.isEmployed ?? false}
+                  onChange={(event) => updateEmployment(index, 'isEmployed', event.target.checked)}
+                  style={{ width: 'auto', margin: 0}}
+                />
+                <span>Currently Employed</span>
+              </label>
+                  </div>
             </label>
           </div>
           <button

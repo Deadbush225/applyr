@@ -702,7 +702,8 @@ const ResumeAccordion = ({
               placeholder="e.g., Manila, Philippines"
             />
           </label>
-          <label>
+          <div className="flex-row">
+            <label>
             <p className="required-asterisk">Start Year</p>
             <input
               type="number"
@@ -716,6 +717,33 @@ const ResumeAccordion = ({
               placeholder="e.g., 2019"
             />
             {renderFieldError(`education.${index}.startYear`)}
+          </label>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <input
+              type="checkbox"
+              checked={entry.isCurrent ?? false}
+              onChange={(event) => updateEducation(index, 'isCurrent', event.target.checked)}
+              style={{ width: 'auto', margin: 0 }}
+            />
+            <span>Currently Attending</span>
+          </label>
+          </div>
+          <label>
+            <p className={entry.isCurrent ? 'disabled-label' : 'required-asterisk'}>End Year</p>
+            <input
+              type="number"
+              min={entry.startYear ? Number(entry.startYear) : 1900}
+              max={currentYear}
+              minLength={4}
+              maxLength={4}
+              value={entry.endYear || ''}
+              onChange={(event) => updateEducation(index, 'endYear', event.target.value)}
+              onKeyDown={blockInvalidNumberKey}
+              placeholder="e.g., 2023"
+              disabled={entry.isCurrent ?? false}
+              style={{ opacity: entry.isCurrent ? 0.5 : 1, cursor: entry.isCurrent ? 'not-allowed' : 'auto' }}
+            />
+            {renderFieldError(`education.${index}.endYear`)}
           </label>
           <label>
             <p className="required-asterisk">Degree Received</p>
@@ -736,32 +764,6 @@ const ResumeAccordion = ({
               placeholder="e.g., Computer Science"
             />
             {renderFieldError(`education.${index}.programName`)}
-          </label>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <input
-              type="checkbox"
-              checked={entry.isCurrent ?? false}
-              onChange={(event) => updateEducation(index, 'isCurrent', event.target.checked)}
-              style={{ width: 'auto', margin: 0 }}
-            />
-            <span>Currently Attending</span>
-          </label>
-          <label>
-            <p className={entry.isCurrent ? 'disabled-label' : 'required-asterisk'}>End Year</p>
-            <input
-              type="number"
-              min={entry.startYear ? Number(entry.startYear) : 1900}
-              max={currentYear}
-              minLength={4}
-              maxLength={4}
-              value={entry.endYear || ''}
-              onChange={(event) => updateEducation(index, 'endYear', event.target.value)}
-              onKeyDown={blockInvalidNumberKey}
-              placeholder="e.g., 2023"
-              disabled={entry.isCurrent ?? false}
-              style={{ opacity: entry.isCurrent ? 0.5 : 1, cursor: entry.isCurrent ? 'not-allowed' : 'auto' }}
-            />
-            {renderFieldError(`education.${index}.endYear`)}
           </label>
         </div>
       </div>
