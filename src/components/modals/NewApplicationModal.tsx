@@ -22,6 +22,12 @@ const NewApplicationModal = ({ isOpen, onClose, onCreate }: Props) => {
       setError('Applied position is required')
       return
     }
+
+    if (jobDate < today) {
+      setError('Application date cannot be earlier than today')
+      return
+    }
+
     await onCreate({ appliedPosition: appliedPosition.trim(), JobApplicationDate: jobDate, agreesToDrugTest: agrees })
     onClose()
   }
@@ -43,7 +49,7 @@ const NewApplicationModal = ({ isOpen, onClose, onCreate }: Props) => {
           </label>
           <label>
             Application Date
-            <input type="date" value={jobDate} max={today} onChange={(e) => setJobDate(e.target.value)} />
+            <input type="date" value={jobDate} min={today} onChange={(e) => setJobDate(e.target.value)} />
           </label>
           <label className="modal-checkbox-row">
             <input type="checkbox" checked={agrees} onChange={(e) => setAgrees(e.target.checked)} />
