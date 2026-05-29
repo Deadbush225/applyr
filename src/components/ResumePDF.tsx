@@ -351,11 +351,11 @@ export const ResumePDF = ({ applicant, jobApplication, education, employmentHist
                           </View>
                           <View style={styles.lineFlex}>
                             <Text>{entry.companyAddress}</Text>
-                          </View>
-                          <View style={styles.lineFlex}>
-                            <Text>{entry.reasonForLeaving ? `Reason for leaving: ${entry.reasonForLeaving}` : ''}</Text>
                             <Text style={styles.italic}>{entry.companyPhone || 'N/A'}</Text>
                           </View>
+                          {entry.reasonForLeaving && <View style={styles.lineFlex}>
+                            <Text>{entry.reasonForLeaving ? `Reason for leaving: ${entry.reasonForLeaving}` : ''}</Text>
+                          </View>}
                         </View>
                       ))}
                     </View>
