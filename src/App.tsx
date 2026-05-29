@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Navigate, Route, Routes, useNavigate } from 'react-router-dom'
+import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import './styles/App.scss'
 
 import ApplicantDetailsPage from './pages/ApplicantDetailsPage'
@@ -252,6 +252,11 @@ const starterApplicant = createEmptyApplicant()
 
 type ResumeTemplateId = 'classic' | 'compact' | 'modern'
 
+type ProfileNavigationGuard = {
+  blocked: boolean
+  discardCurrentItem: () => Promise<void>
+}
+
 const storageKeys = {
   applicant: 'applyr:applicant',
   jobApplications: 'applyr:job-applications',
@@ -438,6 +443,9 @@ function App() {
   const [isProfileHydrated, setIsProfileHydrated] = useState(!storedAuthSession?.user.id)
   const [showNewAppModal, setShowNewAppModal] = useState(false)
   const [validationErrors, setValidationErrors] = useState<ValidationError[]>([])
+  const [profileNavigationGuard, setProfileNavigationGuard] = useState<ProfileNavigationGuard | null>(null)
+  const [pendingNavigationTarget, setPendingNavigationTarget] = useState<string | null>(null)
+  const location = useLocation()
   const navigate = useNavigate()
 
   const touchActiveApplication = () => {
@@ -449,6 +457,34 @@ function App() {
       )
     )
   }
+
+  const handleProfileNavigationGuardChange = useCallback((guard: ProfileNavigationGuard | null) => {
+    setProfileNavigationGuard(guard)
+  }, [])
+
+  const handleNavbarNavigate = useCallback(
+    (target: string) => {
+      const isLeavingProfilePage = location.pathname.startsWith('/profile') && target !== '/profile'
+      if (isLeavingProfilePage && profileNavigationGuard?.blocked) {
+        setPendingNavigationTarget(target)
+        return
+      }
+
+      setPendingNavigationTarget(null)
+      navigate(target)
+    },
+    [location.pathname, navigate, profileNavigationGuard],
+  )
+
+  const handleDiscardAndNavigate = useCallback(async () => {
+    const target = pendingNavigationTarget ?? '/'
+    try {
+      await profileNavigationGuard?.discardCurrentItem()
+    } finally {
+      setPendingNavigationTarget(null)
+      navigate(target)
+    }
+  }, [navigate, pendingNavigationTarget, profileNavigationGuard])
 
   const linkApplicantId = (newApplicantId: string) => {
     setEducation((prev) => prev.map((item) => ({ ...item, applicantId: newApplicantId })))
@@ -1270,11 +1306,39 @@ function App() {
       {/* 1. Place the Navbar here. 
         It will sit at the top of the screen on EVERY route.
       */}
-      <Navbar authSession={authSession} onLogout={handleLogout} />
+      <Navbar authSession={authSession} onLogout={handleLogout} onNavigateRequest={handleNavbarNavigate} />
 
       {/* 2. Your main content area goes below it.
       */}
       <main className="app-content">
+      {pendingNavigationTarget && profileNavigationGuard?.blocked ? (
+        <div className="modal-backdrop center-align" role="dialog" aria-modal="true" aria-labelledby="profile-exit-title">
+          <div className="modal">
+            <h3 id="profile-exit-title">Finish this item first.</h3>
+            <p>You have required fields left in the current item. Choose whether to fill them in or discard the item completely before leaving the page.</p>
+            <div className="form-actions">
+              <button
+                type="button"
+                className="outline-button"
+                onClick={() => {
+                  setPendingNavigationTarget(null)
+                }}
+              >
+                Continue editing
+              </button>
+              <button
+                type="button"
+                className="primary-button"
+                onClick={() => {
+                  void handleDiscardAndNavigate()
+                }}
+              >
+                Discard current item
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
       <Routes>
         <Route
           path="/"
@@ -1420,6 +1484,7 @@ function App() {
                 validationErrors={validationErrors}
                 isValidationBlocked={isValidationBlocked}
                 onSyncRequest={syncCurrentApplication}
+                onNavigationGuardChange={handleProfileNavigationGuardChange}
               />
             ) : (
               <Navigate to="/" replace />

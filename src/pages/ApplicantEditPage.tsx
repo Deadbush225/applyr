@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { useBlocker, useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import type { Applicant } from "../types";
 import type { AuthSession } from "../services/auth";
 import GroupBox from "../components/GroupBox";
@@ -44,7 +44,6 @@ const ApplicantEditPage = ({
 	const [confirmPassword, setConfirmPassword] = useState("");
 	const [error, setError] = useState("");
 	const [message, setMessage] = useState("");
-	const [isSaving, setIsSaving] = useState(false);
 
 	useEffect(() => {
 		setApplicantName(applicant.applicantName);
@@ -54,51 +53,7 @@ const ApplicantEditPage = ({
 		setLinkedInUrl(applicant.linkedInUrl);
 		setCitizenshipStatus(applicant.citizenshipStatus);
 		setHasCriminalHistory(applicant.hasCriminalHistory);
-		setCurrentPassword("");
-		setNewPassword("");
-		setConfirmPassword("");
 	}, [applicant]);
-
-	const hasUnsavedChanges =
-		applicantName !== applicant.applicantName ||
-		homeAddress !== applicant.homeAddress ||
-		phoneNumber !== applicant.phoneNumber ||
-		emailAddress !== applicant.emailAddress ||
-		linkedInUrl !== applicant.linkedInUrl ||
-		citizenshipStatus !== applicant.citizenshipStatus ||
-		hasCriminalHistory !== applicant.hasCriminalHistory ||
-		currentPassword !== "" ||
-		newPassword !== "" ||
-		confirmPassword !== "";
-
-	const shouldBlockNavigation = hasUnsavedChanges && !isSaving;
-	const blocker = useBlocker(shouldBlockNavigation);
-
-	useEffect(() => {
-		if (blocker.state !== "blocked") {
-			return;
-		}
-
-		if (window.confirm("You have unsaved profile changes. Leave this page?")) {
-			blocker.proceed();
-		} else {
-			blocker.reset();
-		}
-	}, [blocker]);
-
-	useEffect(() => {
-		const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-			if (!shouldBlockNavigation) {
-				return;
-			}
-
-			event.preventDefault();
-			event.returnValue = "";
-		};
-
-		window.addEventListener("beforeunload", handleBeforeUnload);
-		return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-	}, [shouldBlockNavigation]);
 
 	// Auto-redirect if all onboarding fields are complete **and** the user
 	// arrived here as part of the onboarding flow.
@@ -122,11 +77,9 @@ const ApplicantEditPage = ({
 		event.preventDefault();
 		setError("");
 		setMessage("");
-		setIsSaving(true);
 
 		if (newPassword && newPassword !== confirmPassword) {
 			setError("New passwords do not match.");
-			setIsSaving(false);
 			return;
 		}
 
@@ -150,8 +103,6 @@ const ApplicantEditPage = ({
 					? err.message
 					: "Unable to update applicant profile.",
 			);
-		} finally {
-			setIsSaving(false);
 		}
 	};
 

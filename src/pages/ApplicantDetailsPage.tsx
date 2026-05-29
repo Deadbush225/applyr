@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Accordion } from '../components/Accordion'
 import GroupBox from '../components/GroupBox'
@@ -47,6 +47,9 @@ export type ApplicantDetailsPageProps = {
   handleResumeUpload?: (file: File | null) => Promise<void>
   validationErrors: ValidationError[]
   isValidationBlocked: boolean
+  onNavigationGuardChange?: (
+    guard: { blocked: boolean; discardCurrentItem: () => Promise<void> } | null,
+  ) => void
 }
 
 const ApplicantDetailsPage = ({
@@ -70,7 +73,8 @@ const ApplicantDetailsPage = ({
   addCertificate,
   removeCertificate,
   isValidationBlocked,
-  validationErrors
+  validationErrors,
+  onNavigationGuardChange,
 }: ApplicantDetailsPageProps) => {
   const today = new Date().toISOString().split('T')[0]
   const currentMonth = new Date().toISOString().slice(0, 7)
@@ -99,17 +103,13 @@ const ApplicantDetailsPage = ({
   const [openSections, setOpenSections] = useState<string[]>(['education', 'employment', 'training', 'certificate'])
   const [showSectionSwitchModal, setShowSectionSwitchModal] = useState(false)
 
-  const _setActivePanel = (panel: ActivePanel) => {
-    // If switching to or from the list, allow immediately
-    if (activePanel.type === 'list' || panel.type === 'list') {
-      setActivePanel(panel)
-      return
-    }
+  const isPanelComplete = useCallback(
+    (panel: ActivePanel) => {
+      const panelHasErrors = (fieldPath: string) =>
+        validationErrors.some((error) => error.field === fieldPath || error.field.startsWith(`${fieldPath}.`))
 
-    // If current editor is complete (no missing required fields / validation errors), allow switching
-    const isCurrentEditorComplete = () => {
-      if (activePanel.type === 'education') {
-        const entry = education[activePanel.index]
+      if (panel.type === 'education') {
+        const entry = education[panel.index]
         if (!entry) return true
         const isValid =
           entry.schoolName !== '' &&
@@ -118,11 +118,11 @@ const ApplicantDetailsPage = ({
           entry.schoolLocation !== '' &&
           entry.startYear !== '' &&
           (entry.isCurrent || entry.endYear !== '')
-        const hasErrors = hasFieldErrors(`education.${activePanel.index}`)
-        return isValid && !hasErrors
+        return isValid && !panelHasErrors(`education.${panel.index}`)
       }
-      if (activePanel.type === 'employment') {
-        const entry = employmentHistory[activePanel.index]
+
+      if (panel.type === 'employment') {
+        const entry = employmentHistory[panel.index]
         if (!entry) return true
         const isValid =
           entry.companyName !== '' &&
@@ -130,35 +130,66 @@ const ApplicantDetailsPage = ({
           entry.companyAddress !== '' &&
           entry.startDate !== '' &&
           (entry.isEmployed || entry.endDate !== '')
-        const hasErrors = hasFieldErrors(`employmentHistory.${activePanel.index}`)
-        return isValid && !hasErrors
+        return isValid && !panelHasErrors(`employmentHistory.${panel.index}`)
       }
-      if (activePanel.type === 'training') {
-        const entry = trainings[activePanel.index]
+
+      if (panel.type === 'training') {
+        const entry = trainings[panel.index]
         if (!entry) return true
-        const hasTrainingError = trainingErrorMessages.length > 0 || hasFieldErrors(`trainings.${activePanel.index}`)
         const isValid =
           entry.trainingTitle !== '' &&
           entry.trainingInstructor !== '' &&
           entry.trainingDurationHours !== '' &&
           entry.completionDate !== ''
-        return isValid && !hasTrainingError
+        return isValid && !panelHasErrors(`trainings.${panel.index}`)
       }
-      if (activePanel.type === 'certificate') {
-        const entry = certificates[activePanel.index]
+
+      if (panel.type === 'certificate') {
+        const entry = certificates[panel.index]
         if (!entry) return true
-        const hasCertificateError = certificateErrorMessages.length > 0 || hasFieldErrors(`certificates.${activePanel.index}`)
         const isValid =
           entry.certificateName !== '' &&
           entry.issuingAuthority !== '' &&
           entry.validityMonths !== '' &&
           entry.dateIssued !== ''
-        return isValid && !hasCertificateError
+        return isValid && !panelHasErrors(`certificates.${panel.index}`)
       }
+
       return true
+    },
+    [certificates, education, employmentHistory, trainings, validationErrors],
+  )
+
+  const discardActivePanelItem = useCallback(
+    async (nextPanel: ActivePanel = { type: 'list' }) => {
+      try {
+        if (activePanel.type === 'education') {
+          await removeEducation(activePanel.index)
+        } else if (activePanel.type === 'employment') {
+          await removeEmployment(activePanel.index)
+        } else if (activePanel.type === 'training') {
+          await removeTraining(activePanel.index)
+        } else if (activePanel.type === 'certificate') {
+          await removeCertificate(activePanel.index)
+        }
+      } catch (err) {
+        console.error('Failed to discard item before switching:', err)
+      }
+      setActivePanel(nextPanel)
+      setShowSectionSwitchModal(false)
+    },
+    [activePanel, removeEducation, removeEmployment, removeTraining, removeCertificate],
+  )
+
+  const _setActivePanel = (panel: ActivePanel) => {
+    // If switching to or from the list, allow immediately
+    if (activePanel.type === 'list' || panel.type === 'list') {
+      setActivePanel(panel)
+      return
     }
 
-    if (isCurrentEditorComplete()) {
+    // If current editor is complete (no missing required fields / validation errors), allow switching
+    if (isPanelComplete(activePanel)) {
       setActivePanel(panel)
       return
     }
@@ -169,21 +200,7 @@ const ApplicantDetailsPage = ({
   }
 
   const handleDiscardAndSwitch = async () => {
-    try {
-      if (activePanel.type === 'education') {
-        await removeEducation(activePanel.index)
-      } else if (activePanel.type === 'employment') {
-        await removeEmployment(activePanel.index)
-      } else if (activePanel.type === 'training') {
-        await removeTraining(activePanel.index)
-      } else if (activePanel.type === 'certificate') {
-        await removeCertificate(activePanel.index)
-      }
-    } catch (err) {
-      console.error('Failed to discard item before switching:', err)
-    }
-    setActivePanel(clickedPanel)
-    setShowSectionSwitchModal(false)
+    await discardActivePanelItem(clickedPanel)
   }
 
   const blockInvalidNumberKey = (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -198,20 +215,28 @@ const ApplicantDetailsPage = ({
     syncRef.current = onSyncRequest
   }, [onSyncRequest])
 
+  const serializeCurrentState = useCallback(() => {
+    try {
+      return JSON.stringify({ applicant, education, employmentHistory, trainings, certificates })
+    } catch {
+      return null
+    }
+  }, [applicant, education, employmentHistory, trainings, certificates])
+
   // 2. TRUE UNMOUNT SAVE: Empty dependency array means this ONLY runs when leaving the page
   const lastSavedSerializedRef = useRef<string | null>(null)
+  const latestSerializedSnapshotRef = useRef<string | null>(null)
+  const isSyncingRef = useRef(false)
 
   // Initialize baseline serialized snapshot to avoid an immediate sync when nothing changed
   useEffect(() => {
-    try {
-      lastSavedSerializedRef.current = JSON.stringify({ applicant, education, employmentHistory, trainings, certificates })
-    } catch {
-      lastSavedSerializedRef.current = null
-    }
+    const snapshot = serializeCurrentState()
+    lastSavedSerializedRef.current = snapshot
+    latestSerializedSnapshotRef.current = snapshot
     return () => {
       // On unmount, only persist if current state differs from last saved snapshot
       try {
-        const current = JSON.stringify({ applicant, education, employmentHistory, trainings, certificates })
+        const current = latestSerializedSnapshotRef.current ?? serializeCurrentState()
         if (current !== lastSavedSerializedRef.current) {
           syncRef.current?.().catch(console.error)
         }
@@ -224,33 +249,54 @@ const ApplicantDetailsPage = ({
 
   // 3. SMART AUTO-SAVE: Debounces network requests by 2 seconds, only when data actually changed
   useEffect(() => {
-    let cancelled = false
-    let timer: ReturnType<typeof setTimeout> | null = null
-    try {
-      const serialized = JSON.stringify({ applicant, education, employmentHistory, trainings, certificates })
-      if (serialized !== lastSavedSerializedRef.current) {
-        timer = setTimeout(async () => {
-          if (cancelled) return
-          try {
-            await syncRef.current?.()
-            lastSavedSerializedRef.current = serialized
-          } catch (err) {
-            console.error(err)
-          }
-        }, 2000)
-      }
-    } catch {
-      // if serialization fails, fallback to syncing as before
-      timer = setTimeout(() => {
-        syncRef.current?.().catch(console.error)
-      }, 2000)
+    const serialized = serializeCurrentState()
+    latestSerializedSnapshotRef.current = serialized
+
+    if (!serialized || serialized === lastSavedSerializedRef.current || isSyncingRef.current) {
+      return
     }
+
+    let cancelled = false
+    const timer = setTimeout(async () => {
+      if (cancelled || isSyncingRef.current) return
+      if (latestSerializedSnapshotRef.current === lastSavedSerializedRef.current) return
+      isSyncingRef.current = true
+      try {
+        await syncRef.current?.()
+        lastSavedSerializedRef.current = latestSerializedSnapshotRef.current ?? serialized
+      } catch (err) {
+        console.error(err)
+      } finally {
+        isSyncingRef.current = false
+      }
+    }, 2000)
 
     return () => {
       cancelled = true
-      if (timer) clearTimeout(timer)
+      clearTimeout(timer)
     }
-  }, [applicant, education, employmentHistory, trainings, certificates])
+  }, [serializeCurrentState])
+
+  const navigationGuard = useMemo(() => {
+    if (activePanel.type === 'list' || isPanelComplete(activePanel)) {
+      return null
+    }
+
+    return {
+      blocked: true,
+      discardCurrentItem: () => discardActivePanelItem({ type: 'list' }),
+    }
+  }, [activePanel, discardActivePanelItem, isPanelComplete])
+
+  useEffect(() => {
+    onNavigationGuardChange?.(navigationGuard)
+  }, [navigationGuard, onNavigationGuardChange])
+
+  useEffect(() => {
+    return () => {
+      onNavigationGuardChange?.(null)
+    }
+  }, [onNavigationGuardChange])
 
   const toggleSection = (sectionName: string) => {
     setOpenSections((prev) =>

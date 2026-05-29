@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, type MouseEvent as ReactMouseEvent } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import type { AuthSession } from '../services/auth';
 import logo from '../assets/logo.png';
@@ -6,6 +6,7 @@ import logo from '../assets/logo.png';
 type NavbarProps = {
   authSession: AuthSession | null
   onLogout: () => void
+  onNavigateRequest?: (to: string) => void
 }
 
 // const getBreadcrumb = (pathname: string) => {
@@ -28,7 +29,7 @@ type NavbarProps = {
 //   return ['Dashboard']
 // }
 
-const Navbar = ({ authSession, onLogout }: NavbarProps) => {
+const Navbar = ({ authSession, onLogout, onNavigateRequest }: NavbarProps) => {
   const location = useLocation()
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -59,7 +60,7 @@ const Navbar = ({ authSession, onLogout }: NavbarProps) => {
 
   // Close dropdown when clicking outside
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
+    const handleClickOutside = (event: globalThis.MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsDropdownOpen(false);
       }
@@ -87,10 +88,17 @@ const Navbar = ({ authSession, onLogout }: NavbarProps) => {
 
   const displayName = authSession?.user.name || authSession?.user.email.split('@')[0]
 
+  const handleNavigate = (event: ReactMouseEvent<HTMLAnchorElement>, target: string) => {
+    if (onNavigateRequest) {
+      event.preventDefault()
+      onNavigateRequest(target)
+    }
+  }
+
   return (
     <nav className="global-navbar">
       <div className="navbar-brand">
-        <Link to="/" className="brand-link">
+        <Link to="/" className="brand-link" onClick={(event) => handleNavigate(event, '/')}>
           <img src={logo} alt="Applyr Logo" className="logo" />
         </Link>
       </div>
@@ -107,13 +115,13 @@ const Navbar = ({ authSession, onLogout }: NavbarProps) => {
             }} 
           />
           
-          <Link to="/" className={`nav-link ${location.pathname === '/' ? 'active' : ''}`}>
+          <Link to="/" className={`nav-link ${location.pathname === '/' ? 'active' : ''}`} onClick={(event) => handleNavigate(event, '/')}>
             Dashboard
           </Link>
-          <Link to="/profile" className={`nav-link ${location.pathname.startsWith('/profile') ? 'active' : ''}`}>
+          <Link to="/profile" className={`nav-link ${location.pathname.startsWith('/profile') ? 'active' : ''}`} onClick={(event) => handleNavigate(event, '/profile')}>
             My Profile
           </Link>
-          <Link to="/applicant" className={`nav-link ${location.pathname.startsWith('/applicant') ? 'active' : ''}`}>
+          <Link to="/applicant" className={`nav-link ${location.pathname.startsWith('/applicant') ? 'active' : ''}`} onClick={(event) => handleNavigate(event, '/applicant')}>
             Applicant Info
           </Link>
         </div>
@@ -162,9 +170,15 @@ const Navbar = ({ authSession, onLogout }: NavbarProps) => {
                   <p className="dropdown-email">{authSession.user.email}</p>
                 </div>
                 <div className="dropdown-divider"></div>
-                <Link to="/" className="dropdown-item">Dashboard</Link>
-                <Link to="/profile" className="dropdown-item">My Profile</Link>
-                <Link to="/applicant" className="dropdown-item">Applicant Info</Link>
+                <Link to="/" className="dropdown-item" onClick={(event) => handleNavigate(event, '/')}>
+                  Dashboard
+                </Link>
+                <Link to="/profile" className="dropdown-item" onClick={(event) => handleNavigate(event, '/profile')}>
+                  My Profile
+                </Link>
+                <Link to="/applicant" className="dropdown-item" onClick={(event) => handleNavigate(event, '/applicant')}>
+                  Applicant Info
+                </Link>
                 <div className="dropdown-divider"></div>
                 <button 
                   type="button" 

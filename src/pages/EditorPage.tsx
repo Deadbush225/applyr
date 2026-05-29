@@ -108,23 +108,6 @@ const EditorPage = ({
     syncRef.current = onSyncRequest
   }, [onSyncRequest])
 
-  const currentSyncSnapshot = (() => {
-    try {
-      return JSON.stringify({
-        applicant,
-        jobApplication,
-        education,
-        employmentHistory,
-        previewFont,
-        resumeTemplate,
-      })
-    } catch {
-      return null
-    }
-  })()
-
-  const lastSyncedSnapshotRef = useRef<string | null>(currentSyncSnapshot)
-
   const handleDeleteJobApplication = async (jobApplicationId: string) => {
     await onDeleteJobApplication(jobApplicationId)
     await syncRef.current?.()
@@ -140,39 +123,17 @@ const EditorPage = ({
 
   // 3. SMART AUTO-SAVE: Debounces network requests by 2 seconds
   useEffect(() => {
-    let cancelled = false
-    let timer: ReturnType<typeof setTimeout> | null = null
-
-    if (currentSyncSnapshot && currentSyncSnapshot !== lastSyncedSnapshotRef.current) {
-      timer = setTimeout(async () => {
-        if (cancelled || !jobApplication?.JobApplicationId) {
-          return
-        }
-
-        try {
-          await syncRef.current?.()
-          lastSyncedSnapshotRef.current = currentSyncSnapshot
-        } catch (error) {
-          console.error(error)
-        }
-      }, 2000)
-    } else if (!currentSyncSnapshot) {
-      // Fall back to the old behavior if serialization fails for any reason.
-      timer = setTimeout(() => {
-        if (jobApplication?.JobApplicationId) {
-          syncRef.current?.().catch(console.error)
-        }
-      }, 2000)
-    }
-
-    return () => {
-      cancelled = true
-      if (timer) {
-        clearTimeout(timer)
+    const timer = setTimeout(() => {
+      // Only fire if the user has a valid application loaded
+      if (jobApplication?.JobApplicationId) {
+        syncRef.current?.().catch(console.error)
       }
-    }
+    }, 2000)
+
+    // If any data changes before 2 seconds, this cleanup kills the old timer 
+    // and a new one starts. This effectively stops the spam.
+    return () => clearTimeout(timer)
   }, [
-    currentSyncSnapshot,
     applicant, 
     jobApplication, 
     education, 
