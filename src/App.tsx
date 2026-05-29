@@ -840,7 +840,7 @@ function App() {
       jobApplication: {
         ...activeJobApplication,
         JobApplicationId: activeJobApplication.JobApplicationId,
-        agreesToDrugTest: activeJobApplication.agreesToDrugTest ?? false,
+        agreesToDrugTest: toBooleanFlag(activeJobApplication.agreesToDrugTest),
         JobApplicationStatus: 'Pending',
       },
       references: sanitizeReferences(activeJobApplication.references || []).map((item) => {

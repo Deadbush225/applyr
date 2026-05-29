@@ -265,7 +265,7 @@ export const JobApplicationSchema = z.object({
   JobApplicationDate: z.string().refine((s) => !Number.isNaN(Date.parse(s)), { message: 'JobApplicationDate must be a valid date' }),
   availableStartDate: z.string().optional().nullable(),
   expectedSalary: z.union([z.string(), z.number()]).optional().nullable(),
-  agreesToDrugTest: z.boolean().optional(),
+  agreesToDrugTest: OptionalBooleanLikeSchema,
   agreedToTerms: CoerceBooleanSchema.optional(),
   dateAgreed: z.string().optional(),
 }).superRefine((value, context) => {
