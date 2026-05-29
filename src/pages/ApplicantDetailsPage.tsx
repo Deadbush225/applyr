@@ -398,7 +398,7 @@ const renderEducation = (index: number) => {
 
     return (
       <div className="section-editor">
-        {renderEditorHeader(`Education ${index + 1}`, () => {
+        {renderEditorHeader(`Education`, () => {
           void removeEducation(index)
           _setActivePanel({ type: 'list' })
         })}
@@ -515,7 +515,7 @@ const renderEducation = (index: number) => {
   
       return (
         <div className="section-editor">
-          {renderEditorHeader(`Employment ${index + 1}`, () => {
+          {renderEditorHeader(`Employment`, () => {
             void removeEmployment(index)
             _setActivePanel({ type: 'list' })
           })}
@@ -644,7 +644,7 @@ const renderEducation = (index: number) => {
   
       return (
         <div className="section-editor">
-          {renderEditorHeader(`Training ${index + 1}`, () => {
+          {renderEditorHeader(`Training`, () => {
             void removeTraining(index)
             _setActivePanel({ type: 'list' })
           })}
@@ -775,7 +775,7 @@ const renderEducation = (index: number) => {
   
       return (
         <div className="section-editor">
-          {renderEditorHeader(`Certificate ${index + 1}`, () => {
+          {renderEditorHeader(`Certificate`, () => {
             void removeCertificate(index)
             _setActivePanel({ type: 'list' })
           })}
