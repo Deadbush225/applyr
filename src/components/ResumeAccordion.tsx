@@ -949,7 +949,7 @@ const ResumeAccordion = ({
           </label>
             <button
           type="button"
-          className="remove-button"
+          className="remove-button full-width-btn"
           onClick={() => {
             void removeReference(index)
             setActivePanel({ type: 'list' })

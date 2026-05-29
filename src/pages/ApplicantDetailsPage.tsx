@@ -314,12 +314,14 @@ const ApplicantDetailsPage = ({
     </div>
   )
 
-  const renderEditorHeader = (title: string, onBack: () => void, allowBack?: boolean) => (
+  const renderEditorHeader = (title: string, onRemove?: () => void) => (
     <div className="section-editor-header">
       <h2>{title}</h2>
-        <button type="button" className={`back-button ${allowBack ? '' : 'disabled-btn'}`} onClick={onBack} disabled={!allowBack}>
-          Submit
+      {onRemove ? (
+        <button type="button" className="remove-button" onClick={onRemove}>
+          Remove
         </button>
+      ) : null}
     </div>
   )
 
@@ -334,11 +336,10 @@ const renderEducation = (index: number) => {
 
     return (
       <div className="section-editor">
-        {renderEditorHeader(
-          `Education ${index + 1}`,
-          () => _setActivePanel({ type: 'list' }),
-          isValid && !hasEducationErrors,
-        )}
+        {renderEditorHeader(`Education ${index + 1}`, () => {
+          void removeEducation(index)
+          _setActivePanel({ type: 'list' })
+        })}
         <div className="form-grid">
           <label>
             <p className="required-asterisk">School Name</p>
@@ -431,13 +432,11 @@ const renderEducation = (index: number) => {
         </div>
         <button
           type="button"
-          className="remove-button"
-          onClick={() => {
-            void removeEducation(index)
-            _setActivePanel({ type: 'list' })
-          }}
+          className={`back-button tall-btn ${isValid && !hasEducationErrors ? '' : 'disabled-btn'}`}
+          onClick={() => _setActivePanel({ type: 'list' })}
+          disabled={!(isValid && !hasEducationErrors)}
         >
-          Remove Education
+          Submit
         </button>
       </div>
     )
@@ -454,11 +453,10 @@ const renderEducation = (index: number) => {
   
       return (
         <div className="section-editor">
-          {renderEditorHeader(
-            `Employment ${index + 1}`,
-            () => _setActivePanel({ type: 'list' }),
-            isValid && !hasEmploymentErrors,
-          )}
+          {renderEditorHeader(`Employment ${index + 1}`, () => {
+            void removeEmployment(index)
+            _setActivePanel({ type: 'list' })
+          })}
           <div className="form-grid">
             <label>
               <p className="required-asterisk">Company Name</p>
@@ -564,13 +562,11 @@ const renderEducation = (index: number) => {
           </div>
           <button
             type="button"
-            className="remove-button"
-            onClick={() => {
-              void removeEmployment(index)
-              _setActivePanel({ type: 'list' })
-            }}
+            className={`back-button tall-btn ${isValid && !hasEmploymentErrors ? '' : 'disabled-btn'}`}
+            onClick={() => _setActivePanel({ type: 'list' })}
+            disabled={!(isValid && !hasEmploymentErrors)}
           >
-            Remove Employment
+            Submit
           </button>
         </div>
       )
@@ -586,15 +582,10 @@ const renderEducation = (index: number) => {
   
       return (
         <div className="section-editor">
-          {renderEditorHeader(
-            `Training ${index + 1}`,
-            () => _setActivePanel({ type: 'list' }),
-            !hasTrainingError &&
-              entry.trainingTitle !== '' &&
-              entry.trainingInstructor !== '' &&
-              entry.trainingDurationHours !== '' &&
-              entry.completionDate !== '',
-          )}
+          {renderEditorHeader(`Training ${index + 1}`, () => {
+            void removeTraining(index)
+            _setActivePanel({ type: 'list' })
+          })}
           {hasTrainingError ? (
             <div
               className="bg-red-100 text-red-700 border-red-400"
@@ -671,13 +662,21 @@ const renderEducation = (index: number) => {
           </div>
           <button
             type="button"
-            className="remove-button"
-            onClick={() => {
-              void removeTraining(index)
-              _setActivePanel({ type: 'list' })
-            }}
+            className={`back-button tall-btn ${!hasTrainingError &&
+              entry.trainingTitle !== '' &&
+              entry.trainingInstructor !== '' &&
+              entry.trainingDurationHours !== '' &&
+              entry.completionDate !== ''
+              ? ''
+              : 'disabled-btn'}`}
+            onClick={() => _setActivePanel({ type: 'list' })}
+            disabled={!(!hasTrainingError &&
+              entry.trainingTitle !== '' &&
+              entry.trainingInstructor !== '' &&
+              entry.trainingDurationHours !== '' &&
+              entry.completionDate !== '')}
           >
-            Remove Training
+            Submit
           </button>
         </div>
       )
@@ -693,15 +692,10 @@ const renderEducation = (index: number) => {
   
       return (
         <div className="section-editor">
-          {renderEditorHeader(
-            `Certificate ${index + 1}`,
-            () => _setActivePanel({ type: 'list' }),
-            !hasCertificateError &&
-              entry.certificateName !== '' &&
-              entry.issuingAuthority !== '' &&
-              entry.validityMonths !== '' &&
-              entry.dateIssued !== '',
-          )}
+          {renderEditorHeader(`Certificate ${index + 1}`, () => {
+            void removeCertificate(index)
+            _setActivePanel({ type: 'list' })
+          })}
           {hasCertificateError ? (
             <div
               className="bg-red-100 text-red-700 border-red-400"
@@ -769,13 +763,21 @@ const renderEducation = (index: number) => {
           </div>
           <button
             type="button"
-            className="remove-button"
-            onClick={() => {
-              void removeCertificate(index)
-              _setActivePanel({ type: 'list' })
-            }}
+            className={`back-button tall-btn ${!hasCertificateError &&
+              entry.certificateName !== '' &&
+              entry.issuingAuthority !== '' &&
+              entry.validityMonths !== '' &&
+              entry.dateIssued !== ''
+              ? ''
+              : 'disabled-btn'}`}
+            onClick={() => _setActivePanel({ type: 'list' })}
+            disabled={!(!hasCertificateError &&
+              entry.certificateName !== '' &&
+              entry.issuingAuthority !== '' &&
+              entry.validityMonths !== '' &&
+              entry.dateIssued !== '')}
           >
-            Remove Certificate
+            Submit
           </button>
         </div>
       )

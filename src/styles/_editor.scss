@@ -264,11 +264,12 @@
 
 .back-button {
   border: 1px solid var(--stroke-soft);
-  background: #fff;
+  background: rgb(253, 244, 212);
   color: var(--text-strong);
   border-radius: 10px;
   padding: 8px 12px;
-  font-weight: 700;
+  font-weight: 1000;
+  font-size: 1em;
   cursor: pointer;
   transition: all 0.2s ease;
 
@@ -287,6 +288,14 @@
   cursor: not-allowed;
 }
 
+.tall-btn {
+  padding: 12px 16px;
+}
+
+.full-width-btn {
+  width: 100%;
+}
+
 .remove-button {
   align-self: flex-start;
   border: 1px dashed rgba(162, 38, 25, 0.4);
@@ -296,7 +305,7 @@
   padding: 8px 12px;
   font-weight: 700;
   cursor: pointer;
-  width: 100%;
+  // width: 100%;
   transition: all 0.2s ease;
 
   &:hover {
