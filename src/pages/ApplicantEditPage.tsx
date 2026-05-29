@@ -127,35 +127,11 @@ const ApplicantEditPage = ({
 
 	return (
 		<div className="page-shell profile-edit-shell">
-			<header className="topbar profile-edit-header">
-				<div className="profile-edit-intro">
-					<p className="kicker">Applicant Profile</p>
-					<h1>Personal details and account security</h1>
-				</div>
-				<div className="profile-edit-summary">
-					<div className="profile-summary-card profile-summary-card--accent profile-summary-card--checklist">
-						<span className="profile-summary-label">Required fields</span>
-						<strong>{onboardingFieldsComplete}/{onboardingFieldTotal} complete</strong>
-						<span>Finish these to skip the prompt on sign in.</span>
-						<div className="profile-checklist-popover" aria-hidden="true">
-							<p className="profile-section-eyebrow">Checklist</p>
-							<h2>What onboarding checks</h2>
-							<ul className="profile-checklist">
-								<li>Full name</li>
-								<li>Home address</li>
-								<li>Phone number</li>
-								<li>Citizenship status</li>
-								<li>Criminal history response</li>
-							</ul>
-						</div>
-					</div>
-				</div>
-			</header>
-
 			<section className="panel profile-edit-panel">
 				<form className="profile-edit-form" onSubmit={handleSubmit}>
 					<div className="profile-edit-grid">
 						<div className="profile-edit-column">
+					<p className="kicker">Personal details and account security</p>
 							<GroupBox title="Change Name">
 								<label>
 									Applicant Name
@@ -190,10 +166,32 @@ const ApplicantEditPage = ({
 						</div>
 
 						<div className="profile-edit-column">
+              
 							<div className="profile-section-card">
 								<div className="profile-section-heading">
-									<p className="profile-section-eyebrow">Required profile details</p>
-									<h2>Contact and eligibility</h2>
+                  <div>
+                    <p className="profile-section-eyebrow">Required profile details</p>
+                    <h2>Contact and eligibility</h2>
+                  </div>
+                  <div>
+                    <div className="profile-edit-summary">
+					<div className="profile-summary-card profile-summary-card--accent profile-summary-card--checklist">
+						<span className="profile-summary-label">Required fields</span>
+						<strong>{onboardingFieldsComplete}/{onboardingFieldTotal} complete</strong>
+						<div className="profile-checklist-popover" aria-hidden="true">
+							<p className="profile-section-eyebrow">Checklist</p>
+						<p><strong>Finish these to skip the prompt on sign in.</strong></p>
+							<ul className="profile-checklist">
+								<li>Full name</li>
+								<li>Home address</li>
+								<li>Phone number</li>
+								<li>Citizenship status</li>
+								<li>Criminal history response</li>
+							</ul>
+						</div>
+					</div>
+				</div>
+                  </div>
 								</div>
 								<div className="profile-field-list">
 									<label>
