@@ -397,6 +397,11 @@ input {
   .profile-form-actions {
     align-items: stretch;
   }
+
+  .profile-section-heading {
+    flex-direction: column;
+    margin-bottom: 1em;
+  }
 }
 
 // Scrollbar Styling
