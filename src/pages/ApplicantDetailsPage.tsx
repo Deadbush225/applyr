@@ -351,13 +351,16 @@ const renderEducation = (index: number) => {
                 valueName={entry.companyName}
                 valueId={entry.companyId != null ? String(entry.companyId) : null}
                 placeholder="e.g., Tech Solutions Inc."
-                onChange={({ name, id, location }) => {
+                onChange={({ name, id, location, phone }) => {
                   updateEmployment(index, 'companyName', name)
                   updateEmployment(index, 'companyId', id || '')
                   if (location !== undefined) {
                     updateEmployment(index, 'companyAddress', location || '')
                   }
-                }} 
+                  if (phone !== undefined && phone !== null) {
+                    updateEmployment(index, 'companyPhone', String(phone))
+                  }
+                }}
               />
             </label>
             <label>
