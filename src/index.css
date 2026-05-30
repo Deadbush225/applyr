@@ -35,7 +35,7 @@ body,
   font-size: large !important;
 }
 
-input {
+input, select {
   font-size: 1em !important;
 }
 
