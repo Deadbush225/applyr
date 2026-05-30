@@ -129,7 +129,7 @@ export const updateApplicantProfile = async (payloadBody: {
   linkedInUrl: string
   citizenshipStatus: string
   hasCriminalHistory: boolean | null
-  currentPassword: string
+  currentPassword?: string
   newPassword?: string
 }) => {
   const payload = await requestJson<{ success: boolean; data: ApplicantProfilePayload }>(

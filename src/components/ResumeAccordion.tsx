@@ -141,10 +141,7 @@ const ResumeAccordion = ({
   const currentMonth = new Date().toISOString().slice(0, 7)
   const currentYear = new Date().getFullYear()
   const normalizePhoneInput = (value: string) => {
-    if (value.startsWith('09')) {
-      return value.replace(/\D/g, '')
-    }
-    return value
+    return value.replace(/\s+/g, '').slice(0, 20)
   }
   const blockInvalidNumberKey = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'e' || event.key === 'E' || event.key === '+' || event.key === '-') {
@@ -832,7 +829,7 @@ const ResumeAccordion = ({
             <p>Company Phone</p>
             <input
               type="tel"
-              maxLength={12}
+                maxLength={20}
               value={entry.companyPhone ?? ''}
               onChange={(event) =>
                 updateEmployment(index, 'companyPhone', normalizePhoneInput(event.target.value))
@@ -937,7 +934,7 @@ const ResumeAccordion = ({
             <p className="required-asterisk">Phone</p>
             <input
               type="tel"
-              maxLength={12}
+                maxLength={20}
               value={entry.referencePhone}
               onChange={(event) =>
                 updateReference(index, 'referencePhone', normalizePhoneInput(event.target.value))

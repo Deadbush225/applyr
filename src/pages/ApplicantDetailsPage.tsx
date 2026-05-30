@@ -85,10 +85,7 @@ const ApplicantDetailsPage = ({
   const currentYear = new Date().getFullYear()
 
   const normalizePhoneInput = (value: string) => {
-    if (value.startsWith('09')) {
-      return value.replace(/\D/g, '')
-    }
-    return value
+    return value.replace(/\s+/g, '').slice(0, 20)
   }
 
   const isValidPhoneNumber = (value: string) => {
@@ -552,7 +549,7 @@ const renderEducation = (index: number) => {
               <p>Company Phone</p>
               <input
                 type="tel"
-                maxLength={12}
+                maxLength={20}
                 value={entry.companyPhone ?? ''}
                 onChange={(event) =>
                   updateEmployment(index, 'companyPhone', normalizePhoneInput(event.target.value))
@@ -954,8 +951,9 @@ const renderEducation = (index: number) => {
                 <input
                   id="phoneNumber"
                   type="tel"
+                  maxLength={20}
                   value={applicant.phoneNumber || ''}
-                  onChange={(e) => updateApplicant('phoneNumber', e.target.value)}
+                  onChange={(e) => updateApplicant('phoneNumber', normalizePhoneInput(e.target.value))}
                   disabled={isValidationBlocked}
                   />
                 {applicant.phoneNumber ? (

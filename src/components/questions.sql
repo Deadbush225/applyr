@@ -84,211 +84,152 @@ HAVING AVG(expectedSalary) > :salaryThreshold
 ORDER BY avgExpectedSalary DESC;
 
 
+### Moderate (Using `GROUP BY` and `HAVING`)
+
+**1. Display the applied position and the total count of applications received for each position. Include only those positions that have received more than 5 applications. Provide appropriate headers.**
+
+
+SELECT 
+    appliedPosition AS 'Position', 
+    COUNT(JobApplicationId) AS 'Total Applications'
+FROM JobApplication
+GROUP BY appliedPosition
+HAVING COUNT(JobApplicationId) > 5;
+
+
+
+**2. Display the job application status and the average expected salary for each status. Only display statuses where the average expected salary is greater than $50,000. Provide appropriate headers.**
+
+
+SELECT 
+    JobApplicationStatus AS 'Status', 
+    AVG(expectedSalary) AS 'Average Expected Salary'
+FROM JobApplication
+GROUP BY JobApplicationStatus
+HAVING AVG(expectedSalary) > 50000;
+
+
+
+**3. Display the applicant ID and the total number of certificates they hold. Include only applicants who have earned more than 2 certificates. Provide appropriate headers.**
+
+
+SELECT 
+    applicantId AS 'Applicant ID', 
+    COUNT(certificateId) AS 'Total Certificates'
+FROM ApplicantCertificate
+GROUP BY applicantId
+HAVING COUNT(certificateId) > 2;
+
+
+
+**4. Display the applicant ID and the total training duration hours they have completed. Only show applicants who have accumulated more than 40 hours of training. Provide appropriate headers.**
+
+
+SELECT 
+    a.applicantId AS 'Applicant ID', 
+    SUM(t.trainingDurationHours) AS 'Total Training Hours'
+FROM ApplicantTraining a
+JOIN Training t ON a.trainingId = t.trainingId
+GROUP BY a.applicantId
+HAVING SUM(t.trainingDurationHours) > 40;
+
+
+
+**5. Display the company ID and the count of unique applicants who have worked there. Include only companies that appear in the employment history of 3 or more applicants. Provide appropriate headers.**
+
+
+SELECT 
+    companyId AS 'Company ID', 
+    COUNT(DISTINCT applicantId) AS 'Number of Applicants'
+FROM EmploymentHistory
+GROUP BY companyId
+HAVING COUNT(DISTINCT applicantId) >= 3;
+
+
+
 ---
 
-Problem: For a specific applicant, show certificate details with expiry analytics — compute expiry date, days until expiry, urgency bucket, and set a renewal status.
-ALTER TABLE ApplicantCertificate
-ADD COLUMN renewalStatus ENUM('Pending','Renewed','Expired') NOT NULL DEFAULT 'Pending';
-UPDATE ApplicantCertificate ac
-JOIN Certificate c ON ac.certificateId = c.certificateId
-SET ac.renewalStatus = CASE
-WHEN DATE_ADD(ac.dateIssued, INTERVAL c.validityMonths MONTH) < CURRENT_DATE THEN 'Expired'
-ELSE 'Pending'
-END;
+### Difficult (Multi-table Joins and Complexity)
 
-SELECT
-ac.applicantId,
-ac.certificateId,
-c.certificateName,
-c.issuingAuthority,
-ac.dateIssued,
-DATE_ADD(ac.dateIssued, INTERVAL c.validityMonths MONTH) AS expiryDate,
-DATEDIFF(DATE_ADD(ac.dateIssued, INTERVAL c.validityMonths MONTH), CURRENT_DATE) AS daysUntilExpiry,
-CASE
-WHEN DATEDIFF(DATE_ADD(ac.dateIssued, INTERVAL c.validityMonths MONTH), CURRENT_DATE) < 0 THEN 'Expired'
-WHEN DATEDIFF(DATE_ADD(ac.dateIssued, INTERVAL c.validityMonths MONTH), CURRENT_DATE) <= 30 THEN 'Urgent'
-WHEN DATEDIFF(DATE_ADD(ac.dateIssued, INTERVAL c.validityMonths MONTH), CURRENT_DATE) <= 90 THEN 'Warning'
-ELSE 'Valid'
-END AS expiryStatus,
-ac.renewalStatus
-FROM ApplicantCertificate ac
-JOIN Certificate c ON ac.certificateId = c.certificateId
-WHERE ac.applicantId = :applicantId
-ORDER BY expiryDate ASC, ac.dateIssued DESC;
+**6. Display the applicant name, citizenship status, degree received, program name, and the school name. Display only those who are currently employed. Sort the results alphabetically by the applicants name. Provide appropriate headers.**
 
-Problem: For a specific applicant, show training progression analytics — cumulative training hours and days since previous training.
-ALTER TABLE ApplicantTraining
-ADD COLUMN completionStatus ENUM('Completed','Incomplete') NOT NULL DEFAULT 'Completed';
-UPDATE ApplicantTraining
-SET completionStatus = IF(completionDate IS NULL, 'Incomplete', 'Completed');
 
-SELECT
-at.applicantId,
-at.trainingId,
-t.trainingTitle,
-t.trainingDurationHours,
-at.trainingInstructor,
-at.completionDate,
-(
-SELECT COALESCE(SUM(t2.trainingDurationHours), 0)
-FROM ApplicantTraining at2
-JOIN Training t2 ON at2.trainingId = t2.trainingId
-WHERE at2.applicantId = at.applicantId
-AND at2.completionDate IS NOT NULL
-AND at2.completionDate <= at.completionDate
-) AS cumulativeHours,
-DATEDIFF(
-at.completionDate,
-(
-SELECT MAX(at_prev.completionDate)
-FROM ApplicantTraining at_prev
-WHERE at_prev.applicantId = at.applicantId
-AND at_prev.completionDate < at.completionDate
-)
-) AS daysSincePreviousTraining,
-at.completionStatus
-FROM ApplicantTraining at
-JOIN Training t ON at.trainingId = t.trainingId
-WHERE at.applicantId = :applicantId
-ORDER BY at.completionDate DESC, at.trainingId DESC;
+SELECT 
+    a.applicantName AS 'Applicant Name', 
+    a.citizenshipStatus AS 'Citizenship', 
+    e.degreeReceived AS 'Degree', 
+    e.programName AS 'Program', 
+    s.schoolName AS 'School Name'
+FROM Applicant a
+JOIN Education e ON a.applicantId = e.applicantId
+JOIN School s ON e.schoolId = s.schoolId
+JOIN EmploymentHistory eh ON a.applicantId = eh.applicantId
+WHERE eh.isEmployed = 1
+ORDER BY a.applicantName;
 
-Problem: List job applications (for one applicant) with reference count, settings completeness, a priority tag, and a stale-record flag.
-ALTER TABLE JobApplication
-ADD COLUMN priorityTag VARCHAR(32) NOT NULL DEFAULT 'normal';
-UPDATE JobApplication
-SET priorityTag = 'high'
-WHERE expectedSalary IS NOT NULL AND expectedSalary > :highSalary;
 
-SELECT
-ja.JobApplicationId,
-ja.applicantId,
-a.applicantName,
-ja.appliedPosition,
-ja.JobApplicationDate,
-ja.JobApplicationStatus,
-ja.expectedSalary,
-(
-SELECT COUNT(*) FROM Reference r WHERE r.JobApplicationId = ja.JobApplicationId
-) AS referenceCount,
-CASE
-WHEN EXISTS (
-SELECT 1 FROM ApplicationResumeSettings ars
-WHERE ars.JobApplicationId = ja.JobApplicationId
-AND ars.resumeTemplate IS NOT NULL
-AND ars.previewFont IS NOT NULL
-) THEN 'Complete Settings'
-ELSE 'Missing Settings'
-END AS settingsStatus,
-ja.priorityTag,
-CASE WHEN ja.lastUpdated < (NOW() - INTERVAL 30 DAY) THEN 1 ELSE 0 END AS isStale
+
+**7. Display the applicant name, applied position, their most recent work position, and the company name of that latest job. Include only job applications currently marked as 'Pending'. Provide appropriate headers.**
+
+
+SELECT 
+    a.applicantName AS 'Applicant Name', 
+    ja.appliedPosition AS 'Position Applied', 
+    eh.workPosition AS 'Recent Position', 
+    c.companyName AS 'Company Name'
 FROM JobApplication ja
-JOIN Applicant a ON a.applicantId = ja.applicantId
-WHERE ja.applicantId = :applicantId
-ORDER BY ja.lastUpdated DESC, ja.JobApplicationDate DESC;
+JOIN Applicant a ON ja.applicantId = a.applicantId
+JOIN EmploymentHistory eh ON a.applicantId = eh.applicantId
+JOIN Company c ON eh.companyId = c.companyId
+WHERE ja.JobApplicationStatus = 'Pending'
+  AND eh.endDate = (
+      SELECT MAX(endDate) 
+      FROM EmploymentHistory 
+      WHERE applicantId = a.applicantId
+  );
 
-Problem: For one applicant, show education timeline quality checks — normalized end year, gap from previous, and overlap/large-gap flags.
-ALTER TABLE School
-ADD COLUMN schoolType VARCHAR(32) NOT NULL DEFAULT 'Other';
-UPDATE School
-SET schoolType = CASE
-WHEN schoolName LIKE '%University%' THEN 'University'
-WHEN schoolName LIKE '%College%' THEN 'College'
-ELSE 'Other'
-END;
 
-SELECT
-e.educationId,
-e.applicantId,
-s.schoolName,
-s.schoolType,
-e.degreeReceived,
-e.programName,
-e.startYear,
-e.endYear,
-COALESCE(e.endYear, YEAR(CURRENT_DATE)) AS normalizedEndYear,
-(
-SELECT MAX(COALESCE(e2.endYear, YEAR(CURRENT_DATE)))
-FROM Education e2
-WHERE e2.applicantId = e.applicantId
-AND e2.educationId <> e.educationId
-AND (e2.startYear < e.startYear OR (e2.startYear = e.startYear AND e2.educationId < e.educationId))
-) AS prevNormalizedEndYear,
-CASE
-WHEN (
-SELECT MAX(COALESCE(e2.endYear, YEAR(CURRENT_DATE)))
-FROM Education e2
-WHERE e2.applicantId = e.applicantId
-AND e2.educationId <> e.educationId
-AND (e2.startYear < e.startYear OR (e2.startYear = e.startYear AND e2.educationId < e.educationId))
-) IS NULL THEN NULL
-ELSE e.startYear - (
-SELECT MAX(COALESCE(e2.endYear, YEAR(CURRENT_DATE)))
-FROM Education e2
-WHERE e2.applicantId = e.applicantId
-AND e2.educationId <> e.educationId
-AND (e2.startYear < e.startYear OR (e2.startYear = e.startYear AND e2.educationId < e.educationId))
-)
-END AS gapYearsFromPrevious,
-CASE
-WHEN (
-SELECT MAX(COALESCE(e2.endYear, YEAR(CURRENT_DATE)))
-FROM Education e2
-WHERE e2.applicantId = e.applicantId
-AND e2.educationId <> e.educationId
-AND (e2.startYear < e.startYear OR (e2.startYear = e.startYear AND e2.educationId < e.educationId))
-) IS NULL THEN 'Normal'
-WHEN e.startYear < (
-SELECT MAX(COALESCE(e2.endYear, YEAR(CURRENT_DATE)))
-FROM Education e2
-WHERE e2.applicantId = e.applicantId
-AND e2.educationId <> e.educationId
-AND (e2.startYear < e.startYear OR (e2.startYear = e.startYear AND e2.educationId < e.educationId))
-) THEN 'Overlap'
-WHEN e.startYear - (
-SELECT MAX(COALESCE(e2.endYear, YEAR(CURRENT_DATE)))
-FROM Education e2
-WHERE e2.applicantId = e.applicantId
-AND e2.educationId <> e.educationId
-AND (e2.startYear < e.startYear OR (e2.startYear = e.startYear AND e2.educationId < e.educationId))
-) > 2 THEN 'Large Gap'
-ELSE 'Normal'
-END AS timelineFlag
-FROM Education e
-JOIN School s ON s.schoolId = e.schoolId
-WHERE e.applicantId = :applicantId
-ORDER BY e.startYear DESC, e.educationId DESC;
 
-Problem: For one applicant, show employment history with tenure analytics and overlap detection.
-ALTER TABLE EmploymentHistory
-ADD COLUMN employmentStatus ENUM('Current','Ended') NOT NULL DEFAULT 'Ended';
-UPDATE EmploymentHistory
-SET employmentStatus = IF(isEmployed = 1, 'Current', 'Ended');
+**8. Display the applicant name, email address, and applied position for applicants applying for a 'Manager' position (where the position name contains 'Manager') who have either no listed education records or no listed employment history. Provide appropriate headers.**
 
-SELECT
-eh.EmploymentHistoryId,
-eh.applicantId,
-c.companyName,
-eh.workPosition,
-eh.reasonForLeaving,
-eh.startDate,
-eh.endDate,
-eh.isEmployed,
-COALESCE(eh.endDate, CURRENT_DATE) AS normalizedEndDate,
-TIMESTAMPDIFF(MONTH, eh.startDate, COALESCE(eh.endDate, CURRENT_DATE)) AS tenureMonths,
-eh.employmentStatus AS employmentState,
-CASE
-WHEN EXISTS (
-SELECT 1
-FROM EmploymentHistory x
-WHERE x.applicantId = eh.applicantId
-AND x.EmploymentHistoryId <> eh.EmploymentHistoryId
-AND x.startDate <= COALESCE(eh.endDate, CURRENT_DATE)
-AND COALESCE(x.endDate, CURRENT_DATE) >= eh.startDate
-) THEN 1
-ELSE 0
-END AS hasDateOverlap
-FROM EmploymentHistory eh
-JOIN Company c ON c.companyId = eh.companyId
-WHERE eh.applicantId = :applicantId
-ORDER BY eh.startDate DESC, eh.EmploymentHistoryId DESC;
+
+SELECT 
+    a.applicantName AS 'Applicant Name', 
+    a.emailAddress AS 'Email', 
+    ja.appliedPosition AS 'Position'
+FROM JobApplication ja
+JOIN Applicant a ON ja.applicantId = a.applicantId
+LEFT JOIN Education e ON a.applicantId = e.applicantId
+LEFT JOIN EmploymentHistory eh ON a.applicantId = eh.applicantId
+WHERE ja.appliedPosition LIKE '%Manager%'
+  AND (e.educationId IS NULL OR eh.EmploymentHistoryId IS NULL);
+
+
+
+**9. Display the applicant name, the total number of certificates they hold, the total number of training sessions completed, and the total number of employment history records they have. Sort the results from the applicant with the most total combined records to the least. Provide appropriate headers.**
+
+
+SELECT 
+    a.applicantName AS 'Applicant Name',
+    (SELECT COUNT(*) FROM ApplicantCertificate WHERE applicantId = a.applicantId) AS 'Total Certificates',
+    (SELECT COUNT(*) FROM ApplicantTraining WHERE applicantId = a.applicantId) AS 'Total Trainings',
+    (SELECT COUNT(*) FROM EmploymentHistory WHERE applicantId = a.applicantId) AS 'Total Employments'
+FROM Applicant a
+ORDER BY ('Total Certificates' + 'Total Trainings' + 'Total Employments') DESC;
+
+
+
+**10. Display the applicant name, applied position, and a comma-separated list of their reference names. Include only applicants who have provided at least 3 references for their application and who agreed to a drug test. Provide appropriate headers.**
+
+
+SELECT 
+    a.applicantName AS 'Applicant Name', 
+    ja.appliedPosition AS 'Position', 
+    GROUP_CONCAT(r.referenceName SEPARATOR ', ') AS 'References'
+FROM JobApplication ja
+JOIN Applicant a ON ja.applicantId = a.applicantId
+JOIN Reference r ON ja.JobApplicationId = r.JobApplicationId
+WHERE ja.agreesToDrugTest = 1
+GROUP BY ja.JobApplicationId, a.applicantName, ja.appliedPosition
+HAVING COUNT(r.referenceId) >= 3;
 

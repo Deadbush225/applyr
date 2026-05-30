@@ -11,32 +11,50 @@ $currentPassword = (string)($input['currentPassword'] ?? '');
 $newPassword = (string)($input['newPassword'] ?? '');
 $name = trim((string)($input['applicantName'] ?? ''));
 $homeAddress = trim((string)($input['homeAddress'] ?? ''));
-$phoneNumber = trim((string)($input['phoneNumber'] ?? ''));
+$phoneNumber = preg_replace('/\s+/', '', trim((string)($input['phoneNumber'] ?? '')));
 $emailAddress = trim((string)($input['emailAddress'] ?? ''));
 $linkedinUrl = trim((string)($input['linkedInUrl'] ?? ''));
 $citizenshipStatus = trim((string)($input['citizenshipStatus'] ?? ''));
 $hasCriminalHistory = (int)($input['hasCriminalHistory'] ?? 0);
 
-if ($applicantId === '' || $name === '' || $emailAddress === '' || $currentPassword === '') {
+if ($applicantId === '' || $emailAddress === '') {
     jsonResponse(422, [
         'success' => false,
-        'message' => 'ApplicantId, name, email, and current password are required.',
+        'message' => 'ApplicantId and email are required.',
     ]);
     exit;
 }
 
 try {
     $db = getDatabaseConnection();
-    $statement = $db->prepare('SELECT passwordHash FROM Applicant WHERE applicantId = :applicantId LIMIT 1');
+    $statement = $db->prepare('SELECT applicantName, passwordHash FROM Applicant WHERE applicantId = :applicantId LIMIT 1');
     $statement->execute(['applicantId' => $applicantId]);
     $existing = $statement->fetch(PDO::FETCH_ASSOC);
 
-    if (!$existing || !password_verify($currentPassword, (string)$existing['passwordHash'])) {
-        jsonResponse(401, [
+    if (!$existing) {
+        jsonResponse(404, [
             'success' => false,
-            'message' => 'Current password is incorrect.',
+            'message' => 'Applicant not found.',
         ]);
         exit;
+    }
+
+    if ($newPassword !== '') {
+        if ($currentPassword === '') {
+            jsonResponse(422, [
+                'success' => false,
+                'message' => 'Current password is required to change your password.',
+            ]);
+            exit;
+        }
+
+        if (!password_verify($currentPassword, (string)$existing['passwordHash'])) {
+            jsonResponse(401, [
+                'success' => false,
+                'message' => 'Current password is incorrect.',
+            ]);
+            exit;
+        }
     }
 
     $duplicate = $db->prepare(
@@ -55,15 +73,15 @@ try {
         exit;
     }
 
-    if ($newPassword !== '') {
-        if (strlen($newPassword) < 8) {
-            jsonResponse(422, [
-                'success' => false,
-                'message' => 'New password must be at least 8 characters long.',
-            ]);
-            exit;
-        }
+    if ($newPassword !== '' && strlen($newPassword) < 8) {
+        jsonResponse(422, [
+            'success' => false,
+            'message' => 'New password must be at least 8 characters long.',
+        ]);
+        exit;
     }
+
+    $effectiveName = $name !== '' ? $name : (string)($existing['applicantName'] ?? '');
 
     $query =
         'UPDATE Applicant SET '
@@ -77,7 +95,7 @@ try {
 
     $params = [
         'applicantId' => $applicantId,
-        'applicantName' => $name,
+        'applicantName' => $effectiveName,
         'homeAddress' => $homeAddress,
         'phoneNumber' => $phoneNumber,
         'emailAddress' => $emailAddress,
@@ -100,7 +118,7 @@ try {
         'success' => true,
         'data' => [
             'applicantId' => $applicantId,
-            'applicantName' => $name,
+            'applicantName' => $effectiveName,
             'emailAddress' => $emailAddress,
         ],
     ]);

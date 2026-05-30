@@ -938,8 +938,8 @@ function App() {
     linkedInUrl: string
     citizenshipStatus: string
     hasCriminalHistory: boolean | null
-    currentPassword: string
-    newPassword: string
+    currentPassword?: string
+    newPassword?: string
   }) => {
     if (!applicant.applicantId) {
       throw new Error('Applicant is not loaded.')
@@ -1547,7 +1547,12 @@ function App() {
           path="/applicant"
           element={
             authenticated ? (
-              <ApplicantEditPage applicant={applicant} authSession={authSession} onSaveApplicant={saveApplicantProfile} />
+              <ApplicantEditPage
+                key={String(applicant.applicantId)}
+                applicant={applicant}
+                authSession={authSession}
+                onSaveApplicant={saveApplicantProfile}
+              />
             ) : (
               <Navigate to="/" replace />
             )

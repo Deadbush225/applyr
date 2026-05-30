@@ -1,5 +1,5 @@
-import { useEffect, useState, type FormEvent } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useState, type FormEvent } from "react";
+import { useNavigate } from "react-router-dom";
 import type { Applicant } from "../types";
 import type { AuthSession } from "../services/auth";
 import GroupBox from "../components/GroupBox";
@@ -27,7 +27,6 @@ const ApplicantEditPage = ({
 	onSaveApplicant,
 }: ApplicantEditPageProps) => {
 	const navigate = useNavigate();
-	const location = useLocation();
 	const [applicantName, setApplicantName] = useState(applicant.applicantName);
 	const [homeAddress, setHomeAddress] = useState(applicant.homeAddress);
 	const [phoneNumber, setPhoneNumber] = useState(applicant.phoneNumber);
@@ -45,55 +44,38 @@ const ApplicantEditPage = ({
 	const [error, setError] = useState("");
 	const [message, setMessage] = useState("");
 
-	useEffect(() => {
-		setApplicantName(applicant.applicantName);
-		setHomeAddress(applicant.homeAddress);
-		setPhoneNumber(applicant.phoneNumber);
-		setEmailAddress(applicant.emailAddress);
-		setLinkedInUrl(applicant.linkedInUrl);
-		setCitizenshipStatus(applicant.citizenshipStatus);
-		setHasCriminalHistory(applicant.hasCriminalHistory);
-	}, [applicant]);
-
-	// Auto-redirect if all onboarding fields are complete **and** the user
-	// arrived here as part of the onboarding flow.
-	useEffect(() => {
-		const fieldsComplete = [
-			applicant.applicantName.trim(),
-			applicant.homeAddress.trim(),
-			applicant.phoneNumber.trim(),
-			applicant.citizenshipStatus.trim(),
-			applicant.hasCriminalHistory === null ? '' : 'ok',
-		].filter(Boolean).length;
-
-		const cameFromOnboarding = ((location.state as { from?: string } | null)?.from) === 'onboarding';
-
-		if (cameFromOnboarding && fieldsComplete === 5) {
-			navigate('/', { replace: true });
-		}
-	}, [applicant, navigate, location.state]);
+	const sanitizePhoneNumberInput = (value: string) => value.replace(/\s+/g, "").slice(0, 20);
 
 	const handleSubmit = async (event: FormEvent) => {
 		event.preventDefault();
 		setError("");
 		setMessage("");
 
-		if (newPassword && newPassword !== confirmPassword) {
+		const trimmedApplicantName = applicantName.trim();
+		const trimmedPhoneNumber = sanitizePhoneNumberInput(phoneNumber);
+		const hasNewPassword = newPassword.length > 0;
+
+		if (hasNewPassword && currentPassword.length === 0) {
+			setError("Current password is required to change your password.");
+			return;
+		}
+
+		if (hasNewPassword && newPassword !== confirmPassword) {
 			setError("New passwords do not match.");
 			return;
 		}
 
 		try {
 			await onSaveApplicant({
-				applicantName,
+				applicantName: trimmedApplicantName || applicant.applicantName,
 				homeAddress,
-				phoneNumber,
+				phoneNumber: trimmedPhoneNumber,
 				emailAddress,
 				linkedInUrl,
 				citizenshipStatus,
 				hasCriminalHistory,
-				currentPassword,
-				newPassword,
+				currentPassword: hasNewPassword ? currentPassword : "",
+				newPassword: hasNewPassword ? newPassword : "",
 			});
 			setMessage("Applicant profile updated.");
 			navigate("/", { replace: true });
@@ -106,15 +88,13 @@ const ApplicantEditPage = ({
 		}
 	};
 
-  const isValidPhoneNumber = (value: string) => {
-    if (!value) return false;
-    
-    // Strip all non-numeric characters first
-    const digits = value.replace(/\D/g, '');
-    
-    // Mobile (Philippines): strictly starts with 09 and is exactly 11 digits total
-    return /^09\d{9}$/.test(digits);
-  }
+	const isValidPhoneNumber = (value: string) => {
+		if (!value) return false;
+
+		const digits = value.replace(/\D/g, "");
+
+		return /^09\d{9}$/.test(digits);
+	};
 
 		const onboardingFieldTotal = 5
 		const onboardingFieldsComplete = [
@@ -141,18 +121,20 @@ const ApplicantEditPage = ({
 									/>
 								</label>
 								<label>
-									<p className="required-asterisk">New Full Name</p>
+										New Full Name
 									<input
 										value={applicantName}
 										onChange={(event) => setApplicantName(event.target.value)}
 										placeholder="e.g., Juan Dela Cruz"
 									/>
+										<p className="profile-save-note">Leave this blank to keep your current name.</p>
 								</label>
 							</GroupBox>
 							<GroupBox title="Change Password">
 								<label>
-									<p className="required-asterisk">Current Password</p>
-									<Password value={currentPassword} onChange={setCurrentPassword} autocomplete="off" name="current-password-edit"/>
+										Current Password
+										<Password value={currentPassword} onChange={setCurrentPassword} autocomplete="off" name="current-password-edit"/>
+										<p className="profile-save-note">Required only when changing your password.</p>
 								</label>
 								<label>
 									New Password
@@ -205,9 +187,11 @@ const ApplicantEditPage = ({
 									<label>
 										<p className="required-asterisk">Phone Number</p>
 										<input
+											maxLength={20}
+											inputMode="tel"
 											value={phoneNumber}
-											onChange={(event) => setPhoneNumber(event.target.value)}
-											placeholder="e.g., +63 917 123 4567"
+											onChange={(event) => setPhoneNumber(sanitizePhoneNumberInput(event.target.value))}
+											placeholder="e.g., 09171234567"
 										/>
                     {phoneNumber ? (
                   isValidPhoneNumber(phoneNumber) ? (
