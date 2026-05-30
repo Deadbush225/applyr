@@ -283,9 +283,9 @@ const ResumeAccordion = ({
                     </option>
                   ))}
                 </select>
-                <button type="button" className="add-button" onClick={onAddJobApplication}>
+                {/* <button type="button" className="add-button" onClick={onAddJobApplication}>
                   + Add
-                </button>
+                </button> */}
               </div>
             </label>
             <label>
