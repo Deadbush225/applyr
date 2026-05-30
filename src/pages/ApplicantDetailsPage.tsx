@@ -88,6 +88,13 @@ const ApplicantDetailsPage = ({
     return value.replace(/\s+/g, '').slice(0, 20)
   }
 
+  const blockNonDigitKey = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.ctrlKey || e.metaKey) return
+    const allowed = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Home', 'End', 'Tab']
+    if (allowed.includes(e.key)) return
+    if (!/^[0-9]$/.test(e.key)) e.preventDefault()
+  }
+
   const isValidPhoneNumber = (value: string) => {
     if (!value) return false;
     
@@ -554,6 +561,7 @@ const renderEducation = (index: number) => {
                 onChange={(event) =>
                   updateEmployment(index, 'companyPhone', normalizePhoneInput(event.target.value))
                 }
+                onKeyDown={blockNonDigitKey}
                 placeholder="e.g., 0917 123 4567"
               />
               {entry.companyPhone ? (
@@ -954,6 +962,7 @@ const renderEducation = (index: number) => {
                   maxLength={20}
                   value={applicant.phoneNumber || ''}
                   onChange={(e) => updateApplicant('phoneNumber', normalizePhoneInput(e.target.value))}
+                  onKeyDown={blockNonDigitKey}
                   disabled={isValidationBlocked}
                   />
                 {applicant.phoneNumber ? (

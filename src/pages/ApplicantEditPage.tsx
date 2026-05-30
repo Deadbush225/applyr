@@ -46,6 +46,13 @@ const ApplicantEditPage = ({
 
 	const sanitizePhoneNumberInput = (value: string) => value.replace(/\s+/g, "").slice(0, 20);
 
+	const blockNonDigitKey = (e: React.KeyboardEvent<HTMLInputElement>) => {
+		if (e.ctrlKey || e.metaKey) return
+		const allowed = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Home', 'End', 'Tab']
+		if (allowed.includes(e.key)) return
+		if (!/^[0-9]$/.test(e.key)) e.preventDefault()
+	}
+
 	const handleSubmit = async (event: FormEvent) => {
 		event.preventDefault();
 		setError("");
@@ -190,7 +197,8 @@ const ApplicantEditPage = ({
 											maxLength={20}
 											inputMode="tel"
 											value={phoneNumber}
-											onChange={(event) => setPhoneNumber(sanitizePhoneNumberInput(event.target.value))}
+														onChange={(event) => setPhoneNumber(sanitizePhoneNumberInput(event.target.value))}
+														onKeyDown={blockNonDigitKey}
 											placeholder="e.g., 09171234567"
 										/>
                     {phoneNumber ? (

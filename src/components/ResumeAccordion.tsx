@@ -143,6 +143,12 @@ const ResumeAccordion = ({
   const normalizePhoneInput = (value: string) => {
     return value.replace(/\s+/g, '').slice(0, 20)
   }
+  const blockNonDigitKey = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.ctrlKey || e.metaKey) return
+    const allowed = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Home', 'End', 'Tab']
+    if (allowed.includes(e.key)) return
+    if (!/^[0-9]$/.test(e.key)) e.preventDefault()
+  }
   const blockInvalidNumberKey = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'e' || event.key === 'E' || event.key === '+' || event.key === '-') {
       event.preventDefault()
@@ -667,8 +673,17 @@ const ResumeAccordion = ({
             type="number"
             value={jobApplication.expectedSalary}
             onChange={(event) => updateApplication('expectedSalary', event.target.value)}
+            onKeyDown={(e) => {
+              // prevent minus sign via keystroke
+              if ((e.key === '-' || e.key === '+') && !e.ctrlKey && !e.metaKey) {
+                e.preventDefault()
+              }
+            }}
             placeholder="e.g., 85000"
           />
+          {jobApplication.expectedSalary !== '' && !Number.isNaN(Number(jobApplication.expectedSalary)) && Number(jobApplication.expectedSalary) < 0 ? (
+            <p style={{ color: '#dc2626', fontSize: '0.85rem', marginTop: 6 }}>Expected salary cannot be negative.</p>
+          ) : null}
         </label>
       </div>
     </div>
@@ -834,6 +849,7 @@ const ResumeAccordion = ({
               onChange={(event) =>
                 updateEmployment(index, 'companyPhone', normalizePhoneInput(event.target.value))
               }
+              onKeyDown={blockNonDigitKey}
               placeholder="e.g., 0917 123 4567"
             />
             {renderFieldError(`employmentHistory.${index}.companyPhone`)}
@@ -939,6 +955,7 @@ const ResumeAccordion = ({
               onChange={(event) =>
                 updateReference(index, 'referencePhone', normalizePhoneInput(event.target.value))
               }
+              onKeyDown={blockNonDigitKey}
               placeholder="e.g., 0917 123 4567"
             />
             {entry.referencePhone ? (
