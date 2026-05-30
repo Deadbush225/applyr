@@ -42,9 +42,14 @@ input {
 }
 
 .app-content {
-
   flex: 1;
   overflow: hidden;
+}
+
+@media (max-width:900px) {
+  .app-content {
+    overflow: auto;
+  }
 }
 
 // Resume Editor Layout
