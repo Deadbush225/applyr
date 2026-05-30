@@ -106,7 +106,7 @@ const ResumeAccordion = ({
   jobApplications,
   activeJobApplicationId,
   onJobApplicationChange,
-  onAddJobApplication,
+  // onAddJobApplication,
   education,
   employmentHistory,
   references,
