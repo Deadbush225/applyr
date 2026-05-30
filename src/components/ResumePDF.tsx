@@ -81,6 +81,7 @@ const getMoneyDisplay = (value: string | number | null | undefined) => {
   if (value === null || value === undefined || value === '') return 'Not provided';
   const num = typeof value === 'number' ? value : Number(value);
   if (Number.isNaN(num)) return 'Not provided';
+  if (num < 0) return 'Not provided';
   return `Php ${num.toLocaleString()}`;
 }
 

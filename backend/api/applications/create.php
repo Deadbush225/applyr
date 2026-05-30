@@ -34,6 +34,15 @@ $defaults = [
 
 $jobApplication = array_merge($defaults, $jobApplication);
 
+// Validate expectedSalary: must be numeric and non-negative when provided
+$expectedSalaryRaw = $jobApplication['expectedSalary'] ?? null;
+if ($expectedSalaryRaw !== null && $expectedSalaryRaw !== '') {
+    if (!is_numeric($expectedSalaryRaw) || floatval($expectedSalaryRaw) < 0) {
+        jsonResponse(422, ['success' => false, 'message' => 'Expected salary cannot be negative.']);
+        exit;
+    }
+}
+
 // Validate JobApplicationDate: must be YYYY-MM-DD and not earlier than today
 function is_valid_date_ymd(string $s): bool
 {
