@@ -27,7 +27,7 @@ const ApplicantEditPage = ({
 	onSaveApplicant,
 }: ApplicantEditPageProps) => {
 	const navigate = useNavigate();
-	const [applicantName, setApplicantName] = useState(applicant.applicantName);
+	const [applicantName, setApplicantName] = useState('');
 	const [homeAddress, setHomeAddress] = useState(applicant.homeAddress);
 	const [phoneNumber, setPhoneNumber] = useState(applicant.phoneNumber);
 	const [emailAddress, setEmailAddress] = useState(applicant.emailAddress);
