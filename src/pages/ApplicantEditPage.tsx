@@ -152,15 +152,15 @@ const ApplicantEditPage = ({
 							<GroupBox title="Change Password">
 								<label>
 									<p className="required-asterisk">Current Password</p>
-									<Password value={currentPassword} onChange={setCurrentPassword} />
+									<Password value={currentPassword} onChange={setCurrentPassword} autocomplete="off" name="current-password-edit"/>
 								</label>
 								<label>
 									New Password
-									<Password value={newPassword} onChange={setNewPassword} />
+									<Password value={newPassword} onChange={setNewPassword} autocomplete="new-password" name="new-password" />
 								</label>
 								<label>
 									<p className="required-asterisk">Confirm New Password</p>
-									<Password value={confirmPassword} onChange={setConfirmPassword} />
+									<Password value={confirmPassword} onChange={setConfirmPassword} autocomplete="new-password" name="confirm-new-password" />
 								</label>
 							</GroupBox>
 						</div>

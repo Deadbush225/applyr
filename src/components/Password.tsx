@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-function Password({ onChange, value }: { onChange: (value: string) => void; value: string }) {
+function Password({ onChange, value, autocomplete, name }: { onChange: (value: string) => void; value: string; autocomplete?: string; name?: string }) {
   const [isVisible, setIsVisible] = useState(false);
 
   const toggleVisibility = () => {
@@ -12,7 +12,9 @@ function Password({ onChange, value }: { onChange: (value: string) => void; valu
       <input 
         type={isVisible ? "text" : "password"} 
         value={value} 
-        onChange={(e) => onChange(e.target.value)} 
+        onChange={(e) => onChange(e.target.value)}
+        autoComplete={autocomplete || "off"}
+        name={name}
       />
       <button type="button" className="eye-button" onClick={toggleVisibility} aria-label="Toggle Password Visibility">
         {isVisible ? (
