@@ -103,9 +103,8 @@ const ApplicantEditPage = ({
 		return /^09\d{9}$/.test(digits);
 	};
 
-		const onboardingFieldTotal = 5
+		const onboardingFieldTotal = 4
 		const onboardingFieldsComplete = [
-			applicantName.trim(),
 			homeAddress.trim(),
 			phoneNumber.trim(),
 			citizenshipStatus.trim(),
@@ -171,7 +170,6 @@ const ApplicantEditPage = ({
 							<p className="profile-section-eyebrow">Checklist</p>
 						<p><strong>Finish these to skip the prompt on sign in.</strong></p>
 							<ul className="profile-checklist">
-								<li>Full name</li>
 								<li>Home address</li>
 								<li>Phone number</li>
 								<li>Citizenship status</li>

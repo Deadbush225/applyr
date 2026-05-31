@@ -309,6 +309,9 @@ const HomePage = ({
               </div>
               <div className="application-meta">
                 <h3 className='application-meta-title'>{application.appliedPosition || `Application ${index + 1}`}</h3>
+              <span className={getStatusClass(application.JobApplicationStatus)}>
+                  {application.JobApplicationStatus || 'Pending'}
+                </span>
                 <span className="flex-row">
 
                   <strong>Applied: </strong>
@@ -319,9 +322,6 @@ const HomePage = ({
                 <span className='flex-row'>
                   <strong>Updated: </strong>
                   <p>{formatTime(application.lastUpdated)}</p>
-                </span>
-              <span className={getStatusClass(application.JobApplicationStatus)}>
-                  {application.JobApplicationStatus || 'Pending'}
                 </span>
               </div>
             </Link>

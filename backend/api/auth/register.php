@@ -11,11 +11,20 @@ $name = trim((string)($input['name'] ?? ''));
 $email = trim((string)($input['email'] ?? ''));
 $password = (string)($input['password'] ?? '');
 
-if ($name === '' || $email === '' || $password === '') {
+if ($email === '' || $password === '') {
     jsonResponse(422, [
         'success' => false,
-        'message' => 'Name, email, and password are required.',
+        'message' => 'Email and password are required.',
     ]);
+    exit;
+}
+
+if ($name === '') {
+    jsonResponse(422, [
+        'success' => false,
+        'message' => 'Name is required.',
+    ]);
+    exit;
 }
 
 if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
