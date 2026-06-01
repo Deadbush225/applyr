@@ -454,7 +454,7 @@ function App() {
   const [registrationMessage, setRegistrationMessage] = useState('')
   const storageScope = getStorageScope(authSession?.user.id)
   const [hydratedStorageScope, setHydratedStorageScope] = useState(storageScope)
-  const [isProfileHydrated, setIsProfileHydrated] = useState(!storedAuthSession?.user.id)
+  const [, setIsProfileHydrated] = useState(!storedAuthSession?.user.id)
   const [showNewAppModal, setShowNewAppModal] = useState(false)
   const [showPastApplicationDateModal, setShowPastApplicationDateModal] = useState(false)
   const [validationErrors, setValidationErrors] = useState<ValidationError[]>([])
