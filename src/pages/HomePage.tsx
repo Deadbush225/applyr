@@ -171,7 +171,7 @@ const HomePage = ({
                       required
                       value={name}
                       onChange={(event) => setName(event.target.value)}
-                      placeholder="e.g. Dela Cruz, Juan"
+                      placeholder="e.g. Juan E. Dela Cruz"
                     />
                   </label>
                 )}
