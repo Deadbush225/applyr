@@ -7,6 +7,7 @@ import ApplicantEditPage from './pages/ApplicantEditPage'
 import EditorPage from './pages/EditorPage'
 import HomePage from './pages/HomePage'
 import NewApplicationModal from './components/modals/NewApplicationModal'
+import PastApplicationDateModal from './components/modals/PastApplicationDateModal'
 import Navbar from './components/Navbar'
 import { updateApplication as syncApplication, getResumeSettings, deleteApplication, deleteNestedItem, getApplicationsForApplicant } from './services/applications'
 import { ApplicationSyncSchema, ProfileSyncSchema } from './validation/applicationSchema'
@@ -56,7 +57,7 @@ const createEmptyApplication = (applicantId: number | string): JobApplication =>
   JobApplicationId: createJobApplicationId(),
   applicantId: String(applicantId),
   appliedPosition: '',
-  JobApplicationDate: new Date().toISOString().slice(0, 10),
+  JobApplicationDate: getTodayIsoDate(),
   agreesToDrugTest: false,
   lastUpdated: new Date().toISOString(),
   availableStartDate: '',
@@ -118,6 +119,10 @@ const createCertificate = (): Certificate => ({
   validityMonths: '',
   dateIssued: '',
 })
+
+const getTodayIsoDate = () => new Date().toISOString().slice(0, 10)
+
+const isPastIsoDate = (value?: string | null) => Boolean(value) && String(value) < getTodayIsoDate()
 
 const isBlank = (value: unknown) => value === '' || value === null || value === undefined
 
@@ -451,6 +456,7 @@ function App() {
   const [hydratedStorageScope, setHydratedStorageScope] = useState(storageScope)
   const [isProfileHydrated, setIsProfileHydrated] = useState(!storedAuthSession?.user.id)
   const [showNewAppModal, setShowNewAppModal] = useState(false)
+  const [showPastApplicationDateModal, setShowPastApplicationDateModal] = useState(false)
   const [validationErrors, setValidationErrors] = useState<ValidationError[]>([])
   const [profileNavigationGuard, setProfileNavigationGuard] = useState<ProfileNavigationGuard | null>(null)
   const [pendingNavigationTarget, setPendingNavigationTarget] = useState<string | null>(null)
@@ -458,6 +464,7 @@ function App() {
   const [certificateDuplicateWarnings, setCertificateDuplicateWarnings] = useState<Record<number, { attemptedValue: string; lastValid: string }>>({})
   const pendingTrainingDuplicateSelectionRef = useRef<Record<number, string>>({})
   const pendingCertificateDuplicateSelectionRef = useRef<Record<number, string>>({})
+  const lastPastApplicationPromptRef = useRef<string>('')
   const location = useLocation()
   const navigate = useNavigate()
 
@@ -819,6 +826,30 @@ function App() {
   const activeJobApplication =
     jobApplications.find((application) => application.JobApplicationId === activeJobApplicationId) ??
     jobApplications[0]
+
+  useEffect(() => {
+    const isEditorRoute = location.pathname.startsWith('/editor')
+    const currentId = activeJobApplication?.JobApplicationId ?? ''
+    const currentDate = activeJobApplication?.JobApplicationDate ?? ''
+    const currentDateIsPast = isPastIsoDate(currentDate)
+    const promptKey = `${location.pathname}:${currentId}:${currentDate}`
+
+    if (!isEditorRoute) {
+      setShowPastApplicationDateModal(false)
+      lastPastApplicationPromptRef.current = ''
+      return
+    }
+
+    if (currentId && currentDateIsPast && lastPastApplicationPromptRef.current !== promptKey) {
+      setShowPastApplicationDateModal(true)
+      lastPastApplicationPromptRef.current = promptKey
+    }
+
+    if (!currentDateIsPast) {
+      setShowPastApplicationDateModal(false)
+      lastPastApplicationPromptRef.current = ''
+    }
+  }, [activeJobApplication?.JobApplicationId, activeJobApplication?.JobApplicationDate, location.pathname])
 
   const buildProfileSyncPayload = useCallback(() => {
     if (!applicant.applicantId) {
@@ -1301,6 +1332,9 @@ function App() {
         await syncApplicantProfile(profilePayload, authSession?.token)
       }
       if (applicationPayload) {
+        if (isPastIsoDate(applicationPayload.jobApplication.JobApplicationDate)) {
+          return
+        }
         ApplicationSyncSchema.parse(applicationPayload)
         const res = await syncApplication(applicationPayload, authSession?.token)
         // If backend returned reference ids for inserted/updated refs, map them into local state
@@ -1619,6 +1653,10 @@ function App() {
           }}
         />
       )}
+      <PastApplicationDateModal
+        isOpen={showPastApplicationDateModal}
+        onClose={() => setShowPastApplicationDateModal(false)}
+      />
       </main>
     </div>
   )

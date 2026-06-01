@@ -375,7 +375,7 @@ const ResumeAccordion = ({
               <input
                 type="date"
                 value={jobApplication.JobApplicationDate || ''}
-                max={today}
+                min={today}
                 onChange={(event) => updateApplication('JobApplicationDate', event.target.value)}
               />
               {renderFieldError('jobApplication.JobApplicationDate')}
