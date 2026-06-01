@@ -197,6 +197,11 @@
   color: var(--text-muted);
 }
 
+.application-meta-title {
+  display: flex;
+  justify-content: space-between;
+}
+
 // Application Meta
 .application-meta {
   position: relative;
@@ -213,9 +218,10 @@
 
 // Status Chip
 .application-chip {
-  position: absolute;
-  top: 1em;
-  right: 1em;
+  // position: absolute;
+  // top: 1em;
+  // right: 1em;
+  text-align: center;
   z-index: 100;
   align-self: flex-start;
   background: var(--accent-weak);

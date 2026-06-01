@@ -891,10 +891,11 @@ function App() {
   const authenticated = Boolean(authSession?.token)
   const isValidationBlocked = validationErrors.length > 0
   const requiresApplicantOnboarding =
-    authenticated &&
-    isProfileHydrated &&
-    (!applicant.homeAddress || !applicant.phoneNumber || !applicant.citizenshipStatus || !applicant.applicantName || applicant.hasCriminalHistory === null)
-
+  authenticated &&
+  isProfileHydrated &&
+  (!applicant.homeAddress || !applicant.phoneNumber || !applicant.citizenshipStatus || applicant.hasCriminalHistory === null)
+  console.log('Requires onboarding:', requiresApplicantOnboarding)
+  
   const handleLogin = async (email: string, password: string) => {
     setAuthError('')
     setIsAuthLoading(true)
@@ -1547,12 +1548,16 @@ function App() {
           path="/applicant"
           element={
             authenticated ? (
-              <ApplicantEditPage
-                key={String(applicant.applicantId)}
-                applicant={applicant}
-                authSession={authSession}
-                onSaveApplicant={saveApplicantProfile}
-              />
+              requiresApplicantOnboarding ? (
+                <ApplicantEditPage
+                  key={String(applicant.applicantId)}
+                  applicant={applicant}
+                  authSession={authSession}
+                  onSaveApplicant={saveApplicantProfile}
+                />
+              ) : (
+                <Navigate to="/" replace />
+              )
             ) : (
               <Navigate to="/" replace />
             )

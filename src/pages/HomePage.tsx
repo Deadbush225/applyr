@@ -308,10 +308,12 @@ const HomePage = ({
                 })()}
               </div>
               <div className="application-meta">
-                <h3 className='application-meta-title'>{application.appliedPosition || `Application ${index + 1}`}</h3>
-              <span className={getStatusClass(application.JobApplicationStatus)}>
-                  {application.JobApplicationStatus || 'Pending'}
-                </span>
+                <h3 className='application-meta-title'>{application.appliedPosition || `Application ${index + 1}`}
+
+                <span className={getStatusClass(application.JobApplicationStatus)}>
+                    {application.JobApplicationStatus || 'Pending'}
+                  </span>
+                </h3>
                 <span className="flex-row">
 
                   <strong>Applied: </strong>
