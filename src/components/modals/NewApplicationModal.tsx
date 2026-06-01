@@ -55,7 +55,7 @@ const NewApplicationModal = ({ isOpen, onClose, onCreate }: Props) => {
             <input type="date" value={jobDate} min={today} onChange={(e) => setJobDate(e.target.value)} />
           </label>
           <label className="modal-checkbox-row">
-            <input type="checkbox" checked={agrees} onChange={(e) => setAgrees(e.target.checked)} />
+            <input type="checkbox" checked={agrees} onChange={(e) => setAgrees(e.target.checked)} style={{ flexGrow: '0' }}/>
             <span>I agree to drug testing</span>
           </label>
           {error ? <p style={{ color: '#c93b3b' }}>{error}</p> : null}
