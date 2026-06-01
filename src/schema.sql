@@ -161,7 +161,7 @@ CREATE TABLE `JobApplication` (
 --
 DROP TABLE IF EXISTS `ApplicationResumeSettings`;
 CREATE TABLE `ApplicationResumeSettings` (
-  `JobApplicationId` varchar(36) NOT NULL,  -- Matches UUID of JobApplication
+  `JobApplicationId` char(36) NOT NULL,  -- Matches UUID of JobApplication
   `resumeTemplate` varchar(20) NOT NULL DEFAULT 'classic' CHECK (`resumeTemplate` in ('classic','compact','modern')),
   `previewFont` varchar(50) NOT NULL DEFAULT 'Times New Roman',
   `lastUpdated` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
@@ -175,7 +175,7 @@ CREATE TABLE `ApplicationResumeSettings` (
 DROP TABLE IF EXISTS `Reference`;
 CREATE TABLE `Reference` (
   `referenceId` int(10) NOT NULL AUTO_INCREMENT,
-  `JobApplicationId` varchar(36) NOT NULL,   -- Matches UUID of JobApplication
+  `JobApplicationId` char(36) NOT NULL,   -- Matches UUID of JobApplication
   `referenceName` varchar(80) NOT NULL,
   `referenceTitle` varchar(80) NOT NULL,
   `referenceCompany` varchar(80) NOT NULL,
