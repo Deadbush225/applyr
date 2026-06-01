@@ -964,7 +964,7 @@ const renderEducation = (index: number) => {
                   type="text"
                   value={applicant.applicantName || ''}
                   onChange={(e) => updateApplicant('applicantName', e.target.value)}
-                  disabled={isValidationBlocked}
+                  
                 />
               </div>
               <div className='lyt_flex-row'>
@@ -976,7 +976,7 @@ const renderEducation = (index: number) => {
                   type="email"
                   value={applicant.emailAddress || ''}
                   onChange={(e) => updateApplicant('emailAddress', e.target.value)}
-                  disabled={isValidationBlocked}
+                  
                 />
               </div>
               <div className="form-group">
@@ -988,7 +988,7 @@ const renderEducation = (index: number) => {
                   value={applicant.phoneNumber || ''}
                   onChange={(e) => updateApplicant('phoneNumber', normalizePhoneInput(e.target.value))}
                   onKeyDown={blockNonDigitKey}
-                  disabled={isValidationBlocked}
+                  
                   />
                 {applicant.phoneNumber ? (
                   isValidPhoneNumber(applicant.phoneNumber) ? (
@@ -1024,7 +1024,7 @@ const renderEducation = (index: number) => {
                         type="button"
                         className="row-remove"
                         onClick={() => removeEducation(index)}
-                        disabled={isValidationBlocked}
+                        
                       >
                         Remove
                       </button>
@@ -1070,7 +1070,7 @@ const renderEducation = (index: number) => {
                         type="button"
                         className="row-remove"
                         onClick={() => removeEmployment(index)}
-                        disabled={isValidationBlocked}
+                        
                       >
                         Remove
                       </button>
@@ -1115,7 +1115,7 @@ const renderEducation = (index: number) => {
                         type="button"
                         className="row-remove"
                         onClick={() => removeTraining(index)}
-                        disabled={isValidationBlocked}
+                        
                       >
                         Remove
                       </button>
@@ -1160,7 +1160,7 @@ const renderEducation = (index: number) => {
                         type="button"
                         className="row-remove"
                         onClick={() => removeCertificate(index)}
-                        disabled={isValidationBlocked}
+                        
                       >
                         Remove
                       </button>
