@@ -150,7 +150,6 @@ CREATE TABLE `JobApplication` (
   `agreesToDrugTest` tinyint(1) NOT NULL DEFAULT 0,
   `agreedToTerms` tinyint(1) NOT NULL DEFAULT 1,
   `dateAgreed` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `lastUpdated` datetime NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`JobApplicationId`),
   KEY `applicantId` (`applicantId`),
   CONSTRAINT `fk_JobApp_Applicant` FOREIGN KEY (`applicantId`) REFERENCES `Applicant` (`applicantId`)

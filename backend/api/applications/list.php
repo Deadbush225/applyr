@@ -22,12 +22,12 @@ try {
         'SELECT '
         . 'ja.JobApplicationId, ja.applicantId, ja.appliedPosition, ja.JobApplicationDate, ja.JobApplicationStatus, '
         . 'ja.availableStartDate, ja.expectedSalary, ja.resumeFileUrl, ja.agreesToDrugTest, ja.agreedToTerms, '
-        . 'ja.dateAgreed, ja.lastUpdated, '
+        . 'ja.dateAgreed, COALESCE(ars.lastUpdated, ja.dateAgreed) AS lastUpdated, '
         . 'ars.resumeTemplate, ars.previewFont, ars.lastUpdated AS settingsLastUpdated '
         . 'FROM JobApplication ja '
         . 'LEFT JOIN ApplicationResumeSettings ars ON ars.JobApplicationId = ja.JobApplicationId '
         . 'WHERE ja.applicantId = :applicantId '
-        . 'ORDER BY ja.lastUpdated DESC'
+        . 'ORDER BY COALESCE(ars.lastUpdated, ja.dateAgreed) DESC'
     );
     $statement->execute(['applicantId' => $applicantId]);
     $applications = $statement->fetchAll(PDO::FETCH_ASSOC);
