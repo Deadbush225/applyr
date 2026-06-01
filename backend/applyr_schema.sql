@@ -139,7 +139,7 @@ CREATE TABLE `EmploymentHistory` (
 --
 DROP TABLE IF EXISTS `JobApplication`;
 CREATE TABLE `JobApplication` (
-  `JobApplicationId` varchar(36) NOT NULL,  -- Kept as UUID
+  `JobApplicationId` char(36) NOT NULL,  -- Kept as UUID
   `applicantId` int(10) NOT NULL,           -- Changed to INT to match Applicant table
   `appliedPosition` varchar(60) NOT NULL,
   `JobApplicationDate` date NOT NULL,
