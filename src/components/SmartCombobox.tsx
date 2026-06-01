@@ -65,7 +65,7 @@ export default function SmartCombobox({ fetchUrl, valueName, valueId, placeholde
         if (!res.ok) return
         const raw = await res.json()
         // Normalize incoming items
-        type ReceivedItem = { 
+        type ReceivedItem = {
           id?: string
           certificateId?: string
           trainingId?: string
@@ -79,24 +79,27 @@ export default function SmartCombobox({ fetchUrl, valueName, valueId, placeholde
           location?: string
           companyAddress?: string
           schoolLocation?: string
+          phone?: string
+          companyPhone?: string
           description?: string
+          trainingDescription?: string
           duration?: number
+          trainingDurationHours?: number
           validityMonths?: number
         }
         const list: ReceivedItem[] = Array.isArray(raw) ? raw : raw?.data ?? []
         const mapped = list.map((item) => {
           const id = String(item.id || item.companyId || item.schoolId || item.certificateId || item.trainingId || '')
           const name = String(item.name || item.companyName || item.schoolName || item.certificateName || item.trainingTitle || '')
-          const base = { id, name, location: item.location || item.companyAddress || item.schoolLocation || '' }
-          // include any other fields (duration, validity, description, etc.)
-          const extras = { ...item }
-          delete extras.id
-          delete extras.name
-          delete extras.location
-          delete extras.certificateId
-          delete extras.trainingId
-          delete extras.companyId
-          delete extras.schoolId
+          const base = {
+            id,
+            name,
+            location: item.location || item.companyAddress || item.schoolLocation || '',
+          }
+          const description = String(item.description || item.trainingDescription || '')
+          const companyPhone = String(item.companyPhone || item.phone || '')
+          const duration = item.duration ?? item.trainingDurationHours ?? undefined
+          const extras = { ...item, description, companyPhone, duration }
           return { ...base, ...extras }
         })
         if (!cancelled) {
@@ -149,6 +152,13 @@ export default function SmartCombobox({ fetchUrl, valueName, valueId, placeholde
     onChange({ ...opt })
   }
 
+  const truncateWords = (value: string, maxWords: number) => {
+    const cleaned = value.trim().replace(/\s+/g, ' ')
+    const words = cleaned.split(' ')
+    if (words.length <= maxWords) return cleaned
+    return `${words.slice(0, maxWords).join(' ')}...`
+  }
+
   const onBlur = () => {
     // small delay to allow click
     setTimeout(() => {
@@ -184,12 +194,35 @@ export default function SmartCombobox({ fetchUrl, valueName, valueId, placeholde
       />
       {isOpen && filtered.length > 0 ? (
         <ul className="combobox-list" style={{ position: 'absolute', zIndex: 40, left: 0, right: 0, maxHeight: 220, overflow: 'auto', background: 'white', border: '1px solid #ddd', margin: 0, padding: 0, listStyle: 'none' }}>
-          {filtered.map((opt, i) => (
-            <li key={opt.id} onMouseDown={() => selectOption(opt)} style={{ padding: '8px 10px', background: i === highlight ? '#eef' : 'white', cursor: 'pointer' }}>
-              <div style={{ fontWeight: 500 }}>{opt.name}</div>
-              {opt.location ? <div style={{ fontSize: '0.85em', color: '#6b7280', marginTop: 4 }}>{opt.location}</div> : null}
-            </li>
-          ))}
+          {filtered.map((opt, i) => {
+            const showCompanyMeta = Boolean(opt.companyPhone)
+            const showTrainingMeta = Boolean(opt.description || opt.duration)
+            const showCertificateMeta = Boolean(opt.location || opt.validityMonths != null)
+            const trainingDescription = typeof opt.description === 'string' ? opt.description : ''
+            return (
+              <li key={opt.id} onMouseDown={() => selectOption(opt)} style={{ padding: '8px 10px', background: i === highlight ? '#eef' : 'white', cursor: 'pointer' }}>
+                <div style={{ fontWeight: 500 }}>{opt.name}</div>
+                {showCompanyMeta ? (
+                  <div style={{ fontSize: '0.85em', color: '#6b7280', marginTop: 4, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                    {opt.location ? <div>{opt.location}</div> : null}
+                    <div>{opt.companyPhone}</div>
+                  </div>
+                ) : showTrainingMeta ? (
+                  <div style={{ fontSize: '0.85em', color: '#6b7280', marginTop: 4, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                    {trainingDescription ? <div>{truncateWords(trainingDescription, 12)}</div> : null}
+                    {opt.duration != null ? <div>{`${opt.duration}h`}</div> : null}
+                  </div>
+                ) : showCertificateMeta ? (
+                  <div style={{ fontSize: '0.85em', color: '#6b7280', marginTop: 4, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                    {opt.location ? <div>{opt.location}</div> : null}
+                    {opt.validityMonths != null ? <div>{`Valid for ${opt.validityMonths} months`}</div> : null}
+                  </div>
+                ) : opt.location ? (
+                  <div style={{ fontSize: '0.85em', color: '#6b7280', marginTop: 4 }}>{opt.location}</div>
+                ) : null}
+              </li>
+            )
+          })}
         </ul>
       ) : null}
     </div>

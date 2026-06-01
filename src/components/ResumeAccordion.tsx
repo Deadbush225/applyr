@@ -565,7 +565,6 @@ const ResumeAccordion = ({
                   addReference()
                   setActivePanel({ type: 'reference', index: references.length })
                 }}
-                disabled={isValidationBlocked}
               >
                 + Add
               </button>

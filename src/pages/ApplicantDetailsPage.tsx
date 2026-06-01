@@ -1038,7 +1038,6 @@ const renderEducation = (index: number) => {
                   addEducation()
                   _setActivePanel({ type: 'education', index: education.length })
                 }}
-                disabled={isValidationBlocked}
               >
                 + Add
               </button>
@@ -1085,7 +1084,6 @@ const renderEducation = (index: number) => {
                   addEmployment()
                   _setActivePanel({ type: 'employment', index: employmentHistory.length })
                 }}
-                disabled={isValidationBlocked}
               >
                 + Add
               </button>
@@ -1132,7 +1130,6 @@ const renderEducation = (index: number) => {
                   // wait a tick so the new item appears in `trainings` props
                   setTimeout(() => _setActivePanel({ type: 'training', index: trainings.length }), 0)
                 }}
-                disabled={isValidationBlocked}
               >
                 + Add
               </button>
@@ -1178,7 +1175,6 @@ const renderEducation = (index: number) => {
                   // wait a tick so the new item appears in `certificates` props
                   setTimeout(() => _setActivePanel({ type: 'certificate', index: certificates.length }), 0)
                 }}
-                disabled={isValidationBlocked}
               >
                 + Add
               </button>
