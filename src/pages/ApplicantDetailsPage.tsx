@@ -74,7 +74,7 @@ const ApplicantDetailsPage = ({
   removeTraining,
   addCertificate,
   removeCertificate,
-  isValidationBlocked,
+  // isValidationBlocked,
   validationErrors,
   onNavigationGuardChange,
   trainingDuplicateWarnings = {},
