@@ -921,11 +921,11 @@ function App() {
 
   const authenticated = Boolean(authSession?.token)
   const isValidationBlocked = validationErrors.length > 0
-  const requiresApplicantOnboarding =
-  authenticated &&
-  isProfileHydrated &&
-  (!applicant.homeAddress || !applicant.phoneNumber || !applicant.citizenshipStatus || applicant.hasCriminalHistory === null)
-  console.log('Requires onboarding:', requiresApplicantOnboarding)
+  // const requiresApplicantOnboarding =
+  // authenticated &&
+  // isProfileHydrated &&
+  // (!applicant.homeAddress || !applicant.phoneNumber || !applicant.citizenshipStatus || applicant.hasCriminalHistory === null)
+  // console.log('Requires onboarding:', requiresApplicantOnboarding)
   
   const handleLogin = async (email: string, password: string) => {
     setAuthError('')
@@ -933,8 +933,33 @@ function App() {
     try {
       const session = await loginUser(email, password)
       console.log('Login successful, received session:', session)
+
+      // Prevent the homepage from making onboarding decisions before we check the profile
+      setIsProfileHydrated(false)
+
+      // Do a quick profile fetch immediately and decide where to route the user
+      let profile: any = null
+      try {
+        profile = await getApplicantProfile(session.user.id)
+      } catch (err) {
+        // If profile fetch fails, continue and let the normal hydration effect run later
+        console.warn('Profile quick-check failed:', err)
+      }
+
       setAuthSession(session)
+      // Ensure applicantId is set immediately for scoped storage
       setApplicant((prev) => ({ ...prev, applicantId: session.user.id }))
+
+      const needsOnboarding = !!(
+        profile &&
+        (!profile.homeAddress || !profile.phoneNumber || !profile.citizenshipStatus || profile.hasCriminalHistory === null)
+      )
+
+      if (needsOnboarding) {
+        navigate('/applicant', { replace: true })
+      } else {
+        navigate('/', { replace: true })
+      }
     } catch (error) {
       setAuthError(error instanceof Error ? error.message : 'Login failed')
     } finally {
@@ -1479,9 +1504,7 @@ function App() {
         <Route
           path="/"
           element={
-            requiresApplicantOnboarding ? (
-              <Navigate to="/applicant" state={{ from: 'onboarding' }} replace />
-            ) : (
+             (
                 <HomePage
                 applicant={applicant}
                 jobApplications={jobApplications}
@@ -1582,16 +1605,13 @@ function App() {
           path="/applicant"
           element={
             authenticated ? (
-              requiresApplicantOnboarding ? (
                 <ApplicantEditPage
                   key={String(applicant.applicantId)}
                   applicant={applicant}
                   authSession={authSession}
                   onSaveApplicant={saveApplicantProfile}
                 />
-              ) : (
-                <Navigate to="/" replace />
-              )
+            
             ) : (
               <Navigate to="/" replace />
             )

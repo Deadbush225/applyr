@@ -106,6 +106,13 @@ const ApplicantDetailsPage = ({
   }
 
   const navigate = useNavigate()
+  const onboardingFieldTotal = 4
+  const onboardingFieldsComplete = [
+    applicant.homeAddress?.trim(),
+    applicant.phoneNumber?.trim(),
+    applicant.citizenshipStatus?.trim(),
+    applicant.hasCriminalHistory === null ? '' : 'ok',
+  ].filter(Boolean).length
   const [activePanel, setActivePanel] = useState<ActivePanel>({ type: 'list' })
   const [clickedPanel, setClickedPanel] = useState<ActivePanel>({type: 'list'})
   const [openSections, setOpenSections] = useState<string[]>(['education', 'employment', 'training', 'certificate'])
@@ -928,6 +935,24 @@ const renderEducation = (index: number) => {
               <button type="button" className="back-button " onClick={() => navigate('/')}>
                 ← Back to Home
               </button>
+            </div>
+
+            {/* Profile summary (required fields) */}
+            <div className="profile-edit-summary">
+              <div className="profile-summary-card profile-summary-card--accent profile-summary-card--checklist">
+                <span className="profile-summary-label">Required fields</span>
+                <strong>{onboardingFieldsComplete}/{onboardingFieldTotal} complete</strong>
+                <div className="profile-checklist-popover" aria-hidden="true">
+                  <p className="profile-section-eyebrow">Checklist</p>
+                  <p><strong>Finish these to skip the prompt on sign in.</strong></p>
+                  <ul className="profile-checklist">
+                    <li>Home address</li>
+                    <li>Phone number</li>
+                    <li>Citizenship status</li>
+                    <li>Criminal history response</li>
+                  </ul>
+                </div>
+              </div>
             </div>
 
             {/* Personal Info */}
