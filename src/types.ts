@@ -22,7 +22,6 @@ export type JobApplication = {
   lastUpdated: string
   availableStartDate: string
   expectedSalary: string
-  resumeFileUrl: string
   references?: ApplicantReference[]
   trainings?: Training[]
   certificates?: Certificate[]

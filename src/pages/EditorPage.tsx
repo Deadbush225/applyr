@@ -24,7 +24,6 @@ export type EditorPageProps = {
   onSyncRequest?: () => Promise<void>
   education: Education[]
   employmentHistory: EmploymentHistory[]
-  uploadState: { uploading: boolean; message: string }
   previewFont: string
   resumeTemplate: 'classic' | 'compact' | 'modern'
   onPreviewFontChange: (fontFamily: string) => void
@@ -49,7 +48,7 @@ export type EditorPageProps = {
   reorderTrainings: (fromIndex: number, toIndex: number) => void
   addCertificate: () => void
   reorderCertificates: (fromIndex: number, toIndex: number) => void
-  handleResumeUpload: (file: File | null) => Promise<void>
+  
   validationErrors: ValidationError[]
   isValidationBlocked: boolean
     trainingDuplicateWarnings?: Record<number, { attemptedValue: string; lastValid: string }>
@@ -67,7 +66,7 @@ const EditorPage = ({
   onSyncRequest,
   education,
   employmentHistory,
-  uploadState,
+  
   previewFont,
   resumeTemplate,
   onPreviewFontChange,
@@ -91,7 +90,6 @@ const EditorPage = ({
   reorderTrainings,
   addCertificate,
   reorderCertificates,
-  handleResumeUpload,
   validationErrors,
   isValidationBlocked,
     trainingDuplicateWarnings = {},
@@ -174,7 +172,6 @@ const EditorPage = ({
             references={jobApplication.references || []}
             trainings={jobApplication.trainings || []}
             certificates={jobApplication.certificates || []}
-            uploadState={uploadState}
             previewFont={previewFont}
             onPreviewFontChange={onPreviewFontChange}
             resumeTemplate={resumeTemplate}
@@ -198,7 +195,7 @@ const EditorPage = ({
             reorderTrainings={reorderTrainings}
             addCertificate={addCertificate}
             reorderCertificates={reorderCertificates}
-            handleResumeUpload={handleResumeUpload}
+            
             onDeleteJobApplication={handleDeleteJobApplication}
             onSyncRequest={onSyncRequest}
             validationErrors={validationErrors}

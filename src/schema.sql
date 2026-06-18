@@ -146,7 +146,6 @@ CREATE TABLE `JobApplication` (
   `JobApplicationStatus` varchar(20) NOT NULL DEFAULT 'Pending',
   `availableStartDate` date DEFAULT NULL,
   `expectedSalary` decimal(10,2) DEFAULT NULL,
-  `resumeFileUrl` varchar(255) DEFAULT NULL,
   `agreesToDrugTest` tinyint(1) NOT NULL DEFAULT 0,
   `agreedToTerms` tinyint(1) NOT NULL DEFAULT 1,
   `dateAgreed` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,

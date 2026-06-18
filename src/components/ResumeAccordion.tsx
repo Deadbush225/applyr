@@ -12,10 +12,6 @@ import type {
 import {Accordion, SectionRow} from './Accordion'
 import type { ValidationError } from '../utils/validation'
 
-type UploadState = {
-  uploading: boolean
-  message: string
-}
 
 type ActivePanel =
   | { type: 'list' }
@@ -40,7 +36,7 @@ type ResumeAccordionProps = {
   references: ApplicantReference[]
   trainings: Training[]
   certificates: Certificate[]
-  uploadState: UploadState
+  
   previewFont: string
   onPreviewFontChange: (fontFamily: string) => void
   resumeTemplate: 'classic' | 'compact' | 'modern'
@@ -60,7 +56,7 @@ type ResumeAccordionProps = {
   reorderTrainings: (fromIndex: number, toIndex: number) => void
   addCertificate: () => void
   reorderCertificates: (fromIndex: number, toIndex: number) => void
-  handleResumeUpload: (file: File | null) => Promise<void>
+  
   onDeleteJobApplication: (jobApplicationId: string) => Promise<void>
   validationErrors: ValidationError[]
   isValidationBlocked: boolean
@@ -112,7 +108,6 @@ const ResumeAccordion = ({
   references,
   trainings,
   certificates,
-  uploadState,
   previewFont,
   onPreviewFontChange,
   resumeTemplate,
@@ -1261,17 +1256,7 @@ const ResumeAccordion = ({
         </label>
       </div>
 
-      {uploadState.message ? (
-        <p className={uploadState.uploading ? 'upload-note' : 'upload-note done'}>
-          {uploadState.message}
-        </p>
-      ) : null}
-
-      {jobApplication.resumeFileUrl ? (
-        <p className="upload-link">
-          Resume URL: <a href={jobApplication.resumeFileUrl}>{jobApplication.resumeFileUrl}</a>
-        </p>
-      ) : null}
+      
     </div>
   )
 

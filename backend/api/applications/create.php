@@ -28,7 +28,6 @@ $defaults = [
     'JobApplicationDate' => date('Y-m-d'),
     'availableStartDate' => null,
     'expectedSalary' => null,
-    'resumeFileUrl' => null,
     'agreesToDrugTest' => 0,
 ];
 
@@ -108,8 +107,8 @@ try {
     }
 
     $statement = $db->prepare(
-        'INSERT INTO JobApplication (JobApplicationId, applicantId, appliedPosition, JobApplicationDate, JobApplicationStatus, availableStartDate, expectedSalary, resumeFileUrl, agreesToDrugTest, agreedToTerms, dateAgreed) '
-        . 'VALUES (:jobApplicationId, :applicantId, :appliedPosition, :jobApplicationDate, :status, :availableStartDate, :expectedSalary, :resumeFileUrl, :agreesToDrugTest, :agreedToTerms, :dateAgreed)'
+        'INSERT INTO JobApplication (JobApplicationId, applicantId, appliedPosition, JobApplicationDate, JobApplicationStatus, availableStartDate, expectedSalary, agreesToDrugTest, agreedToTerms, dateAgreed) '
+            . 'VALUES (:jobApplicationId, :applicantId, :appliedPosition, :jobApplicationDate, :status, :availableStartDate, :expectedSalary, :agreesToDrugTest, :agreedToTerms, :dateAgreed)'
     );
 
     $statement->execute([
@@ -120,7 +119,7 @@ try {
         'status' => (string)($jobApplication['JobApplicationStatus'] ?? 'Pending'),
         'availableStartDate' => $jobApplication['availableStartDate'] ?: null,
         'expectedSalary' => $jobApplication['expectedSalary'] !== '' ? $jobApplication['expectedSalary'] : null,
-        'resumeFileUrl' => $jobApplication['resumeFileUrl'] ?: null,
+        
         'agreesToDrugTest' => (int)($jobApplication['agreesToDrugTest'] ?? 0),
         'agreedToTerms' => (int)($jobApplication['agreedToTerms'] ?? 0),
         'dateAgreed' => !empty($jobApplication['dateAgreed']) ? $jobApplication['dateAgreed'] : date('Y-m-d H:i:s'),

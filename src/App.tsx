@@ -66,7 +66,6 @@ const createEmptyApplication = (applicantId: number | string): JobApplication =>
   lastUpdated: new Date().toISOString(),
   availableStartDate: '',
   expectedSalary: '',
-  resumeFileUrl: '',
   references: [],
   trainings: [],
   certificates: [],
@@ -451,7 +450,7 @@ function App() {
   const [previewFont, setPreviewFont] = useState<string>(initialPreviewFont)
   const [resumeTemplate, setResumeTemplate] = useState<ResumeTemplateId>(initialResumeTemplate)
 
-  const [uploadState, setUploadState] = useState({ uploading: false, message: '' })
+  
   const [authSession, setAuthSession] = useState<AuthSession | null>(storedAuthSession)
   const [authError, setAuthError] = useState('')
   const [isAuthLoading, setIsAuthLoading] = useState(false)
@@ -955,6 +954,7 @@ function App() {
       setIsProfileHydrated(false)
 
       // Do a quick profile fetch immediately and decide where to route the user
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let profile: any = null
       try {
         profile = await getApplicantProfile(session.user.id)
@@ -1428,60 +1428,7 @@ function App() {
     }
   }
 
-  const handleResumeUpload = async (file: File | null) => {
-    if (!file) {
-      return
-    }
-
-    if (file.type !== 'application/pdf') {
-      setUploadState({ uploading: false, message: 'Please select a PDF file.' })
-      return
-    }
-
-    const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME
-    const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET
-
-    if (!cloudName || !uploadPreset) {
-      setUploadState({
-        uploading: false,
-        message:
-          'Cloud upload is not configured. Add VITE_CLOUDINARY_CLOUD_NAME and VITE_CLOUDINARY_UPLOAD_PRESET in your .env file.',
-      })
-      return
-    }
-
-    setUploadState({ uploading: true, message: 'Uploading resume...' })
-
-    try {
-      const formData = new FormData()
-      formData.append('file', file)
-      formData.append('upload_preset', uploadPreset)
-      formData.append('folder', 'applyr/resumes')
-
-      const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/upload`, {
-        method: 'POST',
-        body: formData,
-      })
-
-      if (!response.ok) {
-        throw new Error('Upload failed')
-      }
-
-      const payload = (await response.json()) as { secure_url?: string }
-
-      if (!payload.secure_url) {
-        throw new Error('Missing uploaded file URL')
-      }
-
-      updateApplication('resumeFileUrl', payload.secure_url)
-      setUploadState({ uploading: false, message: 'Resume uploaded successfully.' })
-    } catch {
-      setUploadState({
-        uploading: false,
-        message: 'Upload could not be completed. Please verify your Cloudinary configuration.',
-      })
-    }
-  }
+  
 
   return (
     <div className="app-shell">
@@ -1563,7 +1510,6 @@ function App() {
                 onAddJobApplication={addJobApplication}
                 education={education}
                 employmentHistory={employmentHistory}
-                uploadState={uploadState}
                 previewFont={previewFont}
                 resumeTemplate={resumeTemplate}
                 onPreviewFontChange={(font) => {
@@ -1610,7 +1556,6 @@ function App() {
                 reorderTrainings={reorderTrainings}
                 addCertificate={addCertificate}
                 reorderCertificates={reorderCertificates}
-                handleResumeUpload={handleResumeUpload}
                 validationErrors={validationErrors}
                 isValidationBlocked={isValidationBlocked}
                 onDeleteJobApplication={deleteJobApplication}
@@ -1649,7 +1594,6 @@ function App() {
                 employmentHistory={employmentHistory}
                 trainings={applicant.trainings || []}
                 certificates={applicant.certificates || []}
-                uploadState={uploadState}
                 updateApplicant={updateApplicant}
                 updateEducation={updateEducation}
                 updateEmployment={updateEmployment}
@@ -1667,7 +1611,7 @@ function App() {
                 addCertificate={addApplicantCertificate}
                 removeCertificate={removeApplicantCertificate}
                 reorderCertificates={reorderApplicantCertificates}
-                handleResumeUpload={handleResumeUpload}
+                
                 validationErrors={validationErrors}
                 isValidationBlocked={isValidationBlocked}
                 onSyncRequest={syncCurrentApplication}

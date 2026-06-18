@@ -44,7 +44,7 @@ export type ApplicantDetailsPageProps = {
   addCertificate: () => void
   removeCertificate: (index: number) => Promise<void>
   reorderCertificates?: (fromIndex: number, toIndex: number) => void
-  handleResumeUpload?: (file: File | null) => Promise<void>
+  
   validationErrors: ValidationError[]
   isValidationBlocked: boolean
   onNavigationGuardChange?: (

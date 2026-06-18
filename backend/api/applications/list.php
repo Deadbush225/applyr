@@ -21,7 +21,7 @@ try {
     $statement = $db->prepare(
         'SELECT '
         . 'ja.JobApplicationId, ja.applicantId, ja.appliedPosition, ja.JobApplicationDate, ja.JobApplicationStatus, '
-        . 'ja.availableStartDate, ja.expectedSalary, ja.resumeFileUrl, ja.agreesToDrugTest, ja.agreedToTerms, '
+        . 'ja.availableStartDate, ja.expectedSalary, ja.agreesToDrugTest, ja.agreedToTerms, '
         . 'ja.dateAgreed, COALESCE(ars.lastUpdated, ja.dateAgreed) AS lastUpdated, '
         . 'ars.resumeTemplate, ars.previewFont, ars.lastUpdated AS settingsLastUpdated '
         . 'FROM JobApplication ja '
