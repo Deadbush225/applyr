@@ -960,6 +960,7 @@ const renderEducation = (index: number) => {
               <div className="form-group">
                 <label htmlFor="applicantName">Full Name</label>
                 <input
+                disabled
                   id="applicantName"
                   type="text"
                   value={applicant.applicantName || ''}
