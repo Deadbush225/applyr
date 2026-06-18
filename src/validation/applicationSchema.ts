@@ -340,4 +340,11 @@ export const ApplicationSyncSchema = z.object({
   resumeSettings: z.object({ resumeTemplate: z.string().optional(), previewFont: z.string().optional() }).optional(),
 })
 
+export const ApplicationStatusSyncSchema = z.object({
+  jobApplication: z.object({
+    JobApplicationId: EntityIdSchema,
+    JobApplicationStatus: z.string(),
+  }),
+})
+
 export type ApplicationPayload = z.infer<typeof ApplicationPayloadSchema>

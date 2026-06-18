@@ -77,11 +77,20 @@ type ApplicationPayload = {
   resumeSettings?: ApplicationResumeSettings
 }
 
+type ApplicationStatusPayload = {
+  jobApplication: {
+    JobApplicationId: string
+    JobApplicationStatus: string
+  }
+}
+
 export const createApplication = async (payload: ApplicationPayload, token?: string) =>
   requestJson(`${API_BASE_URL}/api/applications/create.php`, payload, token)
 
-export const updateApplication = async (payload: ApplicationPayload, token?: string) =>
-  requestJson(`${API_BASE_URL}/api/applications/update.php`, payload, token)
+export const updateApplication = async (
+  payload: ApplicationPayload | ApplicationStatusPayload,
+  token?: string,
+) => requestJson(`${API_BASE_URL}/api/applications/update.php`, payload, token)
 
 export const deleteApplication = async (jobApplicationId: string | number, token?: string) =>
   requestJson(`${API_BASE_URL}/api/applications/delete.php`, { jobApplicationId: String(jobApplicationId) }, token)

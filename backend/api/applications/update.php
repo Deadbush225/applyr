@@ -8,7 +8,8 @@ require_once __DIR__ . '/../auth/require_auth.php';
 [$db, $user] = requireAuthUser();
 $input = readJsonInput();
 $applicant = is_array($input['applicant'] ?? null) ? $input['applicant'] : [];
-$jobApplication = is_array($input['jobApplication'] ?? null) ? $input['jobApplication'] : [];
+$jobApplicationRequest = is_array($input['jobApplication'] ?? null) ? $input['jobApplication'] : [];
+$jobApplication = $jobApplicationRequest;
 
 $applicantId = (string)$user['applicantId'];
 $jobApplicationId = (string)($jobApplication['JobApplicationId'] ?? '');
@@ -21,6 +22,10 @@ if ($jobApplicationId === '') {
     exit;
 }
 
+$fetchExistingJobApplication = $db->prepare('SELECT * FROM JobApplication WHERE JobApplicationId = :jobApplicationId LIMIT 1');
+$fetchExistingJobApplication->execute(['jobApplicationId' => $jobApplicationId]);
+$existingJobApplication = $fetchExistingJobApplication->fetch(PDO::FETCH_ASSOC) ?: null;
+
 $defaults = [
     'appliedPosition' => '',
     'JobApplicationDate' => date('Y-m-d'),
@@ -30,7 +35,11 @@ $defaults = [
     'agreesToDrugTest' => 0,
 ];
 
-$jobApplication = array_merge($defaults, $jobApplication);
+if ($existingJobApplication !== null) {
+    $jobApplication = array_merge($defaults, $existingJobApplication, $jobApplication);
+} else {
+    $jobApplication = array_merge($defaults, $jobApplication);
+}
 
 // Validate expectedSalary: must be numeric and non-negative when provided
 $expectedSalaryRaw = $jobApplication['expectedSalary'] ?? null;
@@ -65,8 +74,19 @@ if ($jobAppDate !== '') {
 
     $today = date('Y-m-d');
     if (strtotime($jobAppDate) < strtotime($today)) {
-        jsonResponse(422, ['success' => false, 'message' => 'Job application date cannot be earlier than today.']);
-        exit;
+        if ($existingJobApplication !== null) {
+            $nonStatusKeys = array_diff(array_keys($jobApplicationRequest), ['JobApplicationId', 'JobApplicationStatus', 'JobApplicationDate']);
+            $explicitDateSame = array_key_exists('JobApplicationDate', $jobApplicationRequest)
+                && (string)$jobApplicationRequest['JobApplicationDate'] === (string)$existingJobApplication['JobApplicationDate'];
+
+            if (!empty($nonStatusKeys) || (array_key_exists('JobApplicationDate', $jobApplicationRequest) && !$explicitDateSame)) {
+                jsonResponse(422, ['success' => false, 'message' => 'Past-dated applications may only sync status when the date is unchanged.']);
+                exit;
+            }
+        } else {
+            jsonResponse(422, ['success' => false, 'message' => 'Job application date cannot be earlier than today.']);
+            exit;
+        }
     }
 }
 

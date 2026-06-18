@@ -10,7 +10,11 @@ import NewApplicationModal from './components/modals/NewApplicationModal'
 import PastApplicationDateModal from './components/modals/PastApplicationDateModal'
 import Navbar from './components/Navbar'
 import { updateApplication as syncApplication, getResumeSettings, deleteApplication, deleteNestedItem, getApplicationsForApplicant } from './services/applications'
-import { ApplicationSyncSchema, ProfileSyncSchema } from './validation/applicationSchema'
+import {
+  ApplicationSyncSchema,
+  ApplicationStatusSyncSchema,
+  ProfileSyncSchema,
+} from './validation/applicationSchema'
 import { validateApplicationPayload, type ValidationError } from './utils/validation'
 import { loginUser, registerUser, getApplicantProfile, syncApplicantProfile, updateApplicantProfile, type AuthSession } from './services/auth'
 import type {
@@ -889,7 +893,7 @@ function App() {
         ...activeJobApplication,
         JobApplicationId: activeJobApplication.JobApplicationId,
         agreesToDrugTest: toBooleanFlag(activeJobApplication.agreesToDrugTest),
-        JobApplicationStatus: 'Pending',
+        JobApplicationStatus: activeJobApplication.JobApplicationStatus || 'Pending',
       },
       references: sanitizeReferences(activeJobApplication.references || []).map((item) => {
         const ref: ApplicantReference = {
@@ -918,6 +922,19 @@ function App() {
     previewFont,
     resumeTemplate,
   ])
+
+  const buildApplicationStatusSyncPayload = useCallback(() => {
+    if (!activeJobApplication) {
+      return null
+    }
+
+    return {
+      jobApplication: {
+        JobApplicationId: activeJobApplication.JobApplicationId,
+        JobApplicationStatus: activeJobApplication.JobApplicationStatus || 'Pending',
+      },
+    }
+  }, [activeJobApplication])
 
   const authenticated = Boolean(authSession?.token)
   const isValidationBlocked = validationErrors.length > 0
@@ -1358,6 +1375,11 @@ function App() {
       }
       if (applicationPayload) {
         if (isPastIsoDate(applicationPayload.jobApplication.JobApplicationDate)) {
+          const statusOnlyPayload = buildApplicationStatusSyncPayload()
+          if (statusOnlyPayload) {
+            ApplicationStatusSyncSchema.parse(statusOnlyPayload)
+            await syncApplication(statusOnlyPayload, authSession?.token)
+          }
           return
         }
         ApplicationSyncSchema.parse(applicationPayload)

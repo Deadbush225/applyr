@@ -159,3 +159,31 @@ JOIN Reference r ON ja.JobApplicationId = r.JobApplicationId
 WHERE ja.agreesToDrugTest = 1
 GROUP BY ja.JobApplicationId, a.applicantId, a.applicantName, ja.appliedPosition
 HAVING COUNT(r.referenceId) >= 2;
+
+-- 11. The talent acquisition team wants to analyze the profiles of highly 
+--     proactive candidates by comparing their upskilling efforts to their 
+--     salary expectations. Generate a report displaying the Applicant ID, 
+--     applicant name, their Total Training Hours across all completed sessions, 
+--     and their Highest Expected Salary from any of their job applications.
+
+SELECT
+ a.applicantId AS 'Applicant ID',
+ a.applicantName AS 'Applicant Name',
+ (SELECT SUM(tr.trainingDurationHours)
+  FROM ApplicantTraining atr
+  JOIN Training tr ON atr.trainingId = tr.trainingId
+  WHERE atr.applicantId = a.applicantId) AS 'Total Training Hours',
+ (SELECT MAX(ja.expectedSalary)
+  FROM JobApplication ja
+  WHERE ja.applicantId = a.applicantId) AS 'Highest Expected Salary'
+FROM Applicant a
+WHERE EXISTS (
+ SELECT 1
+ FROM ApplicantCertificate ac
+ WHERE ac.applicantId = a.applicantId
+)
+HAVING `Highest Expected Salary` > (
+ SELECT AVG(expectedSalary)
+ FROM JobApplication
+)
+ORDER BY `Total Training Hours` DESC;
