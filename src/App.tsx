@@ -60,8 +60,6 @@ const createEmptyApplicant = (): Applicant => ({
 
 const createEmptyApplication = (
   applicantId: number | string,
-  trainings: Training[] = [],
-  certificates: Certificate[] = [],
 ): JobApplication => ({
   JobApplicationId: createJobApplicationId(),
   applicantId: String(applicantId),
@@ -72,8 +70,6 @@ const createEmptyApplication = (
   availableStartDate: '',
   expectedSalary: '',
   references: [],
-  trainings: trainings.map((item) => ({ ...item })),
-  certificates: certificates.map((item) => ({ ...item })),
 })
 
 const createEducation = (applicantId: number | string): Education => ({
@@ -335,8 +331,6 @@ const normalizeJobApplication = (
   applicantId,
   agreesToDrugTest: toBooleanFlag(value.agreesToDrugTest),
   references: value.references ?? [],
-  trainings: value.trainings ?? [],
-  certificates: value.certificates ?? [],
   lastUpdated:
     value.lastUpdated ||
     value.JobApplicationDate ||
@@ -352,8 +346,6 @@ const normalizeBackendApplication = (
   applicantId: value.applicantId || fallbackApplicantId,
   agreesToDrugTest: toBooleanFlag(value.agreesToDrugTest),
   references: value.references ?? [],
-  trainings: value.trainings ?? [],
-  certificates: value.certificates ?? [],
   lastUpdated: value.lastUpdated || value.JobApplicationDate || new Date().toISOString(),
 })
 
@@ -550,8 +542,6 @@ function App() {
   const addJobApplication = () => {
     const next = createEmptyApplication(
       applicant.applicantId,
-      applicant.trainings || [],
-      applicant.certificates || [],
     )
     setJobApplications((prev) => [...prev, next])
     setActiveJobApplicationId(next.JobApplicationId)
@@ -660,7 +650,7 @@ function App() {
     touchActiveApplication()
   }
 
-  const updateNestedArray = <K extends 'references' | 'trainings' | 'certificates'>(
+  const updateNestedArray = <K extends 'references'>(
     key: K,
     updater: (arr: NonNullable<JobApplication[K]>) => NonNullable<JobApplication[K]>
   ) => {
@@ -679,91 +669,7 @@ function App() {
   const updateReference = (index: number, field: keyof ApplicantReference, value: string) => 
     updateNestedArray('references', arr => arr.map((item, i) => i === index ? { ...item, [field]: value } : item))
   
-  const updateTraining = (index: number, field: keyof Training, value: string) => {
-    const currentTraining = activeJobApplication?.trainings?.[index]
-    const pendingTrainingDuplicateValue = pendingTrainingDuplicateSelectionRef.current[index]
-    
-    updateNestedArray('trainings', arr => {
-      // Check for duplicates when updating trainingTitle
-      if (field === 'trainingTitle' && value.trim() !== '') {
-        const isDuplicate = arr.some(
-          (training, i) => 
-            i !== index && 
-            training.trainingTitle.toLowerCase().trim() === value.toLowerCase().trim()
-        )
-        if (isDuplicate) {
-          pendingTrainingDuplicateSelectionRef.current[index] = value.trim().toLowerCase()
-          // Store warning with the last valid value
-          setTrainingDuplicateWarnings(prev => ({
-            ...prev,
-            [index]: {
-              attemptedValue: value,
-              lastValid: currentTraining?.trainingTitle || ''
-            }
-          }))
-          return arr // Don't update state, but UI will show warning
-        } else {
-          delete pendingTrainingDuplicateSelectionRef.current[index]
-          // Clear warning if user fixed the duplicate
-          setTrainingDuplicateWarnings(prev => {
-            const next = { ...prev }
-            delete next[index]
-            return next
-          })
-        }
-      } else if (field === 'trainingId' && pendingTrainingDuplicateValue) {
-        delete pendingTrainingDuplicateSelectionRef.current[index]
-        return arr
-      }
-      
-      return arr.map((item, i) => i === index ? { ...item, [field]: value } : item)
-    })
-  }
-  
-  const updateCertificate = (index: number, field: keyof Certificate, value: string) => {
-    const currentCert = activeJobApplication?.certificates?.[index]
-    const pendingCertificateDuplicateValue = pendingCertificateDuplicateSelectionRef.current[index]
-    
-    updateNestedArray('certificates', arr => {
-      // Check for duplicates when updating certificateName
-      if (field === 'certificateName' && value.trim() !== '') {
-        const isDuplicate = arr.some(
-          (cert, i) => 
-            i !== index && 
-            cert.certificateName.toLowerCase().trim() === value.toLowerCase().trim()
-        )
-        if (isDuplicate) {
-          pendingCertificateDuplicateSelectionRef.current[index] = value.trim().toLowerCase()
-          // Store warning with the last valid value
-          setCertificateDuplicateWarnings(prev => ({
-            ...prev,
-            [index]: {
-              attemptedValue: value,
-              lastValid: currentCert?.certificateName || ''
-            }
-          }))
-          return arr // Don't update state, but UI will show warning
-        } else {
-          delete pendingCertificateDuplicateSelectionRef.current[index]
-          // Clear warning if user fixed the duplicate
-          setCertificateDuplicateWarnings(prev => {
-            const next = { ...prev }
-            delete next[index]
-            return next
-          })
-        }
-      } else if (field === 'certificateId' && pendingCertificateDuplicateValue) {
-        delete pendingCertificateDuplicateSelectionRef.current[index]
-        return arr
-      }
-      
-      return arr.map((item, i) => i === index ? { ...item, [field]: value } : item)
-    })
-  }
-
   const addReference = () => updateNestedArray('references', arr => [...arr, createReference(applicant.applicantId)])
-  const addTraining = () => updateNestedArray('trainings', arr => [...arr, createTraining()])
-  const addCertificate = () => updateNestedArray('certificates', arr => [...arr, createCertificate()])
 
   // Applicant-level helpers (operate on applicant.trainings / applicant.certificates)
   const addApplicantTraining = () => setApplicant((prev) => ({
@@ -836,8 +742,6 @@ function App() {
   }
 
   const reorderReferences = (fromIndex: number, toIndex: number) => updateNestedArray('references', arr => moveItem(arr, fromIndex, toIndex))
-  const reorderTrainings = (fromIndex: number, toIndex: number) => updateNestedArray('trainings', arr => moveItem(arr, fromIndex, toIndex))
-  const reorderCertificates = (fromIndex: number, toIndex: number) => updateNestedArray('certificates', arr => moveItem(arr, fromIndex, toIndex))
 
   const activeJobApplication =
     jobApplications.find((application) => application.JobApplicationId === activeJobApplicationId) ??
@@ -1229,8 +1133,6 @@ function App() {
             return {
               ...application,
               references: preferNonEmptyArray(local?.references, application.references),
-              trainings: preferNonEmptyArray(local?.trainings, application.trainings, backendTrainings),
-              certificates: preferNonEmptyArray(local?.certificates, application.certificates, backendCertificates),
             }
           })
         })
@@ -1582,8 +1484,8 @@ function App() {
                 updateEducation={updateEducation}
                 updateEmployment={updateEmployment}
                 updateReference={updateReference}
-                updateTraining={updateTraining}
-                updateCertificate={updateCertificate}
+                updateTraining={updateApplicantTraining}
+                updateCertificate={updateApplicantCertificate}
                 addEducation={addEducation}
                 removeEducation={removeEducation}
                 reorderEducation={reorderEducation}
@@ -1593,10 +1495,10 @@ function App() {
                 addReference={addReference}
                 removeReference={removeReference}
                 reorderReferences={reorderReferences}
-                addTraining={addTraining}
-                reorderTrainings={reorderTrainings}
-                addCertificate={addCertificate}
-                reorderCertificates={reorderCertificates}
+                addTraining={addApplicantTraining}
+                reorderTrainings={reorderApplicantTrainings}
+                addCertificate={addApplicantCertificate}
+                reorderCertificates={reorderApplicantCertificates}
                 validationErrors={validationErrors}
                 isValidationBlocked={isValidationBlocked}
                 onDeleteJobApplication={deleteJobApplication}
@@ -1673,8 +1575,6 @@ function App() {
           onCreate={async ({ appliedPosition, JobApplicationDate, agreesToDrugTest }) => {
             const next = createEmptyApplication(
               applicant.applicantId,
-              applicant.trainings || [],
-              applicant.certificates || [],
             )
             const nextFilled = { ...next, appliedPosition, JobApplicationDate, agreesToDrugTest }
             setJobApplications((prev) => [...prev, nextFilled])

@@ -23,8 +23,6 @@ export type JobApplication = {
   availableStartDate: string
   expectedSalary: string
   references?: ApplicantReference[]
-  trainings?: Training[]
-  certificates?: Certificate[]
   agreedToTerms?: boolean
   dateAgreed?: string
 }
