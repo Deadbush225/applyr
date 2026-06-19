@@ -286,8 +286,7 @@ type StoredApplicant = Partial<Applicant> & { id?: number | string }
 type StoredJobApplication = Partial<JobApplication> & { id?: number | string }
 type StoredEducation = Partial<Education> & { id?: number | string }
 type StoredEmploymentHistory = Partial<EmploymentHistory> & { id?: number | string }
-type StoredTraining = Partial<Training> & { id?: number | string }
-type StoredCertificate = Partial<Certificate> & { id?: number | string }
+
 
 const getStorageScope = (userId?: number | string | null) => (userId ? `user:${userId}` : 'guest')
 
@@ -678,8 +677,41 @@ function App() {
   }))
 
   const updateApplicantTraining = (index: number, field: keyof Training, value: string) => {
+    const currentTraining = applicant.trainings?.[index]
+    const pendingTrainingDuplicateValue = pendingTrainingDuplicateSelectionRef.current[index]
+    
     setApplicant((prev) => {
       const arr = prev.trainings || []
+      
+      if (field === 'trainingTitle' && value.trim() !== '') {
+        const isDuplicate = arr.some(
+          (training, i) => 
+            i !== index && 
+            training.trainingTitle.toLowerCase().trim() === value.toLowerCase().trim()
+        )
+        if (isDuplicate) {
+          pendingTrainingDuplicateSelectionRef.current[index] = value.trim().toLowerCase()
+          setTrainingDuplicateWarnings(prevWarn => ({
+            ...prevWarn,
+            [index]: {
+              attemptedValue: value,
+              lastValid: currentTraining?.trainingTitle || ''
+            }
+          }))
+          return prev
+        } else {
+          delete pendingTrainingDuplicateSelectionRef.current[index]
+          setTrainingDuplicateWarnings(prevWarn => {
+            const next = { ...prevWarn }
+            delete next[index]
+            return next
+          })
+        }
+      } else if (field === 'trainingId' && pendingTrainingDuplicateValue) {
+        delete pendingTrainingDuplicateSelectionRef.current[index]
+        return prev
+      }
+      
       return { ...prev, trainings: arr.map((item, i) => (i === index ? { ...item, [field]: value } : item)) }
     })
   }
@@ -697,8 +729,41 @@ function App() {
   }))
 
   const updateApplicantCertificate = (index: number, field: keyof Certificate, value: string) => {
+    const currentCert = applicant.certificates?.[index]
+    const pendingCertificateDuplicateValue = pendingCertificateDuplicateSelectionRef.current[index]
+    
     setApplicant((prev) => {
       const arr = prev.certificates || []
+      
+      if (field === 'certificateName' && value.trim() !== '') {
+        const isDuplicate = arr.some(
+          (cert, i) => 
+            i !== index && 
+            cert.certificateName.toLowerCase().trim() === value.toLowerCase().trim()
+        )
+        if (isDuplicate) {
+          pendingCertificateDuplicateSelectionRef.current[index] = value.trim().toLowerCase()
+          setCertificateDuplicateWarnings(prevWarn => ({
+            ...prevWarn,
+            [index]: {
+              attemptedValue: value,
+              lastValid: currentCert?.certificateName || ''
+            }
+          }))
+          return prev
+        } else {
+          delete pendingCertificateDuplicateSelectionRef.current[index]
+          setCertificateDuplicateWarnings(prevWarn => {
+            const next = { ...prevWarn }
+            delete next[index]
+            return next
+          })
+        }
+      } else if (field === 'certificateId' && pendingCertificateDuplicateValue) {
+        delete pendingCertificateDuplicateSelectionRef.current[index]
+        return prev
+      }
+      
       return { ...prev, certificates: arr.map((item, i) => (i === index ? { ...item, [field]: value } : item)) }
     })
   }
@@ -1095,22 +1160,7 @@ function App() {
           isEmployed: toBooleanFlag(entry.isEmployed),
         }))
 
-        const backendTrainings = (profile.trainings || []).map((entry: StoredTraining) => ({
-          trainingId: entry.trainingId || entry.id || createId(),
-          trainingTitle: entry.trainingTitle || '',
-          trainingDescription: entry.trainingDescription || '',
-          trainingInstructor: entry.trainingInstructor || '',
-          trainingDurationHours: entry.trainingDurationHours || '',
-          completionDate: entry.completionDate || '',
-        }))
 
-        const backendCertificates = (profile.certificates || []).map((entry: StoredCertificate) => ({
-          certificateId: entry.certificateId || entry.id || createId(),
-          certificateName: entry.certificateName || '',
-          issuingAuthority: entry.issuingAuthority || '',
-          validityMonths: entry.validityMonths || '',
-          dateIssued: entry.dateIssued || '',
-        }))
 
         setApplicant((prev) => ({
           ...prev,
