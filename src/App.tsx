@@ -58,7 +58,11 @@ const createEmptyApplicant = (): Applicant => ({
   agreesToDrugTest: false,
 })
 
-const createEmptyApplication = (applicantId: number | string): JobApplication => ({
+const createEmptyApplication = (
+  applicantId: number | string,
+  trainings: Training[] = [],
+  certificates: Certificate[] = [],
+): JobApplication => ({
   JobApplicationId: createJobApplicationId(),
   applicantId: String(applicantId),
   appliedPosition: '',
@@ -68,8 +72,8 @@ const createEmptyApplication = (applicantId: number | string): JobApplication =>
   availableStartDate: '',
   expectedSalary: '',
   references: [],
-  trainings: [],
-  certificates: [],
+  trainings: trainings.map((item) => ({ ...item })),
+  certificates: certificates.map((item) => ({ ...item })),
 })
 
 const createEducation = (applicantId: number | string): Education => ({
@@ -544,7 +548,11 @@ function App() {
   }
 
   const addJobApplication = () => {
-    const next = createEmptyApplication(applicant.applicantId)
+    const next = createEmptyApplication(
+      applicant.applicantId,
+      applicant.trainings || [],
+      applicant.certificates || [],
+    )
     setJobApplications((prev) => [...prev, next])
     setActiveJobApplicationId(next.JobApplicationId)
     return next.JobApplicationId
@@ -1663,7 +1671,11 @@ function App() {
           isOpen={showNewAppModal}
           onClose={() => setShowNewAppModal(false)}
           onCreate={async ({ appliedPosition, JobApplicationDate, agreesToDrugTest }) => {
-            const next = createEmptyApplication(applicant.applicantId)
+            const next = createEmptyApplication(
+              applicant.applicantId,
+              applicant.trainings || [],
+              applicant.certificates || [],
+            )
             const nextFilled = { ...next, appliedPosition, JobApplicationDate, agreesToDrugTest }
             setJobApplications((prev) => [...prev, nextFilled])
             setActiveJobApplicationId(next.JobApplicationId)
