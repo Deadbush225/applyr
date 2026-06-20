@@ -102,6 +102,13 @@ try {
         }
     }
 
+    if ($hasCertificates) {
+        // Remove existing applicant certificates first so the incoming array
+        // becomes the single source of truth. This allows removing certificates
+        // from the profile by sending an empty array.
+        $db->prepare('DELETE FROM ApplicantCertificate WHERE applicantId = :applicantId')->execute(['applicantId' => $applicantId]);
+    }
+
     if ($hasCertificates && $certificates !== []) {
         $stmtFindCert = $db->prepare('SELECT certificateId FROM Certificate WHERE certificateName = :name AND issuingAuthority = :authority LIMIT 1');
         $stmtCert = $db->prepare('INSERT INTO Certificate (certificateId, certificateName, issuingAuthority, validityMonths) VALUES (:certificateId, :certificateName, :issuingAuthority, :validityMonths) ON DUPLICATE KEY UPDATE certificateName = VALUES(certificateName), issuingAuthority = VALUES(issuingAuthority), validityMonths = VALUES(validityMonths)');
@@ -144,6 +151,12 @@ try {
                 'dateIssued' => $entry['dateIssued'] ?? date('Y-m-d'),
             ]);
         }
+    }
+
+    if ($hasTrainings) {
+        // Remove existing applicant trainings so the incoming trainings array
+        // replaces previous entries (supports removal).
+        $db->prepare('DELETE FROM ApplicantTraining WHERE applicantId = :applicantId')->execute(['applicantId' => $applicantId]);
     }
 
     if ($hasTrainings && $trainings !== []) {

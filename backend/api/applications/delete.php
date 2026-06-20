@@ -17,17 +17,27 @@ if ($jobApplicationId === '') {
 }
 
 try {
-    $statement = $db->prepare(
-        'DELETE FROM JobApplication WHERE JobApplicationId = :jobApplicationId'
-    );
-    $statement->execute([
-        'jobApplicationId' => $jobApplicationId,
-    ]);
+    $db->beginTransaction();
+
+    // Remove dependent references first to avoid FK constraint failures
+    $stmtDelRefs = $db->prepare('DELETE FROM `Reference` WHERE JobApplicationId = :jobApplicationId');
+    $stmtDelRefs->execute(['jobApplicationId' => $jobApplicationId]);
+
+    // Remove resume settings (table has ON DELETE CASCADE in schema, but ensure cleanup)
+    $stmtDelSettings = $db->prepare('DELETE FROM ApplicationResumeSettings WHERE JobApplicationId = :jobApplicationId');
+    $stmtDelSettings->execute(['jobApplicationId' => $jobApplicationId]);
+
+    $statement = $db->prepare('DELETE FROM JobApplication WHERE JobApplicationId = :jobApplicationId');
+    $statement->execute(['jobApplicationId' => $jobApplicationId]);
+
+    $deleted = $statement->rowCount() > 0;
+
+    $db->commit();
 
     jsonResponse(200, [
         'success' => true,
         'data' => [
-            'deleted' => $statement->rowCount() > 0,
+            'deleted' => $deleted,
         ],
     ]);
 } catch (Throwable $error) {

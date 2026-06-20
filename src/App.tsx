@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { flushSync } from 'react-dom'
 import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import './styles/App.scss'
 
@@ -552,12 +553,16 @@ function App() {
   const deleteJobApplication = async (jobApplicationId: string) => {
     try {
       await deleteApplication(jobApplicationId, authSession?.token)
-      setJobApplications((prev) => {
-        const remaining = prev.filter((app) => app.JobApplicationId !== jobApplicationId)
-        if (jobApplicationId === activeJobApplicationId) {
-          setActiveJobApplicationId(remaining[0]?.JobApplicationId ?? '')
-        }
-        return remaining
+      // Ensure state changes are flushed synchronously so callers (like EditorPage)
+      // that perform an immediate sync afterwards won't read stale application data
+      flushSync(() => {
+        setJobApplications((prev) => {
+          const remaining = prev.filter((app) => app.JobApplicationId !== jobApplicationId)
+          if (jobApplicationId === activeJobApplicationId) {
+            setActiveJobApplicationId(remaining[0]?.JobApplicationId ?? '')
+          }
+          return remaining
+        })
       })
       setResumeSettingsMap((prev) => {
         const next = { ...prev }
@@ -1047,6 +1052,34 @@ function App() {
           }
         : prev,
     )
+    // Also sync nested profile data (education, employment, trainings, certificates)
+    try {
+      const profilePayload = {
+        applicantId: applicant.applicantId,
+        education: sanitizeEducation(education).map((item) => ({
+          ...item,
+          educationId: toPersistableId(item.educationId),
+          schoolId: toPersistableId(item.schoolId),
+        })),
+        employmentHistory: sanitizeEmployment(employmentHistory).map((item) => ({
+          ...item,
+          EmploymentHistoryId: toPersistableId(item.EmploymentHistoryId),
+          companyId: toPersistableId(item.companyId),
+        })),
+        trainings: sanitizeTrainings(applicant.trainings || []).map((item) => ({
+          ...item,
+          trainingId: toPersistableId(item.trainingId),
+        })),
+        certificates: sanitizeCertificates(applicant.certificates || []).map((item) => ({
+          ...item,
+          certificateId: toPersistableId(item.certificateId),
+        })),
+      }
+
+      await syncApplicantProfile(profilePayload, authSession?.token)
+    } catch (err) {
+      console.error('Failed to sync full applicant profile after update:', err)
+    }
   }
 
   useEffect(() => {
