@@ -26,6 +26,7 @@ type HomePageProps = {
   authSession: AuthSession | null
   isAuthLoading: boolean
   authError: string
+  onClearAuthError?: () => void
   onLogin: (email: string, password: string) => Promise<void>
   onSignup: (name: string, email: string, password: string) => Promise<void>
   onAddJobApplication: () => string,
@@ -75,6 +76,7 @@ const HomePage = ({
   authError,
   onLogin,
   onSignup,
+  onClearAuthError,
   onAddJobApplication,
   onRequestNewApplication,
   registrationMessage,
@@ -140,6 +142,7 @@ const HomePage = ({
                 onClick={() => {
                   setMode('login')
                   setLocalError('')
+                  onClearAuthError?.()
                 }}
               >
                 Sign in
@@ -150,6 +153,7 @@ const HomePage = ({
                 onClick={() => {
                   setMode('signup')
                   setLocalError('')
+                  onClearAuthError?.()
                 }}
               >
                 Create account
@@ -219,11 +223,11 @@ const HomePage = ({
             <div className="auth-footer">
               {mode === 'login' ? (
                 <p>
-                  Don't have an account? <button type="button" onClick={() => setMode('signup')}>Create account</button>
+                  Don't have an account? <button type="button" onClick={() => { setMode('signup'); setLocalError(''); onClearAuthError?.() }}>Create account</button>
                 </p>
               ) : (
                 <p>
-                  Already have an account? <button type="button" onClick={() => setMode('login')}>Sign in</button>
+                  Already have an account? <button type="button" onClick={() => { setMode('login'); setLocalError(''); onClearAuthError?.() }}>Sign in</button>
                 </p>
               )}
             </div>

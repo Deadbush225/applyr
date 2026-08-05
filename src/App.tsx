@@ -1481,6 +1481,7 @@ function App() {
                 authSession={authSession}
                 isAuthLoading={isAuthLoading}
                 authError={authError}
+                onClearAuthError={() => setAuthError('')}
                 registrationMessage={registrationMessage}
                 onLogin={handleLogin}
                 onSignup={handleSignup}
