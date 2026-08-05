@@ -43,10 +43,7 @@ type AuthResponse = {
   message?: string
 }
 
-const API_BASE_URL = 
-// 'http://localhost:8000'
-  //import.meta.env.VITE_API_BASE_URL ?? 
-  'https://eliazar.heliohost.us/backend';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'https://eliazar.heliohost.us/backend';
 
 const endpoints = {
   login: '/api/auth/login.php',
