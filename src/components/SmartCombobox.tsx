@@ -59,7 +59,7 @@ export default function SmartCombobox({ fetchUrl, valueName, valueId, placeholde
     void (async () => {
       try {
         const env = (import.meta as unknown as { env?: { VITE_API_BASE_URL?: string } }).env
-        const base = env?.VITE_API_BASE_URL
+        const base = env?.VITE_API_BASE_URL || 'example.com'
         const finalUrl = fetchUrl.startsWith('http') ? fetchUrl : `${base.replace(/\/$/, '')}${fetchUrl.startsWith('/') ? '' : '/'}${fetchUrl}`
         const res = await fetch(finalUrl)
         if (!res.ok) return
