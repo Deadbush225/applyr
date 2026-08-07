@@ -2,8 +2,7 @@ import type { JobApplication, ApplicationResumeSettings, ApplicantReference } fr
 
 const API_BASE_URL = 
 // 'http://localhost:8000'
-  // import.meta.env.VITE_API_BASE_URL ?? 
-  'https://eliazar.heliohost.us/backend'
+  import.meta.env.VITE_API_BASE_URL
 
 const requestJson = async <T>(
   url: string,
